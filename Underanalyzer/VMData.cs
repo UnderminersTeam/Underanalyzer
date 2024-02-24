@@ -22,14 +22,14 @@ public interface IGMInstruction
     /// <summary>
     /// Mnemonic attribute used for opcodes.
     /// </summary>
-    public class OpcodeMnemonic : Attribute
+    public class OpcodeInfo : Attribute
     {
         /// <summary>
         /// Unique shorthand identifier used for this opcode.
         /// </summary>
         public string Mnemonic { get; }
 
-        public OpcodeMnemonic(string mnemonic)
+        public OpcodeInfo(string mnemonic)
         {
             Mnemonic = mnemonic;
         }
@@ -66,49 +66,49 @@ public interface IGMInstruction
         /// Converts between one type of value on the stack to another.
         /// Mnemonic: "conv"
         /// </summary>
-        [OpcodeMnemonic("conv")]
+        [OpcodeInfo("conv")]
         Convert = 0x07,
 
         /// <summary>
         /// Pops two values from the stack, multiplies them, and pushes the result.
         /// Mnemonic: "mul"
         /// </summary>
-        [OpcodeMnemonic("mul")]
+        [OpcodeInfo("mul")]
         Multiply = 0x08,
 
         /// <summary>
         /// Pops two values from the stack, divides them, and pushes the result.
         /// Mnemonic: "div"
         /// </summary>
-        [OpcodeMnemonic("mul")]
+        [OpcodeInfo("div")]
         Divide = 0x09,
 
         /// <summary>
         /// Pops two values from the stack, performs a GML "div" operation (remainder), and pushes the result.
         /// Mnemonic: "rem"
         /// </summary>
-        [OpcodeMnemonic("rem")]
-        GMLDiv = 0x0A,
+        [OpcodeInfo("rem")]
+        GMLDivRemainder = 0x0A,
 
         /// <summary>
         /// Pops two values from the stack, performs a GML "mod"/% operation, and pushes the result.
         /// Mnemonic: "mod"
         /// </summary>
-        [OpcodeMnemonic("mod")]
+        [OpcodeInfo("mod")]
         GMLModulo = 0x0B,
 
         /// <summary>
         /// Pops two values from the stack, adds them, and pushes the result.
         /// Mnemonic: "add"
         /// </summary>
-        [OpcodeMnemonic("add")]
+        [OpcodeInfo("add")]
         Add = 0x0C,
 
         /// <summary>
         /// Pops two values from the stack, subtracts them, and pushes the result.
         /// Mnemonic: "sub"
         /// </summary>
-        [OpcodeMnemonic("sub")]
+        [OpcodeInfo("sub")]
         Subtract = 0x0D,
 
         /// <summary>
@@ -116,7 +116,7 @@ public interface IGMInstruction
         /// This can be done bitwise or logically.
         /// Mnemonic: "and"
         /// </summary>
-        [OpcodeMnemonic("and")]
+        [OpcodeInfo("and")]
         And = 0x0E,
 
         /// <summary>
@@ -124,7 +124,7 @@ public interface IGMInstruction
         /// This can be done bitwise or logically.
         /// Mnemonic: "or"
         /// </summary>
-        [OpcodeMnemonic("or")]
+        [OpcodeInfo("or")]
         Or = 0x0F,
 
         /// <summary>
@@ -132,42 +132,42 @@ public interface IGMInstruction
         /// This can be done bitwise or logically.
         /// Mnemonic: "xor"
         /// </summary>
-        [OpcodeMnemonic("xor")]
+        [OpcodeInfo("xor")]
         Xor = 0x10,
 
         /// <summary>
         /// Negates the top value of the stack.
         /// Mnemonic: "neg"
         /// </summary>
-        [OpcodeMnemonic("neg")]
+        [OpcodeInfo("neg")]
         Negate = 0x11,
 
         /// <summary>
-        /// Performs a boolean NOT operation on the top value of the stack.
+        /// Performs a boolean NOT operation on the top value of the stack (modifying it).
         /// Mnemonic: "not"
         /// </summary>
-        [OpcodeMnemonic("not")]
+        [OpcodeInfo("not")]
         Not = 0x12,
 
         /// <summary>
         /// Pops two values from the stack, performs a bitwise left shift operation (<<), and pushes the result.
         /// Mnemonic: "shl"
         /// </summary>
-        [OpcodeMnemonic("shl")]
+        [OpcodeInfo("shl")]
         ShiftLeft = 0x13,
 
         /// <summary>
         /// Pops two values from the stack, performs a bitwise right shift operation (>>), and pushes the result.
         /// Mnemonic: "shr"
         /// </summary>
-        [OpcodeMnemonic("shr")]
+        [OpcodeInfo("shr")]
         ShiftRight = 0x14,
 
         /// <summary>
-        /// Pops two values from the stack, compares them, and pushes a boolean result.
+        /// Pops two values from the stack, compares them using a <see cref="ComparisonType"/>, and pushes a boolean result.
         /// Mnemonic: "set", and unofficially "cmp"
         /// </summary>
-        [OpcodeMnemonic("cmp")]
+        [OpcodeInfo("cmp")]
         Compare = 0x15,
 
         /// <summary>
@@ -175,7 +175,7 @@ public interface IGMInstruction
         /// Has an alternate mode that can swap values around on the stack.
         /// Mnemonic: "pop"
         /// </summary>
-        [OpcodeMnemonic("pop")]
+        [OpcodeInfo("pop")]
         Pop = 0x45,
 
         /// <summary>
@@ -183,56 +183,56 @@ public interface IGMInstruction
         /// Behavior depends on instruction parameters, both in data sizes and mode.
         /// Mnemonic: "dup"
         /// </summary>
-        [OpcodeMnemonic("dup")]
+        [OpcodeInfo("dup")]
         Duplicate = 0x86,
 
         /// <summary>
         /// Pops a value from the stack, and returns from the current function/script with that value as the return value.
         /// Mnemonic: "ret"
         /// </summary>
-        [OpcodeMnemonic("ret")]
+        [OpcodeInfo("ret")]
         Return = 0x9C,
 
         /// <summary>
         /// Returns from the current function/script/event with no return value.
         /// Mnemonic: "exit"
         /// </summary>
-        [OpcodeMnemonic("exit")]
+        [OpcodeInfo("exit")]
         Exit = 0x9D,
 
         /// <summary>
         /// Pops a value from the stack, and discards it.
         /// Mnemonic: "popz"
         /// </summary>
-        [OpcodeMnemonic("popz")]
+        [OpcodeInfo("popz")]
         PopDelete = 0x9E,
 
         /// <summary>
         /// Branches to another instruction in the code entry.
         /// Mnemonic: "b"
         /// </summary>
-        [OpcodeMnemonic("b")]
+        [OpcodeInfo("b")]
         Branch = 0xB6,
 
         /// <summary>
         /// Pops a boolean/int32 value from the stack. If true/nonzero, branches to another instruction in the code entry.
         /// Mnemonic: "bt"
         /// </summary>
-        [OpcodeMnemonic("bt")]
+        [OpcodeInfo("bt")]
         BranchTrue = 0xB7,
 
         /// <summary>
         /// Pops a boolean/int32 value from the stack. If false/zero, branches to another instruction in the code entry.
         /// Mnemonic: "bf"
         /// </summary>
-        [OpcodeMnemonic("bf")]
+        [OpcodeInfo("bf")]
         BranchFalse = 0xB8,
 
         /// <summary>
         /// Pushes a "with" context, used for GML "with" statements, to the VM environment/self instance stack.
         /// Mnemonic: "pushenv"
         /// </summary>
-        [OpcodeMnemonic("pushenv")]
+        [OpcodeInfo("pushenv")]
         PushWithContext = 0xBA,
 
         /// <summary>
@@ -241,42 +241,42 @@ public interface IGMInstruction
         /// If a flag is encoded in this instruction, then this will always terminate the loop, and branch to the encoded address.
         /// Mnemonic: "popenv"
         /// </summary>
-        [OpcodeMnemonic("popenv")]
+        [OpcodeInfo("popenv")]
         PopWithContext = 0xBB,
 
         /// <summary>
         /// Pushes a constant value onto the stack. Can vary in size depending on value type.
         /// Mnemonic: "push"
         /// </summary>
-        [OpcodeMnemonic("push")]
+        [OpcodeInfo("push")]
         Push = 0xC0,
 
         /// <summary>
         /// Pushes a value stored in a local variable onto the stack.
         /// Mnemonic: "pushl", or unofficially "pushloc"
         /// </summary>
-        [OpcodeMnemonic("pushloc")]
+        [OpcodeInfo("pushloc")]
         PushLocal = 0xC1,
 
         /// <summary>
         /// Pushes a value stored in a global variable onto the stack.
         /// Mnemonic: "pushg", or unofficially "pushglb"
         /// </summary>
-        [OpcodeMnemonic("pushglb")]
+        [OpcodeInfo("pushglb")]
         PushGlobal = 0xC2,
 
         /// <summary>
         /// Pushes a value stored in a GameMaker builtin variable onto the stack.
         /// Mnemonic: "pushb", or unofficially "pushbltn"
         /// </summary>
-        [OpcodeMnemonic("pushbltn")]
+        [OpcodeInfo("pushbltn")]
         PushBuiltin = 0xC3,
 
         /// <summary>
         /// Pushes an immediate signed 32-bit integer value onto the stack, encoded as a signed 16-bit integer.
         /// Mnemonic: "pushi"
         /// </summary>
-        [OpcodeMnemonic("pushi")]
+        [OpcodeInfo("pushi")]
         PushImmediate = 0x84,
 
         /// <summary>
@@ -284,7 +284,7 @@ public interface IGMInstruction
         /// Argument count is encoded in this instruction. Arguments are popped off of the stack.
         /// Mnemonic: "call"
         /// </summary>
-        [OpcodeMnemonic("call")]
+        [OpcodeInfo("call")]
         Call = 0xD9,
 
         /// <summary>
@@ -293,19 +293,19 @@ public interface IGMInstruction
         /// Arguments are dealt with identically to "call".
         /// Mnemonic: "call.v" (an exception to normal rules!), or unofficially "callv"
         /// </summary>
-        [OpcodeMnemonic("callv")]
+        [OpcodeInfo("callv")]
         CallVariable = 0x99,
 
         /// <summary>
         /// Performs extended operations that are detailed in the ExtendedType enum.
         /// Often referred to as "break", but there are multiple mnemonics for this opcode.
         /// </summary>
-        [OpcodeMnemonic("break")]
+        [OpcodeInfo("break")]
         Extended = 0xFF
     }
 
     /// <summary>
-    /// Represents multiple extended opcodes used by instructions.
+    /// Represents multiple extended opcodes used by instructions with the Extended opcode.
     /// </summary>
     public enum ExtendedType : short
     {
@@ -313,7 +313,7 @@ public interface IGMInstruction
         /// Verifies an array index is within proper bounds, typically for multi-dimensional arrays.
         /// Mnemonic: "chkindex"
         /// </summary>
-        [OpcodeMnemonic("chkindex")]
+        [OpcodeInfo("chkindex")]
         CheckArrayIndex = -1,
 
         /// <summary>
@@ -322,7 +322,7 @@ public interface IGMInstruction
         /// That is, this is used only with multi-dimensional arrays, for the final/last index operation.
         /// Mnemonic: "pushaf"
         /// </summary>
-        [OpcodeMnemonic("pushaf")]
+        [OpcodeInfo("pushaf")]
         PushArrayRef = -2,
 
         /// <summary>
@@ -330,7 +330,7 @@ public interface IGMInstruction
         /// Then, assigns the value to the array at the specified index.
         /// Mnemonic: "popaf"
         /// </summary>
-        [OpcodeMnemonic("popaf")]
+        [OpcodeInfo("popaf")]
         PopMultiArray = -3,
 
         /// <summary>
@@ -339,7 +339,7 @@ public interface IGMInstruction
         /// That is, this is used only with multi-dimensional arrays, for all index operations from the second through the second to last.
         /// Mnemonic: "pushac"
         /// </summary>
-        [OpcodeMnemonic("pushac")]
+        [OpcodeInfo("pushac")]
         PushSubArray = -4,
 
         /// <summary>
@@ -348,7 +348,7 @@ public interface IGMInstruction
         /// extended opcode is not used.
         /// Mnemonic: "setowner"
         /// </summary>
-        [OpcodeMnemonic("setowner")]
+        [OpcodeInfo("setowner")]
         SetArrayOwner = -5,
 
         /// <summary>
@@ -356,42 +356,42 @@ public interface IGMInstruction
         /// Enters a static variable initialization state.
         /// Mnemonic: "isstaticok"
         /// </summary>
-        [OpcodeMnemonic("isstaticok")]
+        [OpcodeInfo("isstaticok")]
         HasStaticInitialized = -6,
 
         /// <summary>
         /// Exits a static variable initialization state.
         /// Mnemonic: "setstatic"
         /// </summary>
-        [OpcodeMnemonic("setstatic")]
+        [OpcodeInfo("setstatic")]
         ResetStatic = -7,
 
         /// <summary>
         /// Stores an array reference temporarily. Used in multi-dimensional array compound assignment statements.
         /// Mnemonic: "savearef"
         /// </summary>
-        [OpcodeMnemonic("savearef")]
+        [OpcodeInfo("savearef")]
         SaveArrayReference = -8,
 
         /// <summary>
         /// Restores a previously-stored array reference. Used in multi-dimensional array compound assignment statements.
         /// Mnemonic: "restorearef"
         /// </summary>
-        [OpcodeMnemonic("restorearef")]
+        [OpcodeInfo("restorearef")]
         RestoreArrayReference = -9,
 
         /// <summary>
         /// Pops a value from the stack, and pushes a boolean result. The result is true if a "nullish" value, such as undefined or GML's pointer_null.
         /// Mnemonic: "isnullish"
         /// </summary>
-        [OpcodeMnemonic("isnullish")]
+        [OpcodeInfo("isnullish")]
         IsNullishValue = -10,
 
         /// <summary>
         /// Pushes an asset reference to the stack, encoded in an integer. Includes asset type and index.
         /// Mnemonic: "pushref"
         /// </summary>
-        [OpcodeMnemonic("pushref")]
+        [OpcodeInfo("pushref")]
         PushReference = -11
     }
 
