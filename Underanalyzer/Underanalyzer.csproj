@@ -5,4 +5,8 @@
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Decompiler\" />
+  </ItemGroup>
+
 </Project>

@@ -6,12 +6,37 @@ namespace Underanalyzer;
 /// <summary>
 /// Represents a single code entry, as seen in a game's data file.
 /// </summary>
-public interface IGMCode<T> where T : IGMInstruction
+public interface IGMCode
 {
     /// <summary>
-    /// List of instructions contained within a code entry.
+    /// Gets an instruction at the specified index, in this code entry.
     /// </summary>
-    public IList<T> Instructions { get; }
+    public IGMInstruction GetInstruction(int index);
+
+    /// <summary>
+    /// Returns the number of instructions in this code entry.
+    /// </summary>
+    public int InstructionCount { get; }
+
+    /// <summary>
+    /// Returns the offset within the instructions (in bytes) from which this code entry begins.
+    /// </summary>
+    public uint StartOffset { get; }
+
+    /// <summary>
+    /// Parent code entry, if this is a sub-function entry. Otherwise, if a root code entry, this is null.
+    /// </summary>
+    public IGMCode Parent { get; }
+
+    /// <summary>
+    /// Gets a child code entry at the specified index.
+    /// </summary>
+    public IGMCode GetChild(int index);
+
+    /// <summary>
+    /// Returns the number of children of this code entry. If this is a sub-function entry, this is 0.
+    /// </summary>
+    public int ChildCount { get; }
 }
 
 /// <summary>
@@ -297,7 +322,7 @@ public interface IGMInstruction
         CallVariable = 0x99,
 
         /// <summary>
-        /// Performs extended operations that are detailed in the ExtendedType enum.
+        /// Performs extended operations that are detailed in the <see cref="ExtendedOpcode"/> enum.
         /// Often referred to as "break", but there are multiple mnemonics for this opcode.
         /// </summary>
         [OpcodeInfo("break")]
@@ -307,7 +332,7 @@ public interface IGMInstruction
     /// <summary>
     /// Represents multiple extended opcodes used by instructions with the Extended opcode.
     /// </summary>
-    public enum ExtendedType : short
+    public enum ExtendedOpcode : short
     {
         /// <summary>
         /// Verifies an array index is within proper bounds, typically for multi-dimensional arrays.
@@ -343,7 +368,7 @@ public interface IGMInstruction
         PushSubArray = -4,
 
         /// <summary>
-        /// Sets a global variable in the VM, designated for tracking the now-deprecated array copy-on-write functionality in GML.
+        /// Sets a global variable in the VM (popped from stack), designated for tracking the now-deprecated array copy-on-write functionality in GML.
         /// The value used is specific to certain locations in scripts. When array copy-on-write functionality is disabled, this
         /// extended opcode is not used.
         /// Mnemonic: "setowner"
@@ -464,11 +489,6 @@ public interface IGMInstruction
     public enum InstanceType : short
     {
         /// <summary>
-        /// Represents no special instance, or occasionally object index 0.
-        /// </summary>
-        Undefined = 0,
-
-        /// <summary>
         /// Represents the current "self" instance.
         /// </summary>
         Self = -1,
@@ -566,6 +586,11 @@ public interface IGMInstruction
     public Opcode Kind { get; }
 
     /// <summary>
+    /// The extended opcode of this instruction, if <see cref="Kind"/> is <see cref="Opcode.Extended"/>.
+    /// </summary>
+    public ExtendedOpcode ExtKind { get; }
+
+    /// <summary>
     /// For comparison instructions, represents the comparison kind.
     /// </summary>
     public ComparisonType ComparisonKind { get; }
@@ -583,7 +608,7 @@ public interface IGMInstruction
     /// <summary>
     /// For instructions that have an instance type, represents the kind of instance or object ID.
     /// </summary>
-    public InstanceType TypeInst { get; }
+    public InstanceType InstType { get; }
 
     /// <summary>
     /// For instructions that reference a variable, represents the variable being referenced.
@@ -606,6 +631,11 @@ public interface IGMInstruction
     public double ValueDouble { get; }
 
     /// <summary>
+    /// Represents a 16-bit integer value for instructions that use it.
+    /// </summary>
+    public short ValueShort { get; }
+
+    /// <summary>
     /// Represents a 32-bit integer value for instructions that use it.
     /// </summary>
     public int ValueInt { get; }
@@ -621,7 +651,12 @@ public interface IGMInstruction
     public bool ValueBool { get; }
 
     /// <summary>
-    /// Represents a branch offset for instructions that use it.
+    /// Represents a string value for instructions that push strings.
+    /// </summary>
+    public IGMString ValueString { get; }
+
+    /// <summary>
+    /// Represents a branch offset for branch instructions.
     /// </summary>
     public int BranchOffset { get; }
 
@@ -642,6 +677,34 @@ public interface IGMInstruction
     /// </summary>
     public byte DuplicationSize2 { get; }
 
+    /// <summary>
+    /// Returns the number of arguments encoded in this instruction, for call instructions.
+    /// </summary>
+    public int ArgumentCount { get; }
+
+    /// <summary>
+    /// Returns size of an instruction, in bytes.
+    /// </summary>
+    internal static uint GetSize(IGMInstruction instr)
+    {
+        if (instr.Variable != null || instr.Function != null)
+            return 8;
+        switch (instr.Kind)
+        {
+            case Opcode.Push or Opcode.PushLocal or Opcode.PushGlobal or
+                 Opcode.PushBuiltin or Opcode.PushImmediate:
+                if (instr.Type1 == DataType.Double || instr.Type1 == DataType.Int64)
+                    return 12;
+                if (instr.Type1 != DataType.Int16)
+                    return 8;
+                break;
+            case Opcode.Extended:
+                if (instr.Type1 == DataType.Int32)
+                    return 8;
+                break;
+        }
+        return 4;
+    }
 }
 
 /// <summary>
@@ -657,7 +720,7 @@ public interface IGMVariable
     /// <summary>
     /// Represents the type of instance used for the variable.
     /// </summary>
-    public IGMInstruction.InstanceType VariableType { get; }
+    public IGMInstruction.InstanceType InstanceType { get; }
 
     /// <summary>
     /// The ID of the variable in the game's data file.
