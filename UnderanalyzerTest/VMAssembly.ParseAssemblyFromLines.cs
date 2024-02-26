@@ -6,7 +6,7 @@ namespace UnderanalyzerTest;
 public class VMAssembly_ParseInstructions
 {
     [Fact]
-    public void TestParse()
+    public void TestBasic()
     {
         string text =
         """
@@ -112,7 +112,8 @@ public class VMAssembly_ParseInstructions
         """;
         string[] lines = text.Split('\n');
 
-        var list = VMAssembly.ParseInstructionsFromLines(lines);
+        GMCode code = VMAssembly.ParseAssemblyFromLines(lines);
+        List<GMInstruction> list = code.Instructions;
 
         Assert.True(list.Count == 72);
 
@@ -151,5 +152,46 @@ public class VMAssembly_ParseInstructions
         Assert.True(list[57].Kind == IGMInstruction.Opcode.Push);
         Assert.True(list[57].Type1 == IGMInstruction.DataType.String);
         Assert.True(list[57].ValueString.Content == "\"Test\nescaped\nstring!\"");
+    }
+
+    [Fact]
+    public void TestSubEntries()
+    {
+        string text =
+        """
+        > test_root (locals=5)
+        pushi.e 0
+
+        > test_sub_entry_1 (locals=20, args=5)
+        :[0]
+        pushi.e 1
+
+        :[1]
+        pushi.e 2
+
+        > test_sub_entry_2 (args=15, locals=10)
+        :[2]
+        pushi.e 3
+
+        """;
+        string[] lines = text.Split('\n');
+
+        GMCode code = VMAssembly.ParseAssemblyFromLines(lines, "test_root");
+        List<GMInstruction> list = code.Instructions;
+
+        Assert.True(code.Name.Content == "test_root");
+        Assert.True(code.Children.Count == 2);
+        Assert.True(code.ArgumentCount == 1);
+        Assert.True(code.LocalCount == 5);
+        Assert.True(code.Children[0].Name.Content == "test_sub_entry_1");
+        Assert.True(code.Children[0].Parent == code);
+        Assert.True(code.Children[0].StartOffset == list[1].Address);
+        Assert.True(code.Children[0].ArgumentCount == 5);
+        Assert.True(code.Children[0].LocalCount == 20);
+        Assert.True(code.Children[1].Name.Content == "test_sub_entry_2");
+        Assert.True(code.Children[1].Parent == code);
+        Assert.True(code.Children[1].StartOffset == list[3].Address);
+        Assert.True(code.Children[1].ArgumentCount == 15);
+        Assert.True(code.Children[1].LocalCount == 10);
     }
 }

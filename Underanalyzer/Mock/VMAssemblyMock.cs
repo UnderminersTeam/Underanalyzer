@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Underanalyzer.Mock;
@@ -51,9 +52,10 @@ public static class VMAssembly
     /// <summary>
     /// Parses VM assembly into mock instruction data.
     /// </summary>
-    public static List<GMInstruction> ParseInstructionsFromLines(IEnumerable<string> lines)
+    public static GMCode ParseAssemblyFromLines(IEnumerable<string> lines, string name = "root")
     {
         List<GMInstruction> instructions = new();
+        GMCode root = new(name, instructions);
 
         Dictionary<string, uint> branchLabelAddresses = new();
         List<(string Label, GMInstruction Instr)> branchTargets = new();
@@ -76,6 +78,43 @@ public static class VMAssembly
                 if (label.Length < 3 || label[0] != '[' || label[^1] != ']')
                     throw new Exception("Invalid branch header");
                 branchLabelAddresses[label[1..^1]] = address;
+                continue;
+            }
+
+            // Sub-entry label
+            if (line[0] == '>')
+            {
+                string decl = line[1..].Trim();
+
+                // Split into label and parameters
+                int space = decl.IndexOf(' ');
+                if (space == -1)
+                    throw new Exception("Invalid sub-entry label");
+                string label = decl[..space];
+                string parameters = decl[(space + 1)..];
+
+                // Parse (optional) parameters
+                int? localCount = ParseOptionalParameter(parameters, "locals");
+                int? argCount = ParseOptionalParameter(parameters, "args");
+
+                if (address == 0 && label == name)
+                {
+                    // If we're at the start and are the same name as the root, then just perform an update
+                    if (localCount != null)
+                        root.LocalCount = localCount.Value;
+                    if (argCount != null)
+                        root.ArgumentCount = argCount.Value;
+                    continue;
+                }
+
+                // Add normal sub-entry as a child of the root
+                root.Children.Add(new(label, instructions)
+                {
+                    Parent = root,
+                    StartOffset = address,
+                    LocalCount = localCount ?? 0,
+                    ArgumentCount = argCount ?? 0
+                });
                 continue;
             }
 
@@ -317,7 +356,7 @@ public static class VMAssembly
             target.Instr.BranchOffset = (int)labelAddress - (int)target.Instr.Address;
         }
 
-        return instructions;
+        return root;
     }
 
     private static bool ParseVariableFromString(
@@ -429,5 +468,24 @@ public static class VMAssembly
             throw new Exception("Invalid escape at end of string");
 
         return sb.ToString();
+    }
+
+    private static int? ParseOptionalParameter(string str, string paramName)
+    {
+        int paramPos = str.IndexOf($"{paramName}=");
+        if (paramPos != -1)
+        {
+            int digitStart = paramPos + $"{paramName}=".Length;
+            int digitEnd = digitStart;
+            while (digitEnd < str.Length)
+            {
+                if (!char.IsDigit(str[digitEnd]))
+                    break;
+                digitEnd++;
+            }
+            if (int.TryParse(str[digitStart..digitEnd], out int paramValue))
+                return paramValue;
+        }
+        return null;
     }
 }

@@ -9,6 +9,11 @@ namespace Underanalyzer;
 public interface IGMCode
 {
     /// <summary>
+    /// Name of the code entry.
+    /// </summary>
+    public IGMString Name { get; }
+
+    /// <summary>
     /// Gets an instruction at the specified index, in this code entry.
     /// </summary>
     public IGMInstruction GetInstruction(int index);
@@ -37,6 +42,16 @@ public interface IGMCode
     /// Returns the number of children of this code entry. If this is a sub-function entry, this is 0.
     /// </summary>
     public int ChildCount { get; }
+
+    /// <summary>
+    /// The number of arguments this code entry takes in. Expected to be 0 for root entries.
+    /// </summary>
+    public int ArgumentCount { get; }
+
+    /// <summary>
+    /// The number of local variables this code entry uses. Root entries tend to include an additional 1 for "arguments".
+    /// </summary>
+    public int LocalCount { get; }
 }
 
 /// <summary>

@@ -5,15 +5,25 @@ namespace Underanalyzer.Mock;
 
 public class GMCode : IGMCode
 {
-    public List<GMInstruction> Instructions { get; private set; }
-    public GMCode Parent { get; private set; } = null;
-    public List<GMCode> Children { get; private set; }
-    public uint StartOffset { get; private set; }
+    public GMString Name { get; set; }
+    public List<GMInstruction> Instructions { get; set; }
+    public GMCode Parent { get; set; } = null;
+    public List<GMCode> Children { get; set; } = new();
+    public uint StartOffset { get; set; } = 0;
+    public int ArgumentCount { get; set; } = 1;
+    public int LocalCount { get; set; } = 0;
+
+    public GMCode(string name, List<GMInstruction> instructions)
+    {
+        Name = new(name);
+        Instructions = instructions;
+    }
 
     // Interface implementation
+    IGMString IGMCode.Name => Name;
     public int InstructionCount => Instructions.Count;
-    public int ChildCount => Children.Count;
     IGMCode IGMCode.Parent => Parent;
+    public int ChildCount => Children.Count;
 
     public IGMCode GetChild(int index) => Children[index];
     public IGMInstruction GetInstruction(int index) => Instructions[index];
