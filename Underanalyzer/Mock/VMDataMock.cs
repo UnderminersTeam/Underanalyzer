@@ -6,10 +6,11 @@ namespace Underanalyzer.Mock;
 public class GMCode : IGMCode
 {
     public GMString Name { get; set; }
+    public int Length { get; set; } = 0;
     public List<GMInstruction> Instructions { get; set; }
     public GMCode Parent { get; set; } = null;
     public List<GMCode> Children { get; set; } = new();
-    public uint StartOffset { get; set; } = 0;
+    public int StartOffset { get; set; } = 0;
     public int ArgumentCount { get; set; } = 1;
     public int LocalCount { get; set; } = 0;
 
@@ -31,7 +32,7 @@ public class GMCode : IGMCode
 
 public class GMInstruction : IGMInstruction
 {
-    public uint Address { get; set; }
+    public int Address { get; set; }
     public IGMInstruction.Opcode Kind { get; set; }
     public IGMInstruction.ExtendedOpcode ExtKind { get; set; }
     public IGMInstruction.ComparisonType ComparisonKind { get; set; }

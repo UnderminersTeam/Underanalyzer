@@ -14,6 +14,11 @@ public interface IGMCode
     public IGMString Name { get; }
 
     /// <summary>
+    /// Length of the code entry's VM instructions, in bytes.
+    /// </summary>
+    public int Length { get; }
+
+    /// <summary>
     /// Gets an instruction at the specified index, in this code entry.
     /// </summary>
     public IGMInstruction GetInstruction(int index);
@@ -26,7 +31,7 @@ public interface IGMCode
     /// <summary>
     /// Returns the offset within the instructions (in bytes) from which this code entry begins.
     /// </summary>
-    public uint StartOffset { get; }
+    public int StartOffset { get; }
 
     /// <summary>
     /// Parent code entry, if this is a sub-function entry. Otherwise, if a root code entry, this is null.
@@ -593,7 +598,7 @@ public interface IGMInstruction
     /// <summary>
     /// The address of this instruction, in bytes, from the start of the containing code entry. 
     /// </summary>
-    public uint Address { get; }
+    public int Address { get; }
 
     /// <summary>
     /// The opcode of this instruction. Generally indicates what operation the instruction will perform.
@@ -671,7 +676,7 @@ public interface IGMInstruction
     public IGMString ValueString { get; }
 
     /// <summary>
-    /// Represents a branch offset for branch instructions.
+    /// Represents a branch offset for branch instructions, in bytes.
     /// </summary>
     public int BranchOffset { get; }
 
@@ -700,7 +705,7 @@ public interface IGMInstruction
     /// <summary>
     /// Returns size of an instruction, in bytes.
     /// </summary>
-    internal static uint GetSize(IGMInstruction instr)
+    internal static int GetSize(IGMInstruction instr)
     {
         if (instr.Variable != null || instr.Function != null)
             return 8;

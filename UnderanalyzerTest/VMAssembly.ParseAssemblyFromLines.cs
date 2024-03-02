@@ -115,43 +115,43 @@ public class VMAssembly_ParseInstructions
         GMCode code = VMAssembly.ParseAssemblyFromLines(lines);
         List<GMInstruction> list = code.Instructions;
 
-        Assert.True(list.Count == 72);
+        Assert.Equal(72, list.Count);
 
-        Assert.True(list[0].Kind == IGMInstruction.Opcode.Convert);
-        Assert.True(list[0].Type1 == IGMInstruction.DataType.Int32);
-        Assert.True(list[0].Type2 == IGMInstruction.DataType.Variable);
+        Assert.Equal(IGMInstruction.Opcode.Convert, list[0].Kind);
+        Assert.Equal(IGMInstruction.DataType.Int32, list[0].Type1);
+        Assert.Equal(IGMInstruction.DataType.Variable, list[0].Type2);
 
-        Assert.True(list[1].Kind == IGMInstruction.Opcode.Convert);
-        Assert.True(list[1].Type1 == IGMInstruction.DataType.Variable);
-        Assert.True(list[1].Type2 == IGMInstruction.DataType.Int32);
+        Assert.Equal(IGMInstruction.Opcode.Convert, list[1].Kind);
+        Assert.Equal(IGMInstruction.DataType.Variable, list[1].Type1);
+        Assert.Equal(IGMInstruction.DataType.Int32, list[1].Type2);
 
-        Assert.True(list[26].Kind == IGMInstruction.Opcode.Pop);
-        Assert.True(list[26].Type1 == IGMInstruction.DataType.Int32);
-        Assert.True(list[26].Type2 == IGMInstruction.DataType.Variable);
-        Assert.True(list[26].InstType == IGMInstruction.InstanceType.Self);
-        Assert.True(list[26].ReferenceVarType == IGMInstruction.VariableType.Normal);
-        Assert.True(list[26].Variable.Name.Content == "a");
+        Assert.Equal(IGMInstruction.Opcode.Pop, list[26].Kind);
+        Assert.Equal(IGMInstruction.DataType.Int32, list[26].Type1);
+        Assert.Equal(IGMInstruction.DataType.Variable, list[26].Type2);
+        Assert.Equal(IGMInstruction.InstanceType.Self, list[26].InstType);
+        Assert.Equal(IGMInstruction.VariableType.Normal, list[26].ReferenceVarType);
+        Assert.Equal("a", list[26].Variable.Name.Content);
 
-        Assert.True(list[29].Kind == IGMInstruction.Opcode.Pop);
-        Assert.True(list[29].Type1 == IGMInstruction.DataType.Variable);
-        Assert.True(list[29].Type2 == IGMInstruction.DataType.Variable);
-        Assert.True(list[29].InstType == IGMInstruction.InstanceType.Self);
-        Assert.True(list[29].ReferenceVarType == IGMInstruction.VariableType.StackTop);
-        Assert.True(list[29].Variable.Name.Content == "a");
+        Assert.Equal(IGMInstruction.Opcode.Pop, list[29].Kind);
+        Assert.Equal(IGMInstruction.DataType.Variable, list[29].Type1);
+        Assert.Equal(IGMInstruction.DataType.Variable, list[29].Type2);
+        Assert.Equal(IGMInstruction.InstanceType.Self, list[29].InstType);
+        Assert.Equal(IGMInstruction.VariableType.StackTop, list[29].ReferenceVarType);
+        Assert.Equal("a", list[29].Variable.Name.Content);
 
-        Assert.True(list[41].Kind == IGMInstruction.Opcode.Branch);
-        Assert.True(list[41].BranchOffset == -list[41].Address);
+        Assert.Equal(IGMInstruction.Opcode.Branch, list[41].Kind);
+        Assert.Equal(-list[41].Address, list[41].BranchOffset);
 
-        Assert.True(list[42].Kind == IGMInstruction.Opcode.BranchTrue);
-        Assert.True(list[42].BranchOffset == 8 + (list[^1].Address - list[42].Address));
+        Assert.Equal(IGMInstruction.Opcode.BranchTrue, list[42].Kind);
+        Assert.Equal(8 + (list[^1].Address - list[42].Address), list[42].BranchOffset);
 
-        Assert.True(list[56].Kind == IGMInstruction.Opcode.Push);
-        Assert.True(list[56].Type1 == IGMInstruction.DataType.String);
-        Assert.True(list[56].ValueString.Content == "Test string!");
+        Assert.Equal(IGMInstruction.Opcode.Push, list[56].Kind);
+        Assert.Equal(IGMInstruction.DataType.String, list[56].Type1);
+        Assert.Equal("Test string!", list[56].ValueString.Content);
 
-        Assert.True(list[57].Kind == IGMInstruction.Opcode.Push);
-        Assert.True(list[57].Type1 == IGMInstruction.DataType.String);
-        Assert.True(list[57].ValueString.Content == "\"Test\nescaped\nstring!\"");
+        Assert.Equal(IGMInstruction.Opcode.Push, list[57].Kind);
+        Assert.Equal(IGMInstruction.DataType.String, list[57].Type1);
+        Assert.Equal("\"Test\nescaped\nstring!\"", list[57].ValueString.Content);
     }
 
     [Fact]
@@ -179,19 +179,19 @@ public class VMAssembly_ParseInstructions
         GMCode code = VMAssembly.ParseAssemblyFromLines(lines, "test_root");
         List<GMInstruction> list = code.Instructions;
 
-        Assert.True(code.Name.Content == "test_root");
-        Assert.True(code.Children.Count == 2);
-        Assert.True(code.ArgumentCount == 1);
-        Assert.True(code.LocalCount == 5);
+        Assert.Equal("test_root", code.Name.Content);
+        Assert.Equal(2, code.Children.Count);
+        Assert.Equal(1, code.ArgumentCount);
+        Assert.Equal(5, code.LocalCount);
         Assert.True(code.Children[0].Name.Content == "test_sub_entry_1");
-        Assert.True(code.Children[0].Parent == code);
-        Assert.True(code.Children[0].StartOffset == list[1].Address);
-        Assert.True(code.Children[0].ArgumentCount == 5);
-        Assert.True(code.Children[0].LocalCount == 20);
-        Assert.True(code.Children[1].Name.Content == "test_sub_entry_2");
-        Assert.True(code.Children[1].Parent == code);
-        Assert.True(code.Children[1].StartOffset == list[3].Address);
-        Assert.True(code.Children[1].ArgumentCount == 15);
-        Assert.True(code.Children[1].LocalCount == 10);
+        Assert.Equal(code, code.Children[0].Parent);
+        Assert.Equal(list[1].Address, code.Children[0].StartOffset);
+        Assert.Equal(5, code.Children[0].ArgumentCount);
+        Assert.Equal(20, code.Children[0].LocalCount);
+        Assert.Equal("test_sub_entry_2", code.Children[1].Name.Content);
+        Assert.Equal(code, code.Children[1].Parent);
+        Assert.Equal(list[3].Address, code.Children[1].StartOffset);
+        Assert.Equal(15, code.Children[1].ArgumentCount);
+        Assert.Equal(10, code.Children[1].LocalCount);
     }
 }

@@ -57,10 +57,10 @@ public static class VMAssembly
         List<GMInstruction> instructions = new();
         GMCode root = new(name, instructions);
 
-        Dictionary<string, uint> branchLabelAddresses = new();
+        Dictionary<string, int> branchLabelAddresses = new();
         List<(string Label, GMInstruction Instr)> branchTargets = new();
 
-        uint address = 0;
+        int address = 0;
         foreach (string line in lines)
         {
             // Totally empty line; ignore
@@ -350,11 +350,16 @@ public static class VMAssembly
         foreach (var target in branchTargets)
         {
             // Look up label
-            if (!branchLabelAddresses.TryGetValue(target.Label, out uint labelAddress))
+            if (!branchLabelAddresses.TryGetValue(target.Label, out int labelAddress))
                 throw new Exception($"Did not find matching label for \"{target.Label}\"");
 
-            target.Instr.BranchOffset = (int)labelAddress - (int)target.Instr.Address;
+            target.Instr.BranchOffset = labelAddress - target.Instr.Address;
         }
+
+        // Update code lengths
+        root.Length = address;
+        foreach (var child in root.Children)
+            child.Length = address;
 
         return root;
     }
