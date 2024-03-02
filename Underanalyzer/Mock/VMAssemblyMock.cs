@@ -88,10 +88,17 @@ public static class VMAssembly
 
                 // Split into label and parameters
                 int space = decl.IndexOf(' ');
+                string label, parameters;
                 if (space == -1)
-                    throw new Exception("Invalid sub-entry label");
-                string label = decl[..space];
-                string parameters = decl[(space + 1)..];
+                {
+                    label = decl;
+                    parameters = string.Empty;
+                }
+                else
+                {
+                    label = decl[..space];
+                    parameters = decl[(space + 1)..];
+                }
 
                 // Parse (optional) parameters
                 int? localCount = ParseOptionalParameter(parameters, "locals");
@@ -276,7 +283,11 @@ public static class VMAssembly
                                 break;
                             case IGMInstruction.DataType.Int32:
                                 if (!int.TryParse(data, out int dataInt32))
-                                    throw new Exception("Invalid int32");
+                                {
+                                    // We're pushing a function index instead
+                                    instr.Function = new GMFunction(data);
+                                    break;
+                                }
                                 instr.ValueInt = dataInt32;
                                 break;
                             case IGMInstruction.DataType.Int64:

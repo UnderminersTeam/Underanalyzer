@@ -6,10 +6,15 @@ using Underanalyzer.Mock;
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// Represents a basic block of VM instructions.
+/// </summary>
 public class Block : IControlFlowNode
 {
     public int StartAddress { get; private set; }
+
     public int EndAddress { get; private set; }
+
     public List<IControlFlowNode> Predecessors { get; } = new();
 
     public List<IControlFlowNode> Successors { get; } = new();

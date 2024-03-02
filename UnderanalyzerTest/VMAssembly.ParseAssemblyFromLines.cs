@@ -107,6 +107,9 @@ public class VMAssembly_ParseInstructions
         restorearef.e
         isnullish.e
         pushref.i 1234
+
+        # Function index push
+        push.i test_function_reference
         
         :[end]
         """;
@@ -115,7 +118,7 @@ public class VMAssembly_ParseInstructions
         GMCode code = VMAssembly.ParseAssemblyFromLines(lines);
         List<GMInstruction> list = code.Instructions;
 
-        Assert.Equal(72, list.Count);
+        Assert.Equal(73, list.Count);
 
         Assert.Equal(IGMInstruction.Opcode.Convert, list[0].Kind);
         Assert.Equal(IGMInstruction.DataType.Int32, list[0].Type1);
@@ -152,6 +155,10 @@ public class VMAssembly_ParseInstructions
         Assert.Equal(IGMInstruction.Opcode.Push, list[57].Kind);
         Assert.Equal(IGMInstruction.DataType.String, list[57].Type1);
         Assert.Equal("\"Test\nescaped\nstring!\"", list[57].ValueString.Content);
+
+        Assert.Equal(IGMInstruction.Opcode.Push, list[72].Kind);
+        Assert.Equal(IGMInstruction.DataType.Int32, list[72].Type1);
+        Assert.Equal("test_function_reference", list[72].Function.Name.Content);
     }
 
     [Fact]
@@ -173,6 +180,8 @@ public class VMAssembly_ParseInstructions
         :[2]
         pushi.e 3
 
+        > test_sub_entry_no_params
+
         """;
         string[] lines = text.Split('\n');
 
@@ -180,18 +189,26 @@ public class VMAssembly_ParseInstructions
         List<GMInstruction> list = code.Instructions;
 
         Assert.Equal("test_root", code.Name.Content);
-        Assert.Equal(2, code.Children.Count);
+        Assert.Equal(3, code.Children.Count);
         Assert.Equal(1, code.ArgumentCount);
         Assert.Equal(5, code.LocalCount);
-        Assert.True(code.Children[0].Name.Content == "test_sub_entry_1");
+
+        Assert.Equal("test_sub_entry_1", code.Children[0].Name.Content);
         Assert.Equal(code, code.Children[0].Parent);
         Assert.Equal(list[1].Address, code.Children[0].StartOffset);
         Assert.Equal(5, code.Children[0].ArgumentCount);
         Assert.Equal(20, code.Children[0].LocalCount);
+
         Assert.Equal("test_sub_entry_2", code.Children[1].Name.Content);
         Assert.Equal(code, code.Children[1].Parent);
         Assert.Equal(list[3].Address, code.Children[1].StartOffset);
         Assert.Equal(15, code.Children[1].ArgumentCount);
         Assert.Equal(10, code.Children[1].LocalCount);
+
+        Assert.Equal("test_sub_entry_no_params", code.Children[2].Name.Content);
+        Assert.Equal(code, code.Children[2].Parent);
+        Assert.Equal(code.Length, code.Children[2].StartOffset);
+        Assert.Equal(0, code.Children[2].ArgumentCount);
+        Assert.Equal(0, code.Children[2].LocalCount);
     }
 }

@@ -9,7 +9,7 @@ public class Block_FindBlocks
     [Fact]
     public void TestEmpty()
     {
-        GMCode code = TestAssembly.GetCode("");
+        GMCode code = TestUtil.GetCode("");
         List<Block> blocks = Block.FindBlocks(code);
 
         Assert.Single(blocks);
@@ -21,7 +21,7 @@ public class Block_FindBlocks
     [Fact]
     public void TestSingle()
     {
-        GMCode code = TestAssembly.GetCode(
+        GMCode code = TestUtil.GetCode(
             """
             pushi.e 123
             """
@@ -47,7 +47,7 @@ public class Block_FindBlocks
     [Fact]
     public void TestIfElse()
     {
-        GMCode code = TestAssembly.GetCode(
+        GMCode code = TestUtil.GetCode(
             """
             :[0]
             pushi.e 0
@@ -99,7 +99,7 @@ public class Block_FindBlocks
     [Fact]
     public void TestLoop()
     {
-        GMCode code = TestAssembly.GetCode(
+        GMCode code = TestUtil.GetCode(
             """
             :[0]
             pushi.e 0
@@ -133,12 +133,14 @@ public class Block_FindBlocks
         Assert.Single(blocks[2].Predecessors);
         Assert.Contains(blocks[0], blocks[2].Predecessors);
         Assert.Empty(blocks[2].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
     }
 
     [Fact]
     public void TestWith()
     {
-        GMCode code = TestAssembly.GetCode(
+        GMCode code = TestUtil.GetCode(
             """
             :[0]
             pushi.e 0
@@ -189,5 +191,7 @@ public class Block_FindBlocks
 
         Assert.Single(blocks[4].Predecessors);
         Assert.Contains(blocks[3], blocks[4].Predecessors);
+
+        TestUtil.VerifyFlowDirections(blocks);
     }
 }
