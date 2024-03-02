@@ -27,6 +27,12 @@ public interface IControlFlowNode
     public List<IControlFlowNode> Successors { get; }
 
     /// <summary>
+    /// If true, this node's predecessors do not truly exist. That is,
+    /// the predecessors are only directly before this node's instructions.
+    /// </summary>
+    public bool Unreachable { get; set; }
+
+    /// <summary>
     /// Utility function to insert a new control flow node into the graph,
     /// as a successor to an existing node, in the place of an existing successor.
     /// </summary>
@@ -59,5 +65,20 @@ public interface IControlFlowNode
         // Remove predecessor from old successor
         int predIndex = oldSuccessor.Predecessors.FindIndex(p => p == node);
         oldSuccessor.Predecessors.RemoveAt(predIndex);
+    }
+
+    /// <summary>
+    /// Utility function to disconnect a node from one of its predecessor.
+    /// </summary>
+    internal static void DisconnectPredecessor(IControlFlowNode node, int predecessorIndex)
+    {
+        IControlFlowNode oldPredecessor = node.Predecessors[predecessorIndex];
+
+        // Remove predecessor
+        node.Predecessors.RemoveAt(predecessorIndex);
+
+        // Remove successor from old predecessor
+        int succIndex = oldPredecessor.Successors.FindIndex(p => p == node);
+        oldPredecessor.Successors.RemoveAt(succIndex);
     }
 }

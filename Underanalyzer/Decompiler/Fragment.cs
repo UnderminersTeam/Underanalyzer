@@ -16,6 +16,8 @@ public class Fragment : IControlFlowNode
 
     public List<IControlFlowNode> Successors { get; } = new();
 
+    public bool Unreachable { get; set; } = false;
+
     public IGMCode CodeEntry { get; }
 
     public List<Block> Blocks { get; }
@@ -59,14 +61,17 @@ public class Fragment : IControlFlowNode
             {
                 if (stack.Count > 0)
                 {
-                    // If we're an inner fragment, remove "exit" instruction
+                    // We're an inner fragment - mark first block as no longer unreachable
+                    if (!current.Blocks[0].Unreachable)
+                        throw new Exception("Expected first block of fragment to be unreachable.");
+                    current.Blocks[0].Unreachable = false;
+                    IControlFlowNode.DisconnectPredecessor(current.Blocks[0], 0);
+
+                    // We're an inner fragment - remove "exit" instruction
                     var lastBlockInstructions = current.Blocks[^1].Instructions;
                     if (lastBlockInstructions[^1].Kind != IGMInstruction.Opcode.Exit)
                         throw new Exception("Expected exit at end of fragment.");
                     lastBlockInstructions.RemoveAt(lastBlockInstructions.Count - 1);
-
-                    // This last block guarantees a single exit node, so remove any of its successors
-                    IControlFlowNode.DisconnectSuccessor(current.Blocks[^1], 0);
 
                     // Go to the fragment the next level up
                     current = stack.Pop();

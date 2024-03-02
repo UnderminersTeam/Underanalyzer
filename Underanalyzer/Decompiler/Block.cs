@@ -21,6 +21,8 @@ public class Block : IControlFlowNode
 
     public List<IGMInstruction> Instructions { get; }
 
+    public bool Unreachable { get; set; } = false;
+
     public Block(int startAddr, int endAddr, List<IGMInstruction> instructions)
     {
         StartAddress = startAddr;
@@ -150,6 +152,10 @@ public class Block : IControlFlowNode
                         dest.Predecessors.Add(b);
                     }
                     break;
+                case IGMInstruction.Opcode.Exit:
+                case IGMInstruction.Opcode.Return:
+                    // Do nothing - code execution terminates here
+                    break;
                 default:
                     {
                         // Connect to block directly after this current one
@@ -158,6 +164,17 @@ public class Block : IControlFlowNode
                         next.Predecessors.Add(b);
                     }
                     break;
+            }
+        }
+        
+        // Compute blocks that are unreachable
+        for (int i = 1; i < blocks.Count; i++)
+        {
+            if (blocks[i].Predecessors.Count == 0)
+            {
+                blocks[i].Unreachable = true;
+                blocks[i].Predecessors.Add(blocks[i - 1]);
+                blocks[i - 1].Successors.Add(blocks[i]);
             }
         }
 

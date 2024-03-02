@@ -194,4 +194,72 @@ public class Block_FindBlocks
 
         TestUtil.VerifyFlowDirections(blocks);
     }
+
+    [Fact]
+    public void TestUnreachableBranch()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 0
+            b [2]
+
+            :[1]
+            pushi.e 1
+
+            :[2]
+            pushi.e 2
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+
+        Assert.Equal(4, blocks.Count);
+
+        Assert.False(blocks[0].Unreachable);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Equal([blocks[2], blocks[1]], blocks[0].Successors);
+
+        Assert.True(blocks[1].Unreachable);
+        Assert.Equal([blocks[0]], blocks[1].Predecessors);
+
+        Assert.False(blocks[2].Unreachable);
+        Assert.Equal([blocks[0], blocks[1]], blocks[2].Predecessors);
+
+        Assert.False(blocks[3].Unreachable);
+        Assert.Equal([blocks[2]], blocks[3].Predecessors);
+        Assert.Empty(blocks[3].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+    }
+
+    [Fact]
+    public void TestUnreachableExit()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 0
+            exit.i
+
+            :[1]
+            pushi.e 1
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+
+        Assert.Equal(3, blocks.Count);
+
+        Assert.False(blocks[0].Unreachable);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Equal([blocks[1]], blocks[0].Successors);
+
+        Assert.True(blocks[1].Unreachable);
+        Assert.Equal([blocks[0]], blocks[1].Predecessors);
+
+        Assert.False(blocks[2].Unreachable);
+        Assert.Equal([blocks[1]], blocks[2].Predecessors);
+        Assert.Empty(blocks[2].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+    }
 }
