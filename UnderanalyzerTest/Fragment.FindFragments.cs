@@ -18,9 +18,9 @@ public class Fragment_FindFragments
         List<Fragment> fragments = Fragment.FindFragments(code, blocks);
 
         Assert.Single(fragments);
-        Assert.Equal(2, fragments[0].Blocks.Count);
-        Assert.Equal(blocks[0], fragments[0].Blocks[0]);
-        Assert.Equal(blocks[1], fragments[0].Blocks[1]);
+        Assert.Equal(2, fragments[0].Children.Count);
+        Assert.Equal(blocks[0], fragments[0].Children[0]);
+        Assert.Equal(blocks[1], fragments[0].Children[1]);
         Assert.Empty(fragments[0].Predecessors);
         Assert.Empty(fragments[0].Successors);
 
@@ -53,17 +53,17 @@ public class Fragment_FindFragments
 
         Assert.Equal(2, fragments.Count);
 
-        Assert.Equal(3, fragments[0].Blocks.Count);
-        Assert.Equal(blocks[0], fragments[0].Blocks[0]);
-        Assert.Equal(blocks[2], fragments[0].Blocks[1]);
-        Assert.Equal(blocks[3], fragments[0].Blocks[2]);
+        Assert.Equal(3, fragments[0].Children.Count);
+        Assert.Equal(blocks[0], fragments[0].Children[0]);
+        Assert.Equal(blocks[2], fragments[0].Children[1]);
+        Assert.Equal(blocks[3], fragments[0].Children[2]);
         Assert.Equal(fragments[1], blocks[0].Successors[0]);
         Assert.Equal(fragments[1], blocks[2].Predecessors[0]);
         Assert.Empty(fragments[0].Predecessors);
         Assert.Empty(fragments[0].Successors);
 
-        Assert.Single(fragments[1].Blocks);
-        Assert.Equal(blocks[1], fragments[1].Blocks[0]);
+        Assert.Single(fragments[1].Children);
+        Assert.Equal(blocks[1], fragments[1].Children[0]);
         Assert.Single(blocks[1].Instructions);
         Assert.Equal(1, blocks[1].Instructions[0].ValueShort);
         Assert.Equal(blocks[0], fragments[1].Predecessors[0]);
@@ -118,12 +118,12 @@ public class Fragment_FindFragments
         Assert.Equal(4, fragments.Count);
 
         Assert.Equal("root", fragments[0].CodeEntry.Name.Content);
-        Assert.Equal([blocks[0], blocks[6], blocks[7]], fragments[0].Blocks);
+        Assert.Equal([blocks[0], blocks[6], blocks[7]], fragments[0].Children);
         Assert.Equal([], fragments[0].Predecessors);
         Assert.Equal([], fragments[0].Successors);
 
         Assert.Equal("child_entry", fragments[1].CodeEntry.Name.Content);
-        Assert.Equal([blocks[1], blocks[3], blocks[5]], fragments[1].Blocks);
+        Assert.Equal([blocks[1], blocks[3], blocks[5]], fragments[1].Children);
         Assert.Empty(blocks[5].Instructions);
         Assert.Equal([blocks[0]], fragments[1].Predecessors);
         Assert.Equal([blocks[6]], fragments[1].Successors);
@@ -131,14 +131,14 @@ public class Fragment_FindFragments
         Assert.Empty(blocks[5].Successors);
 
         Assert.Equal("child_child_entry_1", fragments[2].CodeEntry.Name.Content);
-        Assert.Equal([blocks[2]], fragments[2].Blocks);
+        Assert.Equal([blocks[2]], fragments[2].Children);
         Assert.Equal([blocks[1]], fragments[2].Predecessors);
         Assert.Equal([blocks[3]], fragments[2].Successors);
         Assert.Empty(blocks[2].Predecessors);
         Assert.Empty(blocks[2].Successors);
 
         Assert.Equal("child_child_entry_2", fragments[3].CodeEntry.Name.Content);
-        Assert.Equal([blocks[4]], fragments[3].Blocks);
+        Assert.Equal([blocks[4]], fragments[3].Children);
         Assert.Equal([blocks[3]], fragments[3].Predecessors);
         Assert.Equal([blocks[5]], fragments[3].Successors);
         Assert.Empty(blocks[4].Predecessors);

@@ -107,9 +107,9 @@ public static class VMAssembly
                 if (address == 0 && label == name)
                 {
                     // If we're at the start and are the same name as the root, then just perform an update
-                    if (localCount != null)
+                    if (localCount is not null)
                         root.LocalCount = localCount.Value;
-                    if (argCount != null)
+                    if (argCount is not null)
                         root.ArgumentCount = argCount.Value;
                     continue;
                 }

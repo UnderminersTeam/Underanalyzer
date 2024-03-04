@@ -707,7 +707,7 @@ public interface IGMInstruction
     /// </summary>
     internal static int GetSize(IGMInstruction instr)
     {
-        if (instr.Variable != null || instr.Function != null)
+        if (instr.Variable is not null || instr.Function is not null)
             return 8;
         switch (instr.Kind)
         {

@@ -16,6 +16,7 @@ internal static class TestUtil
 
     /// <summary>
     /// Asserts that for every predecessor, there is a corresponding successor, and vice versa.
+    /// Additionally asserts that for every parent, there is a child (and NOT the other way around).
     /// </summary>
     public static void VerifyFlowDirections(IEnumerable<IControlFlowNode> nodes)
     {
@@ -28,6 +29,10 @@ internal static class TestUtil
             foreach (var succ in node.Successors)
             {
                 Assert.Contains(node, succ.Predecessors);
+            }
+            if (node.Parent is not null)
+            {
+                Assert.Contains(node, node.Parent.Children);
             }
         }
     }

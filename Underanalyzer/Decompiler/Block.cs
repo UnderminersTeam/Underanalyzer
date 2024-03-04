@@ -21,6 +21,10 @@ public class Block : IControlFlowNode
 
     public List<IGMInstruction> Instructions { get; }
 
+    public IControlFlowNode Parent { get; set; } = null;
+
+    public List<IControlFlowNode> Children => null;
+
     public bool Unreachable { get; set; } = false;
 
     public Block(int startAddr, int endAddr, List<IGMInstruction> instructions)

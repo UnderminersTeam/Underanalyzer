@@ -16,18 +16,20 @@ public class Fragment : IControlFlowNode
 
     public List<IControlFlowNode> Successors { get; } = new();
 
+    public IControlFlowNode Parent { get; set; } = null;
+
+    public List<IControlFlowNode> Children { get; }
+
     public bool Unreachable { get; set; } = false;
 
     public IGMCode CodeEntry { get; }
 
-    public List<Block> Blocks { get; }
-
-    public Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<Block> blocks)
+    public Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks)
     {
         StartAddress = startAddr;
         EndAddress = endAddr;
         CodeEntry = codeEntry;
-        Blocks = blocks;
+        Children = blocks;
     }
 
     /// <summary>
@@ -36,7 +38,7 @@ public class Fragment : IControlFlowNode
     /// </summary>
     public static List<Fragment> FindFragments(IGMCode code, List<Block> blocks)
     {
-        if (code.Parent != null)
+        if (code.Parent is not null)
             throw new ArgumentException("Expected code entry to be root level.", nameof(code));
 
         // Map code entry addresses to code entries
@@ -62,13 +64,13 @@ public class Fragment : IControlFlowNode
                 if (stack.Count > 0)
                 {
                     // We're an inner fragment - mark first block as no longer unreachable
-                    if (!current.Blocks[0].Unreachable)
+                    if (!current.Children[0].Unreachable)
                         throw new Exception("Expected first block of fragment to be unreachable.");
-                    current.Blocks[0].Unreachable = false;
-                    IControlFlowNode.DisconnectPredecessor(current.Blocks[0], 0);
+                    current.Children[0].Unreachable = false;
+                    IControlFlowNode.DisconnectPredecessor(current.Children[0], 0);
 
                     // We're an inner fragment - remove "exit" instruction
-                    var lastBlockInstructions = current.Blocks[^1].Instructions;
+                    var lastBlockInstructions = (current.Children[^1] as Block).Instructions;
                     if (lastBlockInstructions[^1].Kind != IGMInstruction.Opcode.Exit)
                         throw new Exception("Expected exit at end of fragment.");
                     lastBlockInstructions.RemoveAt(lastBlockInstructions.Count - 1);
@@ -79,7 +81,7 @@ public class Fragment : IControlFlowNode
                 else
                 {
                     // We're done processing now. Add last block and exit loop.
-                    current.Blocks.Add(block);
+                    current.Children.Add(block);
 
                     if (block.StartAddress != code.Length)
                         throw new Exception("Code length mismatches final block address.");
@@ -110,7 +112,11 @@ public class Fragment : IControlFlowNode
             }
 
             // Add this block to our current fragment
-            current.Blocks.Add(block);
+            current.Children.Add(block);
+
+            // If we're at the start of the fragment, track parent node on the block
+            if (current.Children.Count == 0)
+                block.Parent = current;
         }
 
         if (stack.Count > 0)
