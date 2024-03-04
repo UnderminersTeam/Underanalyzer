@@ -382,4 +382,114 @@ public class Loop_FindLoops
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
     }
+
+    [Fact]
+    public void TestWhileDoUntil()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            pushi.e 10
+            cmp.i.v LT
+            bf [3]
+
+            :[1]
+            push.v self.b
+            pushi.e 10
+            cmp.i.v GTE
+            bf [1]
+
+            :[2]
+            b [0]
+
+            :[3]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Equal(2, loops.Count);
+        Assert.IsType<WhileLoop>(loops[0]);
+        Assert.IsType<DoUntilLoop>(loops[1]);
+        WhileLoop loop0 = (WhileLoop)loops[0];
+        DoUntilLoop loop1 = (DoUntilLoop)loops[1];
+        Assert.Equal(fragments[0], loop0.Parent);
+        Assert.Equal(loop0, loop1.Parent);
+        Assert.Empty(loop1.Predecessors);
+        Assert.Equal([blocks[2]], loop1.Successors);
+        Assert.Empty(loop0.Predecessors);
+        Assert.Equal([blocks[3]], loop0.Successors);
+        Assert.Equal(blocks[1], loop1.Head);
+        Assert.Equal(blocks[1], loop1.Tail);
+        Assert.IsType<EmptyNode>(loop1.After);
+        Assert.Equal(blocks[0], loop0.Head);
+        Assert.Equal(loop1, loop0.Body);
+        Assert.Equal(blocks[2], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Empty(loop1.Head.Predecessors);
+        Assert.Empty(loop1.Tail.Successors);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+        Assert.Empty(loop0.Body.Predecessors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestDoUntilWhile()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.b
+            pushi.e 10
+            cmp.i.v LT
+            bf [2]
+
+            :[1]
+            b [0]
+
+            :[2]
+            push.v self.a
+            pushi.e 10
+            cmp.i.v GTE
+            bf [0]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Equal(2, loops.Count);
+        Assert.IsType<DoUntilLoop>(loops[0]);
+        Assert.IsType<WhileLoop>(loops[1]);
+        DoUntilLoop loop0 = (DoUntilLoop)loops[0];
+        WhileLoop loop1 = (WhileLoop)loops[1];
+        Assert.Equal(loop0, loop1.Parent);
+        Assert.Equal(fragments[0], loop0.Parent);
+        Assert.Empty(loop1.Predecessors);
+        Assert.Equal([blocks[2]], loop1.Successors);
+        Assert.Empty(loop0.Predecessors);
+        Assert.Equal([blocks[3]], loop0.Successors);
+        Assert.Equal(loop1, loop0.Head);
+        Assert.Equal(blocks[2], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Equal(blocks[0], loop1.Head);
+        Assert.Equal(blocks[1], loop1.Body);
+        Assert.Equal(blocks[1], loop1.Tail);
+        Assert.IsType<EmptyNode>(loop1.After);
+        Assert.Empty(loop1.Head.Predecessors);
+        Assert.Empty(loop1.Body.Predecessors);
+        Assert.Empty(loop1.Tail.Successors);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
 }
