@@ -111,12 +111,12 @@ public class Fragment : IControlFlowNode
                 IControlFlowNode.InsertSuccessor(previous, 0, current);
             }
 
-            // Add this block to our current fragment
-            current.Children.Add(block);
-
             // If we're at the start of the fragment, track parent node on the block
             if (current.Children.Count == 0)
                 block.Parent = current;
+
+            // Add this block to our current fragment
+            current.Children.Add(block);
         }
 
         if (stack.Count > 0)

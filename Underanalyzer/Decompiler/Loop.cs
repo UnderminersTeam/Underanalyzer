@@ -67,6 +67,7 @@ public abstract class Loop : IControlFlowNode
         }
 
         // Update control flow graph to include the new loops
+        loops.Sort((a, b) => a.StartAddress - b.StartAddress);
         foreach (var loop in loops)
             loop.UpdateFlowGraph();
 
