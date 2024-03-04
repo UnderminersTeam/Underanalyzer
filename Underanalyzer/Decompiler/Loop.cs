@@ -63,11 +63,27 @@ public abstract class Loop : IControlFlowNode
                         }
                     }
                     break;
+                case IGMInstruction.Opcode.BranchFalse:
+                    if (instr.BranchOffset < 0)
+                    {
+                        // Do...until loop detected
+                        int headAddr = instr.Address + instr.BranchOffset;
+                        loops.Add(new DoUntilLoop(headAddr, block.EndAddress, 
+                            blockLookup[headAddr], block, block.Successors[0]));
+                    }
+                    break;
             }
         }
 
         // Update control flow graph to include the new loops
-        loops.Sort((a, b) => a.StartAddress - b.StartAddress);
+        loops.Sort((a, b) =>
+        {
+            if (a.StartAddress < b.StartAddress)
+                return -1;
+            if (a.StartAddress > b.StartAddress) 
+                return 1;
+            return b.EndAddress - a.EndAddress;
+        });
         foreach (var loop in loops)
             loop.UpdateFlowGraph();
 

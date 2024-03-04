@@ -179,12 +179,12 @@ public static class VMAssembly
                             throw new Exception("Compare needs comparison kind parameter");
                         instr.ComparisonKind = parts[1].ToLowerInvariant() switch
                         {
-                            "lt" => IGMInstruction.ComparisonType.Lesser,
-                            "leq" => IGMInstruction.ComparisonType.LesserEqual,
-                            "eq" => IGMInstruction.ComparisonType.Equal,
-                            "neq" => IGMInstruction.ComparisonType.NotEqual,
-                            "geq" => IGMInstruction.ComparisonType.GreaterEqual,
-                            "gt" => IGMInstruction.ComparisonType.Greater,
+                            "lt" =>             IGMInstruction.ComparisonType.Lesser,
+                            "leq" or "lte" =>   IGMInstruction.ComparisonType.LesserEqual,
+                            "eq" =>             IGMInstruction.ComparisonType.Equal,
+                            "neq" =>            IGMInstruction.ComparisonType.NotEqual,
+                            "geq" or "gte" =>   IGMInstruction.ComparisonType.GreaterEqual,
+                            "gt" =>             IGMInstruction.ComparisonType.Greater,
                             _ => throw new Exception("Unknown comparison kind")
                         };
                     }
