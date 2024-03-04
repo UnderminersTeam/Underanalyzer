@@ -1,4 +1,5 @@
-﻿using Underanalyzer.Decompiler;
+﻿using Underanalyzer;
+using Underanalyzer.Decompiler;
 using Underanalyzer.Mock;
 using static System.Reflection.Metadata.BlobBuilder;
 
@@ -487,6 +488,125 @@ public class Loop_FindLoops
         Assert.Empty(loop1.Tail.Successors);
         Assert.Empty(loop0.Head.Predecessors);
         Assert.Empty(loop0.Tail.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestSingleRepeat()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 100
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [2]
+
+            :[1]
+            push.i 1
+            sub.i.i
+            dup.i 0
+            conv.i.b
+            bt [1]
+
+            :[2]
+            popz.i
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Single(loops);
+        Assert.IsType<RepeatLoop>(loops[0]);
+        RepeatLoop loop0 = (RepeatLoop)loops[0];
+        Assert.Equal([loop0], blocks[0].Successors);
+        Assert.Equal([blocks[2]], loop0.Successors);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[1], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Single(blocks[0].Instructions);
+        Assert.Equal(IGMInstruction.Opcode.PushImmediate, blocks[0].Instructions[0].Kind);
+        Assert.Empty(blocks[1].Instructions);
+        Assert.Empty(blocks[2].Instructions);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestNestedRepeat()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 100
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [4]
+
+            :[1]
+            pushi.e 200
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [3]
+
+            :[2]
+            push.i 1
+            sub.i.i
+            dup.i 0
+            conv.i.b
+            bt [2]
+
+            :[3]
+            popz.i
+            push.i 1
+            sub.i.i
+            dup.i 0
+            conv.i.b
+            bt [1]
+
+            :[4]
+            popz.i
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Equal(2, loops.Count);
+        Assert.IsType<RepeatLoop>(loops[0]);
+        Assert.IsType<RepeatLoop>(loops[1]);
+        RepeatLoop loop0 = (RepeatLoop)loops[0];
+        RepeatLoop loop1 = (RepeatLoop)loops[1];
+        Assert.Equal([loop1], loop0.Head.Successors);
+        Assert.Empty(loop0.Tail.Successors);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[3], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Equal(blocks[2], loop1.Head);
+        Assert.Equal(blocks[2], loop1.Tail);
+        Assert.IsType<EmptyNode>(loop1.After);
+        Assert.Equal([blocks[1]], loop1.Predecessors);
+        Assert.Equal([blocks[3]], loop1.Successors);
+        Assert.Equal([blocks[0]], loop0.Predecessors);
+        Assert.Equal([blocks[4]], loop0.Successors);
+        Assert.Single(blocks[0].Instructions);
+        Assert.Equal(IGMInstruction.Opcode.PushImmediate, blocks[0].Instructions[0].Kind);
+        Assert.Single(blocks[1].Instructions);
+        Assert.Equal(IGMInstruction.Opcode.PushImmediate, blocks[1].Instructions[0].Kind);
+        Assert.Empty(blocks[2].Instructions);
+        Assert.Empty(blocks[3].Instructions);
+        Assert.Empty(blocks[4].Instructions);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);

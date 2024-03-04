@@ -72,6 +72,15 @@ public abstract class Loop : IControlFlowNode
                             blockLookup[headAddr], block, block.Successors[0]));
                     }
                     break;
+                case IGMInstruction.Opcode.BranchTrue:
+                    if (instr.BranchOffset < 0)
+                    {
+                        // Repeat loop detected
+                        int headAddr = instr.Address + instr.BranchOffset;
+                        loops.Add(new RepeatLoop(headAddr, block.EndAddress,
+                            blockLookup[headAddr], block, block.Successors[0]));
+                    }
+                    break;
             }
         }
 
