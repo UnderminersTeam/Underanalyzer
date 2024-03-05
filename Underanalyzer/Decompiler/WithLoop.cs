@@ -57,6 +57,9 @@ public class WithLoop : Loop
             // Get rid of branch instruction from oldAfter
             Block oldAfterBlock = oldAfter as Block;
             oldAfterBlock.Instructions.RemoveAt(oldAfterBlock.Instructions.Count - 1);
+
+            // Disonnect successor of After, now, as it is no longer desired
+            IControlFlowNode.DisconnectSuccessor(After, 0);
         }
 
         // Insert structure into graph
