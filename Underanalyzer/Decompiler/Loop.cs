@@ -67,18 +67,35 @@ public abstract class Loop : IControlFlowNode
                     if (instr.BranchOffset < 0)
                     {
                         // Do...until loop detected
-                        int headAddr = instr.Address + instr.BranchOffset;
-                        loops.Add(new DoUntilLoop(headAddr, block.EndAddress, 
-                            blockLookup[headAddr], block, block.Successors[0]));
+                        loops.Add(new DoUntilLoop(block.Successors[1].StartAddress, block.EndAddress,
+                            block.Successors[1], block, block.Successors[0]));
                     }
                     break;
                 case IGMInstruction.Opcode.BranchTrue:
                     if (instr.BranchOffset < 0)
                     {
                         // Repeat loop detected
-                        int headAddr = instr.Address + instr.BranchOffset;
-                        loops.Add(new RepeatLoop(headAddr, block.EndAddress,
-                            blockLookup[headAddr], block, block.Successors[0]));
+                        loops.Add(new RepeatLoop(block.Successors[1].StartAddress, block.EndAddress,
+                            block.Successors[1], block, block.Successors[0]));
+                    }
+                    break;
+                case IGMInstruction.Opcode.PushWithContext:
+                    {
+                        // With loop detected - need to additionally check for break block
+                        Block afterBlock = block.Successors[1].Successors[0] as Block;
+                        Block breakBlock = null;
+                        if (afterBlock.Instructions is [{ Kind: IGMInstruction.Opcode.Branch }])
+                        {
+                            Block potentialBreakBlock = blockLookup[afterBlock.EndAddress];
+                            if (potentialBreakBlock.EndAddress == afterBlock.Successors[0].StartAddress &&
+                                potentialBreakBlock.Instructions is 
+                                    [{ Kind: IGMInstruction.Opcode.PopWithContext, PopWithContextExit: true }])
+                            {
+                                breakBlock = potentialBreakBlock;
+                            }
+                        }
+                        loops.Add(new WithLoop(block.EndAddress, block.Successors[1].StartAddress,
+                            block.Successors[0], block.Successors[1], afterBlock, breakBlock));
                     }
                     break;
             }

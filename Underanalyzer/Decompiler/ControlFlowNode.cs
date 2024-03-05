@@ -105,7 +105,7 @@ public interface IControlFlowNode
     }
 
     /// <summary>
-    /// Utility function to disconnect a node from one of its predecessor.
+    /// Utility function to disconnect a node from one of its predecessors.
     /// </summary>
     internal static void DisconnectPredecessor(IControlFlowNode node, int predecessorIndex)
     {

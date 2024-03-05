@@ -155,6 +155,13 @@ public class Block : IControlFlowNode
                         b.Successors.Add(dest);
                         dest.Predecessors.Add(b);
                     }
+                    else
+                    {
+                        // Connect to block directly after this current one, only
+                        Block next = blocksByAddress[b.EndAddress];
+                        b.Successors.Add(next);
+                        next.Predecessors.Add(b);
+                    }
                     break;
                 case IGMInstruction.Opcode.Exit:
                 case IGMInstruction.Opcode.Return:

@@ -4,7 +4,7 @@ namespace Underanalyzer.Decompiler;
 
 public class RepeatLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [ null, null, null ];
+    public override List<IControlFlowNode> Children { get; } = [null, null, null];
 
     public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
 

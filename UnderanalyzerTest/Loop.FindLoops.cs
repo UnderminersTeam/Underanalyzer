@@ -612,4 +612,255 @@ public class Loop_FindLoops
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
     }
+
+    [Fact]
+    public void TestSingleEmptyWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [1]
+
+            :[1]
+            popenv [1]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Single(loops);
+        Assert.IsType<WithLoop>(loops[0]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        Assert.Equal(blocks[0], loop0.Predecessors[0]);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[1], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Null(loop0.BreakBlock);
+        Assert.Equal(blocks[2], loop0.Successors[0]);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestSingleWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [2]
+
+            :[1]
+            pushi.e 123
+            pop.v.i self.a
+
+            :[2]
+            popenv [1]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Single(loops);
+        Assert.IsType<WithLoop>(loops[0]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        Assert.Equal(blocks[0], loop0.Predecessors[0]);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[2], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Null(loop0.BreakBlock);
+        Assert.Equal(blocks[3], loop0.Successors[0]);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestSingleBreakWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [3]
+
+            :[1]
+            push.v self.a
+            conv.v.b
+            bf [3]
+
+            :[2]
+            b [5]
+
+            :[3]
+            popenv [1]
+
+            :[4]
+            b [6]
+
+            :[5]
+            popenv <drop>
+
+            :[6]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Single(loops);
+        Assert.IsType<WithLoop>(loops[0]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        Assert.Equal(blocks[0], loop0.Predecessors[0]);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[3], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Equal(blocks[5], loop0.BreakBlock);
+        Assert.Equal(blocks[6], loop0.Successors[0]);
+        Assert.Empty(loop0.Head.Predecessors);
+        Assert.Empty(loop0.Tail.Successors);
+        Assert.Empty(loop0.BreakBlock.Predecessors);
+        Assert.Empty(loop0.BreakBlock.Successors);
+        Assert.Equal([loop0.After], blocks[2].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestNestedWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [4]
+
+            :[1]
+            pushi.e 456
+            pushenv [3]
+
+            :[2]
+            pushi.e 789
+            pop.v.i self.a
+
+            :[3]
+            popenv [2]
+
+            :[4]
+            popenv [1]
+
+            :[5]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Equal(2, loops.Count);
+        Assert.IsType<WithLoop>(loops[0]);
+        Assert.IsType<WithLoop>(loops[1]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        WithLoop loop1 = (WithLoop)loops[1];
+        Assert.Equal([blocks[0]], loop0.Predecessors);
+        Assert.Equal([blocks[5]], loop0.Successors);
+        Assert.Equal([blocks[1]], loop1.Predecessors);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[4], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Null(loop0.BreakBlock);
+        Assert.Equal(blocks[2], loop1.Head);
+        Assert.Equal(blocks[3], loop1.Tail);
+        Assert.IsType<EmptyNode>(loop1.After);
+        Assert.Null(loop1.BreakBlock);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
+
+    [Fact]
+    public void TestNestedBreakWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [7]
+
+            :[1]
+            pushi.e 456
+            pushenv [3]
+
+            :[2]
+            pushi.e 789
+            pop.v.i self.a
+            b [5]
+
+            :[3]
+            popenv [2]
+
+            :[4]
+            b [6]
+
+            :[5]
+            popenv <drop>
+
+            :[6]
+            b [8]
+
+            :[7]
+            popenv [1]
+
+            :[8]
+            b [10]
+
+            :[9]
+            popenv <drop>
+
+            :[10]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+
+        Assert.Equal(2, loops.Count);
+        Assert.IsType<WithLoop>(loops[0]);
+        Assert.IsType<WithLoop>(loops[1]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        WithLoop loop1 = (WithLoop)loops[1];
+        Assert.Equal([blocks[0]], loop0.Predecessors);
+        Assert.Equal([blocks[10]], loop0.Successors);
+        Assert.Equal([blocks[1]], loop1.Predecessors);
+        Assert.Equal(blocks[1], loop0.Head);
+        Assert.Equal(blocks[7], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+        Assert.Equal(blocks[9], loop0.BreakBlock);
+        Assert.Empty(loop0.BreakBlock.Predecessors);
+        Assert.Empty(loop0.BreakBlock.Successors);
+        Assert.Equal(blocks[2], loop1.Head);
+        Assert.Equal(blocks[3], loop1.Tail);
+        Assert.IsType<EmptyNode>(loop1.After);
+        Assert.Equal(blocks[5], loop1.BreakBlock);
+        Assert.Empty(loop1.BreakBlock.Predecessors);
+        Assert.Empty(loop1.BreakBlock.Successors);
+        Assert.Equal([loop1.After], blocks[2].Successors);
+        Assert.Equal([loop0.After], blocks[6].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
 }

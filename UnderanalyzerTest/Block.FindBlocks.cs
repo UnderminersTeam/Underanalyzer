@@ -103,13 +103,13 @@ public class Block_FindBlocks
             """
             :[0]
             pushi.e 0
-            bf [end]
+            bf [2]
 
             :[1]
             pushi.e 1
             b [0]
 
-            :[end]
+            :[2]
             """
         );
         List<Block> blocks = Block.FindBlocks(code);
@@ -157,7 +157,7 @@ public class Block_FindBlocks
             :[3]
             pushi.e 3
 
-            :[end]
+            :[4]
             """
         );
         List<Block> blocks = Block.FindBlocks(code);
@@ -191,6 +191,72 @@ public class Block_FindBlocks
 
         Assert.Single(blocks[4].Predecessors);
         Assert.Contains(blocks[3], blocks[4].Predecessors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+    }
+
+    [Fact]
+    public void TestBreakWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 0
+            pushenv [2]
+
+            :[1]
+            pushi.e 1
+            b [4]
+
+            :[2]
+            popenv [1]
+
+            :[3]
+            b [5]
+
+            :[4]
+            popenv <drop>
+
+            :[5]
+            pushi.e 5
+
+            :[6]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+
+        Assert.Equal(7, blocks.Count);
+        Assert.Equal(0, blocks[0].Instructions[0].ValueShort);
+        Assert.Equal(1, blocks[1].Instructions[0].ValueShort);
+        Assert.Equal(5, blocks[5].Instructions[0].ValueShort);
+        Assert.Empty(blocks[6].Instructions);
+
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Equal(2, blocks[0].Successors.Count);
+        Assert.Equal(blocks[1], blocks[0].Successors[0]);
+        Assert.Equal(blocks[2], blocks[0].Successors[1]);
+
+        Assert.Equal(2, blocks[1].Predecessors.Count);
+        Assert.Equal(blocks[0], blocks[1].Predecessors[0]);
+        Assert.Equal(blocks[2], blocks[1].Predecessors[1]);
+        Assert.Single(blocks[1].Successors);
+        Assert.Contains(blocks[4], blocks[1].Successors);
+
+        Assert.Single(blocks[2].Predecessors);
+        Assert.Equal(blocks[0], blocks[2].Predecessors[0]);
+        Assert.Equal(2, blocks[2].Successors.Count);
+        Assert.Equal(blocks[3], blocks[2].Successors[0]);
+        Assert.Equal(blocks[1], blocks[2].Successors[1]);
+
+        Assert.Single(blocks[3].Predecessors);
+        Assert.Equal(blocks[2], blocks[3].Predecessors[0]);
+        Assert.Single(blocks[3].Successors);
+        Assert.Equal(blocks[5], blocks[3].Successors[0]);
+
+        Assert.Equal([blocks[3], blocks[4]], blocks[5].Predecessors);
+
+        Assert.Single(blocks[6].Predecessors);
+        Assert.Contains(blocks[5], blocks[6].Predecessors);
 
         TestUtil.VerifyFlowDirections(blocks);
     }
