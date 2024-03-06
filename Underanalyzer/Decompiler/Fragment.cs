@@ -102,6 +102,9 @@ public class Fragment : IControlFlowNode
                     throw new Exception("Expected branch before fragment start.");
                 int endAddr = previous.Successors[0].StartAddress;
 
+                // Remove previous block's branch instruction
+                previous.Instructions.RemoveAt(previous.Instructions.Count - 1);
+
                 // Make our new "current" be this new fragment
                 current = new Fragment(block.StartAddress, endAddr, newCode, []);
                 fragments.Add(current);

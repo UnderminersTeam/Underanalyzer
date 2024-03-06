@@ -34,6 +34,9 @@ public class ShortCircuit : IControlFlowNode
         Children = children;
     }
 
+    /// <summary>
+    /// Finds all short-circuit operations contained within a list of blocks, and updates the control flow graph accordingly.
+    /// </summary>
     public static List<ShortCircuit> FindShortCircuits(List<Block> blocks, bool oldBytecodeVersion = false)
     {
         List<ShortCircuit> shortCircuits = new();
