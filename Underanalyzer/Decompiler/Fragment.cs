@@ -124,4 +124,9 @@ public class Fragment : IControlFlowNode
 
         return fragments;
     }
+
+    public override string ToString()
+    {
+        return $"{nameof(Fragment)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
 }

@@ -2,14 +2,37 @@
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// Represents a "repeat" loop in a control flow graph.
+/// </summary>
 public class RepeatLoop : Loop
 {
     public override List<IControlFlowNode> Children { get; } = [null, null, null];
 
+    /// <summary>
+    /// The top loop point and body of the loop, as written in the source code.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this has its predecessors disconnected.
+    /// Of its predecessors, the instructions used to initialize the loop counter are removed.
+    /// </remarks>
     public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
 
+    /// <summary>
+    /// The bottom loop point of the loop, where the loop counter is decremented.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, all instructions pertaining to the loop counter are removed, and all successors are disconnected.
+    /// </remarks>
     public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
 
+    /// <summary>
+    /// The "sink" location of the loop. The loop counter being falsey or "break" statements will lead to this location.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
+    /// Additionally, a final pop instruction is removed.
+    /// </remarks>
     public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
 
     public RepeatLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
@@ -51,5 +74,10 @@ public class RepeatLoop : Loop
         // Update parent status of Head, as well as this loop, for later operation
         Parent = Head.Parent;
         Head.Parent = this;
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(RepeatLoop)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 }

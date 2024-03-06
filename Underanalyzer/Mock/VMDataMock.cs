@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Underanalyzer.Mock;
 
@@ -28,6 +27,11 @@ public class GMCode : IGMCode
 
     public IGMCode GetChild(int index) => Children[index];
     public IGMInstruction GetInstruction(int index) => Instructions[index];
+
+    public override string ToString()
+    {
+        return $"{nameof(GMCode)}: {Name.Content} ({Instructions.Count} instructions, length {Length}, {ArgumentCount} args, {LocalCount} locals, offset {StartOffset})";
+    }
 }
 
 public class GMInstruction : IGMInstruction
@@ -54,6 +58,11 @@ public class GMInstruction : IGMInstruction
     public byte DuplicationSize2 { get; set; }
     public int ArgumentCount { get => ValueInt; set => ValueInt = value; }
     public int PopSwapSize { get => ValueInt; set => ValueInt = value; }
+
+    public override string ToString()
+    {
+        return $"{nameof(GMInstruction)}: {Kind} (address {Address})";
+    }
 }
 
 public class GMString : IGMString
@@ -61,6 +70,11 @@ public class GMString : IGMString
     public string Content { get; set; }
 
     public GMString(string content) => Content = content;
+
+    public override string ToString()
+    {
+        return $"{nameof(GMString)}: {Content}";
+    }
 }
 
 public class GMVariable : IGMVariable
@@ -70,6 +84,11 @@ public class GMVariable : IGMVariable
     public IGMInstruction.InstanceType InstanceType { get; set; }
 
     public int VariableID { get; set; }
+
+    public override string ToString()
+    {
+        return $"{nameof(GMVariable)}: {Name.Content} ({InstanceType})";
+    }
 }
 
 public class GMFunction : IGMFunction
@@ -77,4 +96,9 @@ public class GMFunction : IGMFunction
     public IGMString Name { get; set; }
 
     public GMFunction(string name) => Name = new GMString(name);
+
+    public override string ToString()
+    {
+        return $"{nameof(GMFunction)}: {Name.Content}";
+    }
 }

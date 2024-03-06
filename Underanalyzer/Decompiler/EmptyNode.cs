@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// Represents an empty node in the control flow graph.
+/// This is generally used for reshaping control flow to make later analysis easier.
+/// </summary>
 public class EmptyNode(int address) : IControlFlowNode
 {
     public int StartAddress { get; set; } = address;
@@ -19,4 +21,9 @@ public class EmptyNode(int address) : IControlFlowNode
     public List<IControlFlowNode> Children { get; } = new();
 
     public bool Unreachable { get; set; } = false;
+
+    public override string ToString()
+    {
+        return $"{nameof(EmptyNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
 }

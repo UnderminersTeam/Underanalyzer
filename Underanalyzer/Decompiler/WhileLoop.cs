@@ -3,16 +3,44 @@ using System.Collections.Generic;
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// Represents a "while" loop in a control flow graph.
+/// Can become a "for" loop as needed or desired, depending on the code.
+/// </summary>
 public class WhileLoop : Loop
 {
     public override List<IControlFlowNode> Children { get; } = [null, null, null, null];
 
+    /// <summary>
+    /// The top loop point of the while loop. This is where the loop condition begins to be evaluated.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this becomes disconnected from the rest of the graph.
+    /// </remarks>
     public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
 
+    /// <summary>
+    /// The bottom loop point of the while loop. This is where the jump back to the loop head/condition is located.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this becomes disconnected from the rest of the graph.
+    /// </remarks>
     public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
 
+    /// <summary>
+    /// The "sink" location of the loop. The loop condition being false or "break" statements will lead to this location.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
+    /// </remarks>
     public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
 
+    /// <summary>
+    /// The start of the body of the loop, as written in the source code. That is, this does not include the loop condition.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this is disconnected from the loop condition (which is otherwise a predecessor).
+    /// </remarks>
     public IControlFlowNode Body { get => Children[3]; private set => Children[3] = value; }
 
     /// <summary>
@@ -64,5 +92,10 @@ public class WhileLoop : Loop
         // Update parent status of Head, as well as this loop, for later operation
         Parent = Head.Parent;
         Head.Parent = this;
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(WhileLoop)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 }

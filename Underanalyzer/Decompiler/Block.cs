@@ -27,10 +27,13 @@ public class Block : IControlFlowNode
 
     public bool Unreachable { get; set; } = false;
 
-    public Block(int startAddr, int endAddr, List<IGMInstruction> instructions)
+    public int BlockIndex { get; }
+
+    public Block(int startAddr, int endAddr, int blockIndex, List<IGMInstruction> instructions)
     {
         StartAddress = startAddr;
         EndAddress = endAddr;
+        BlockIndex = blockIndex;
         Instructions = instructions;
     }
 
@@ -92,7 +95,7 @@ public class Block : IControlFlowNode
                     current.EndAddress = instr.Address;
 
                 // Make new block
-                current = new(instr.Address, -1, []);
+                current = new(instr.Address, -1, blocks.Count, []);
                 blocks.Add(current);
                 blocksByAddress[current.StartAddress] = current;
             }
@@ -106,7 +109,7 @@ public class Block : IControlFlowNode
             current.EndAddress = code.Length;
 
         // Add ending block
-        Block end = new(code.Length, code.Length, []);
+        Block end = new(code.Length, code.Length, blocks.Count, []);
         blocks.Add(end);
         blocksByAddress[end.StartAddress] = end;
 
@@ -190,5 +193,10 @@ public class Block : IControlFlowNode
         }
 
         return blocks;
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(Block)} {BlockIndex} ({Instructions.Count} instructions, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 }

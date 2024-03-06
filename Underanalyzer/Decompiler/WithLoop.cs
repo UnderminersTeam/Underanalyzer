@@ -69,4 +69,9 @@ public class WithLoop : Loop
         Parent = Head.Parent;
         Head.Parent = this;
     }
+
+    public override string ToString()
+    {
+        return $"{nameof(WithLoop)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
 }

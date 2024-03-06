@@ -2,6 +2,9 @@
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// Represents a loop (jump/branch backwards) node in a control flow graph.
+/// </summary>
 public abstract class Loop : IControlFlowNode
 {
     public int StartAddress { get; private set; }
@@ -14,6 +17,9 @@ public abstract class Loop : IControlFlowNode
 
     public IControlFlowNode Parent { get; set; } = null;
 
+    /// <summary>
+    /// The child nodes of this loop, those being the constituent parts (such as loop head, tail, and so on).
+    /// </summary>
     public abstract List<IControlFlowNode> Children { get; }
 
     public bool Unreachable { get; set; } = false;
@@ -24,17 +30,18 @@ public abstract class Loop : IControlFlowNode
         EndAddress = endAddress;
     }
 
+    /// <summary>
+    /// Called to insert a given loop's node into the control flow graph.
+    /// </summary>
     public abstract void UpdateFlowGraph();
 
+    /// <summary>
+    /// Finds all loops present in a list of blocks, and updates the control flow graph with special nodes for loops.
+    /// </summary>
     public static List<Loop> FindLoops(List<Block> blocks)
     {
         List<Loop> loops = new();
         HashSet<int> whileLoopsFound = new();
-
-        // Build look-up from block addresses to blocks
-        Dictionary<int, Block> blockLookup = new();
-        foreach (Block b in blocks)
-            blockLookup[b.StartAddress] = b;
 
         // Search for different loop types based on instruction patterns
         // Do this in reverse order, because we want to find the ends of loops first
@@ -58,8 +65,8 @@ public abstract class Loop : IControlFlowNode
                         int conditionAddr = instr.Address + instr.BranchOffset;
                         if (whileLoopsFound.Add(conditionAddr))
                         {
-                            loops.Add(new WhileLoop(conditionAddr, block.EndAddress, 
-                                blockLookup[conditionAddr], block, blockLookup[block.EndAddress]));
+                            loops.Add(new WhileLoop(conditionAddr, block.EndAddress,
+                                block.Successors[0], block, blocks[block.BlockIndex + 1]));
                         }
                     }
                     break;
@@ -86,7 +93,7 @@ public abstract class Loop : IControlFlowNode
                         Block breakBlock = null;
                         if (afterBlock.Instructions is [{ Kind: IGMInstruction.Opcode.Branch }])
                         {
-                            Block potentialBreakBlock = blockLookup[afterBlock.EndAddress];
+                            Block potentialBreakBlock = blocks[afterBlock.BlockIndex + 1];
                             if (potentialBreakBlock.EndAddress == afterBlock.Successors[0].StartAddress &&
                                 potentialBreakBlock.Instructions is 
                                     [{ Kind: IGMInstruction.Opcode.PopWithContext, PopWithContextExit: true }])
