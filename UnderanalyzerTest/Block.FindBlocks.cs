@@ -328,4 +328,111 @@ public class Block_FindBlocks
 
         TestUtil.VerifyFlowDirections(blocks);
     }
+
+    [Fact]
+    public void TestTry()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.i 48
+            conv.i.v
+            push.i -1
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[1]
+            pushi.e 1
+            pop.v.i self.a
+
+            :[2]
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushi.e 2
+            pop.v.i self.b
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [3]
+
+            :[3]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+
+        Assert.Equal(4, blocks.Count);
+
+        Assert.Equal(6, blocks[0].Instructions.Count);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Equal([blocks[1], blocks[2]], blocks[0].Successors);
+
+        Assert.Equal(2, blocks[1].Instructions.Count);
+        Assert.Equal([blocks[0]], blocks[1].Predecessors);
+        Assert.Equal([blocks[2]], blocks[1].Successors);
+
+        Assert.Equal(7, blocks[2].Instructions.Count);
+        Assert.Equal([blocks[0], blocks[1]], blocks[2].Predecessors);
+        Assert.Equal([blocks[3]], blocks[2].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+    }
+
+    [Fact]
+    public void TestTryCatch()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.i 108
+            conv.i.v
+            push.i 52
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[1]
+            pushi.e 1
+            pop.v.i self.a
+            b [3]
+
+            :[2]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushloc.v local.ex
+            call.i show_debug_message 1
+            popz.v
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [4]
+
+            :[3]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[4]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+
+        Assert.Equal(5, blocks.Count);
+
+        Assert.Equal(6, blocks[0].Instructions.Count);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Equal([blocks[1], blocks[3], blocks[2]], blocks[0].Successors); // Note the order: try, end/finally, catch
+
+        Assert.Equal(3, blocks[1].Instructions.Count);
+        Assert.Equal([blocks[0]], blocks[1].Predecessors);
+        Assert.Equal([blocks[3]], blocks[1].Successors);
+
+        Assert.Equal(9, blocks[2].Instructions.Count);
+        Assert.Equal([blocks[0]], blocks[2].Predecessors);
+        Assert.Equal([blocks[4]], blocks[2].Successors);
+
+        Assert.Equal(2, blocks[3].Instructions.Count);
+        Assert.Equal([blocks[0], blocks[1]], blocks[3].Predecessors);
+        Assert.Equal([blocks[4]], blocks[3].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+    }
 }

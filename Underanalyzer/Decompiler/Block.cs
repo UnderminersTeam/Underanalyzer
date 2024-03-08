@@ -67,7 +67,38 @@ public class Block : IControlFlowNode
                 case IGMInstruction.Opcode.Return:
                     addresses.Add(instr.Address + 4);
                     break;
-                // TODO: should we handle try..catch here?
+                case IGMInstruction.Opcode.Call:
+                    // Handle try hook addresses
+                    if (i >= 4 && instr.Function.Name?.Content == VMConstants.TryHookFunction)
+                    {
+                        // If too close to end, bail
+                        if (i >= code.InstructionCount - 1)
+                            break;
+                        
+                        // Check instructions
+                        IGMInstruction finallyInstr = code.GetInstruction(i - 4);
+                        IGMInstruction catchInstr = code.GetInstruction(i - 2);
+                        IGMInstruction popInstr = code.GetInstruction(i + 1);
+                        if (finallyInstr is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
+                            catchInstr   is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
+                            popInstr     is not { Kind: IGMInstruction.Opcode.PopDelete })
+                        {
+                            throw new Exception("Expected Push with type Int32 before try hook");
+                        }
+
+                        // Add connections to referenced blocks
+                        int finallyBlock = finallyInstr.ValueInt;
+                        addresses.Add(finallyBlock);
+
+                        int catchBlock = catchInstr.ValueInt;
+                        if (catchBlock != -1)
+                            addresses.Add(catchBlock);
+
+                        // Split this try hook into its own block - removes edge cases in later graph operations
+                        addresses.Add(finallyInstr.Address);
+                        addresses.Add(popInstr.Address + IGMInstruction.GetSize(popInstr));
+                    }
+                    break;
             }
         }
 
@@ -164,6 +195,40 @@ public class Block : IControlFlowNode
                         Block next = blocksByAddress[b.EndAddress];
                         b.Successors.Add(next);
                         next.Predecessors.Add(b);
+                    }
+                    break;
+                case IGMInstruction.Opcode.PopDelete:
+                    {
+                        // First, connect to block directly after this current one
+                        Block next = blocksByAddress[b.EndAddress];
+                        b.Successors.Add(next);
+                        next.Predecessors.Add(b);
+
+                        // Check for a block that was (theoretically) split earlier to only contain a try hook
+                        if (b.Instructions.Count == 6)
+                        {
+                            IGMInstruction callInstr = b.Instructions[^2];
+                            if (callInstr.Kind == IGMInstruction.Opcode.Call &&
+                                callInstr.Function.Name?.Content == VMConstants.TryHookFunction)
+                            {
+                                // We've found a try hook - connect to targets
+                                int finallyAddr = b.Instructions[^6].ValueInt;
+                                int catchAddr = b.Instructions[^4].ValueInt;
+
+                                // Add finally/end block target
+                                Block finallyBlock = blocksByAddress[finallyAddr];
+                                b.Successors.Add(finallyBlock);
+                                finallyBlock.Predecessors.Add(b);
+
+                                // If -1, we don't have a catch block at all
+                                if (catchAddr != -1)
+                                {
+                                    Block catchBlock = blocksByAddress[catchAddr];
+                                    b.Successors.Add(catchBlock);
+                                    catchBlock.Predecessors.Add(b);
+                                }
+                            }
+                        }
                     }
                     break;
                 case IGMInstruction.Opcode.Exit:
