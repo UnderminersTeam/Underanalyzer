@@ -122,7 +122,7 @@ public interface IControlFlowNode
     /// <summary>
     /// Helper function to replace all instances of "search" with "replace" in a control flow list.
     /// </summary>
-    private static void ReplaceConnections(List<IControlFlowNode> list, IControlFlowNode search, IControlFlowNode replace)
+    public static void ReplaceConnections(List<IControlFlowNode> list, IControlFlowNode search, IControlFlowNode replace)
     {
         for (int i = 0; i < list.Count; i++)
         {
