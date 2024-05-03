@@ -110,6 +110,7 @@ public class VMAssembly_ParseInstructions
 
         # Function index push
         push.i test_function_reference
+        pushref.i test_function_reference
         
         :[end]
         """;
@@ -118,7 +119,7 @@ public class VMAssembly_ParseInstructions
         GMCode code = VMAssembly.ParseAssemblyFromLines(lines);
         List<GMInstruction> list = code.Instructions;
 
-        Assert.Equal(73, list.Count);
+        Assert.Equal(74, list.Count);
 
         Assert.Equal(IGMInstruction.Opcode.Convert, list[0].Kind);
         Assert.Equal(IGMInstruction.DataType.Int32, list[0].Type1);
@@ -159,6 +160,12 @@ public class VMAssembly_ParseInstructions
         Assert.Equal(IGMInstruction.Opcode.Push, list[72].Kind);
         Assert.Equal(IGMInstruction.DataType.Int32, list[72].Type1);
         Assert.Equal("test_function_reference", list[72].Function.Name.Content);
+
+        Assert.Equal(IGMInstruction.Opcode.Extended, list[73].Kind);
+        Assert.Equal(IGMInstruction.ExtendedOpcode.PushReference, list[73].ExtKind);
+        Assert.Equal(IGMInstruction.DataType.Int32, list[73].Type1);
+        Assert.NotNull(list[73].Function);
+        Assert.Equal("test_function_reference", list[73].Function.Name.Content);
     }
 
     [Fact]

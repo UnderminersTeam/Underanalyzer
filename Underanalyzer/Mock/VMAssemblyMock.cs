@@ -345,7 +345,11 @@ public static class VMAssembly
                             if (parts.Length < 2)
                                 throw new Exception("PushReference needs reference ID parameter");
                             if (!int.TryParse(parts[1], out int referenceID))
-                                throw new Exception("Failed to parse reference ID");
+                            {
+                                // Not a reference ID. Instead, a function reference
+                                instr.Function = new GMFunction(parts[1]);
+                                break;
+                            }
                             instr.ValueInt = referenceID;
                         }
                     }
