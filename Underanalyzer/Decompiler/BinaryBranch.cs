@@ -89,7 +89,7 @@ public class BinaryBranch : IControlFlowNode
 
             foreach (IControlFlowNode successor in node.Successors)
             {
-                if (successor.StartAddress <= node.StartAddress)
+                if (successor.StartAddress < node.StartAddress || successor == node)
                     throw new Exception("Unresolved loop");
                 if (!visited.Contains(successor))
                 {
@@ -115,7 +115,7 @@ public class BinaryBranch : IControlFlowNode
 
             foreach (IControlFlowNode successor in node.Successors)
             {
-                if (successor.StartAddress <= node.StartAddress)
+                if (successor.StartAddress < node.StartAddress || successor == node)
                     throw new Exception("Unresolved loop");
                 work.Push(successor);
             }
@@ -124,12 +124,75 @@ public class BinaryBranch : IControlFlowNode
         throw new Exception("Failed to find meetpoint!");
     }
 
+    /// <summary>
+    /// Resolves continue statements that jump backwards, and break statements that exit the loop.
+    /// These are trivial to find on a linear pass, without considering branches.
+    /// </summary>
+    private static void ResolveBasicBreakContinue(List<Block> blocks, Dictionary<Block, Loop> surroundingLoops)
+    {
+        foreach (Block block in blocks)
+        {
+            if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] &&
+                block.Successors.Count >= 1 && surroundingLoops.TryGetValue(block, out Loop loop))
+            {
+                IControlFlowNode node;
+                if (block.Successors[0] == loop)
+                {
+                    // Detected trivial continue
+                    node = new ContinueNode(block.EndAddress);
+                }
+                else if (block.Successors[0].StartAddress >= loop.EndAddress)
+                {
+                    // Detected trivial break
+                    node = new BreakNode(block.EndAddress);
+                }
+                else
+                {
+                    // Didn't detect either a trivial break or continue
+                    continue;
+                }
+
+                // Remove branch instruction
+                block.Instructions.RemoveAt(block.Instructions.Count - 1);
+
+                // Reroute into break/continue node
+                IControlFlowNode.DisconnectSuccessor(block, 0);
+                if (block.Successors.Count == 0)
+                {
+                    block.Successors.Add(node);
+                    node.Predecessors.Add(block);
+
+                    // Now, we want to connect to the following block.
+                    // However, we may have some other structure there, so we need to follow the parent(s) of the block.
+                    if (block.BlockIndex + 1 >= blocks.Count)
+                        throw new Exception("Expected following block after break/continue");
+                    IControlFlowNode following = blocks[block.BlockIndex + 1];
+                    while (following.Parent is not null)
+                        following = following.Parent;
+                    node.Successors.Add(following);
+                    following.Predecessors.Add(node);
+                }
+                else
+                {
+                    // We already have a node after us - it's an unreachable node.
+                    // Just insert this break/continue statement between this block and that node.
+                    if (block.Successors.Count != 1 || !block.Successors[0].Unreachable)
+                        throw new Exception("Expected unreachable block after break/continue");
+                    IControlFlowNode.InsertSuccessor(block, 0, node);
+                }
+            }
+        }
+    }
+
     public static List<BinaryBranch> FindBinaryBranches(List<Block> blocks, List<Loop> loops)
     {
         List<BinaryBranch> res = new();
 
         Dictionary<Block, Loop> surroundingLoops = FindSurroundingLoops(blocks, loops);
         HashSet<IControlFlowNode> visited = new();
+
+        // Resolve continue statements that jump backwards
+        ResolveBasicBreakContinue(blocks, surroundingLoops);
 
         // Iterate over blocks in reverse, as the compiler generates them in the order we want
         for (int i = blocks.Count - 1; i >= 0; i--)
@@ -199,6 +262,7 @@ public class BinaryBranch : IControlFlowNode
                 if (block.Parent is not null)
                 {
                     IControlFlowNode.ReplaceConnections(block.Parent.Children, block, bb);
+                    bb.Parent = block.Parent;
                 }
                 block.Predecessors.Clear();
                 for (int j = 0; j < block.Successors.Count; j++)
