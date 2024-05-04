@@ -52,6 +52,9 @@ public class BinaryBranch : IControlFlowNode
         EndAddress = endAddress;
     }
 
+    /// <summary>
+    /// Creates a mapping of all blocks to the innermost loop they are contained within.
+    /// </summary>
     private static Dictionary<Block, Loop> FindSurroundingLoops(List<Block> blocks, List<Loop> loops)
     {
         // Make lookup of address -> block
@@ -77,14 +80,46 @@ public class BinaryBranch : IControlFlowNode
         return surroundingLoops;
     }
 
-    private static void VisitAll(IControlFlowNode start, HashSet<IControlFlowNode> visited)
+    /// <summary>
+    /// Visits all nodes that are candidates for the meeting point of the if statement branch, along one path.
+    /// Marks off in "visited" all such nodes.
+    /// </summary>
+    private static void VisitAll(
+        Block ifStart, IControlFlowNode start, 
+        HashSet<IControlFlowNode> visited, Dictionary<Block, int> blockAfterLimits)
     {
         Stack<IControlFlowNode> work = new();
         work.Push(start);
 
+        int afterLimit = blockAfterLimits[ifStart];
+
         while (work.Count > 0)
         {
             IControlFlowNode node = work.Pop();
+
+            // Check if we're after our block's after limit. If so, don't consider this node.
+            if (node.StartAddress > afterLimit)
+            {
+                continue;
+            }
+
+            // Check if we have any non-direct branch predecessors coming from before this if statement.
+            // If so, don't consider this node.
+            bool doNotConsider = false;
+            foreach (var predecessor in node.Predecessors)
+            {
+                if (predecessor.StartAddress < ifStart.StartAddress &&
+                    predecessor is Block block && block.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
+                {
+                    doNotConsider = true;
+                    break;
+                }
+            }
+            if (doNotConsider)
+            {
+                continue;
+            }
+
             visited.Add(node);
 
             foreach (IControlFlowNode successor in node.Successors)
@@ -99,14 +134,48 @@ public class BinaryBranch : IControlFlowNode
         }
     }
 
-    private static IControlFlowNode FindMeetpoint(IControlFlowNode start, IControlFlowNode mustBeAfter, HashSet<IControlFlowNode> visited)
+
+    /// <summary>
+    /// Visits all nodes that are candidates for the meeting point of the if statement branch, along a second path.
+    /// Upon finding a node that was visited along the first path (through VisitAll), returns that node.
+    /// If no node is found, mustBeAfter is returned instead as the best meeting point.
+    /// </summary>
+    private static IControlFlowNode FindMeetpoint(
+        Block ifStart, IControlFlowNode start, IControlFlowNode mustBeAfter, 
+        HashSet<IControlFlowNode> visited, Dictionary<Block, int> blockAfterLimits)
     {
         Stack<IControlFlowNode> work = new();
         work.Push(start);
 
+        int afterLimit = blockAfterLimits[ifStart];
+
         while (work.Count > 0)
         {
             IControlFlowNode node = work.Pop();
+
+            // Check if we're after our block's after limit. If so, don't consider this node.
+            if (node.StartAddress > afterLimit)
+            {
+                continue;
+            }
+
+            // Check if we have any non-direct branch predecessors coming from before this if statement.
+            // If so, don't consider this node.
+            bool doNotConsider = false;
+            foreach (var predecessor in node.Predecessors)
+            {
+                if (predecessor.StartAddress < ifStart.StartAddress && 
+                    predecessor is Block block && block.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
+                {
+                    doNotConsider = true;
+                    break;
+                }
+            }
+            if (doNotConsider)
+            {
+                continue;
+            }
+
             if (!visited.Add(node) && node.StartAddress >= mustBeAfter.StartAddress)
             {
                 // We found our meetpoint!
@@ -121,14 +190,49 @@ public class BinaryBranch : IControlFlowNode
             }
         }
 
-        throw new Exception("Failed to find meetpoint!");
+        return mustBeAfter;
+    }
+
+    /// <summary>
+    /// Helper function to insert a continue/break node into the graph.
+    /// </summary>
+    private static void InsertContinueOrBreak(IControlFlowNode node, Block block, List<Block> blocks)
+    {
+        // Remove branch instruction
+        block.Instructions.RemoveAt(block.Instructions.Count - 1);
+
+        // Reroute into break/continue node
+        IControlFlowNode.DisconnectSuccessor(block, 0);
+        if (block.Successors.Count == 0)
+        {
+            block.Successors.Add(node);
+            node.Predecessors.Add(block);
+
+            // Now, we want to connect to the following block.
+            // However, we may have some other structure there, so we need to follow the parent(s) of the block.
+            if (block.BlockIndex + 1 >= blocks.Count)
+                throw new Exception("Expected following block after break/continue");
+            IControlFlowNode following = blocks[block.BlockIndex + 1];
+            while (following.Parent is not null)
+                following = following.Parent;
+            node.Successors.Add(following);
+            following.Predecessors.Add(node);
+        }
+        else
+        {
+            // We already have a node after us - it's an unreachable node.
+            // Just insert this break/continue statement between this block and that node.
+            if (block.Successors.Count != 1 || !block.Successors[0].Unreachable)
+                throw new Exception("Expected unreachable block after break/continue");
+            IControlFlowNode.InsertSuccessor(block, 0, node);
+        }
     }
 
     /// <summary>
     /// Resolves continue statements that jump backwards, and break statements that exit the loop.
     /// These are trivial to find on a linear pass, without considering branches.
     /// </summary>
-    private static void ResolveBasicBreakContinue(List<Block> blocks, Dictionary<Block, Loop> surroundingLoops)
+    private static void ResolveBasicBreakContinue(List<Block> blocks, Dictionary<Block, Loop> surroundingLoops, List<IControlFlowNode> output)
     {
         foreach (Block block in blocks)
         {
@@ -151,48 +255,162 @@ public class BinaryBranch : IControlFlowNode
                     // Didn't detect either a trivial break or continue
                     continue;
                 }
+                output?.Add(node);
 
-                // Remove branch instruction
-                block.Instructions.RemoveAt(block.Instructions.Count - 1);
-
-                // Reroute into break/continue node
-                IControlFlowNode.DisconnectSuccessor(block, 0);
-                if (block.Successors.Count == 0)
-                {
-                    block.Successors.Add(node);
-                    node.Predecessors.Add(block);
-
-                    // Now, we want to connect to the following block.
-                    // However, we may have some other structure there, so we need to follow the parent(s) of the block.
-                    if (block.BlockIndex + 1 >= blocks.Count)
-                        throw new Exception("Expected following block after break/continue");
-                    IControlFlowNode following = blocks[block.BlockIndex + 1];
-                    while (following.Parent is not null)
-                        following = following.Parent;
-                    node.Successors.Add(following);
-                    following.Predecessors.Add(node);
-                }
-                else
-                {
-                    // We already have a node after us - it's an unreachable node.
-                    // Just insert this break/continue statement between this block and that node.
-                    if (block.Successors.Count != 1 || !block.Successors[0].Unreachable)
-                        throw new Exception("Expected unreachable block after break/continue");
-                    IControlFlowNode.InsertSuccessor(block, 0, node);
-                }
+                // Update control flow graph
+                InsertContinueOrBreak(node, block, blocks);
             }
         }
     }
 
-    public static List<BinaryBranch> FindBinaryBranches(List<Block> blocks, List<Loop> loops)
+    /// <summary>
+    /// Resolves any remaining break/continue statements; ones that require checking for 
+    /// branches going out of bounds of the if statement they're contained within.
+    /// </summary>
+    private static void ResolveOtherBreakContinue(BinaryBranch bb, List<Block> blocks, Dictionary<Block, Loop> surroundingLoops, List<IControlFlowNode> output)
+    {
+        int startIndex = (bb.Condition as Block).BlockIndex;
+        int endAddress = bb.Successors[0].StartAddress;
+        for (int i = startIndex + 1; i < blocks.Count && blocks[i].StartAddress < endAddress; i++)
+        {
+            Block block = blocks[i];
+            if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] &&
+                block.Successors.Count >= 1 && block.Successors[0].StartAddress >= endAddress)
+            {
+                surroundingLoops.TryGetValue(block, out Loop loop);
+
+                IControlFlowNode node;
+                if (loop is not null &&
+                    (block.Successors[0] is not Block ||
+                    (block.Successors[0] as Block).Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..]))
+                {
+                    // Detected continue (we're definitely *not* breaking out of a switch)
+                    node = new ContinueNode(block.EndAddress);
+
+                    // If enclosing loop is a while loop, it must actually be a for loop - otherwise we would
+                    // be branching to the top of the loop, which would have been detected by now.
+                    // TODO: In switch statement processing, while loop -> for loop conversion needs to happen too
+                    if (loop is WhileLoop whileLoop)
+                    {
+                        whileLoop.ForLoopIncrementor = block.Successors[0];
+                    }
+                }
+                else
+                {
+                    // Detected break (in switch statements specifically - we detected a PopDelete at destination).
+                    // Technically, this can still be a continue in certain situations, so we set a
+                    // flag for switch statements to verify this later.
+                    //
+                    // To be specific, this can be a continue if the last part of a for loop involves a return/exit,
+                    // and the for loop is contained inside of a repeat loop, OR if this is a continue inside of
+                    // a switch statement, which branches to a special block generated at the end of the switch.
+                    //
+                    // When processing switch statements, we check if this "break" branches to the end of the
+                    // enclosing switch statement. Otherwise, it must be a continue statement.
+                    node = new BreakNode(block.EndAddress, true);
+                    node.Children.AddRange(block.Successors);
+                }
+                output?.Add(node);
+
+                // Update control flow graph
+                InsertContinueOrBreak(node, block, blocks);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes any branches coming from inside the given BinaryBranch, and exiting into "after".
+    /// </summary>
+    private static void CleanupAfterPredecessors(BinaryBranch bb, IControlFlowNode after)
+    {
+        // All branches going into "after" from this branch should come from this branch *only*
+        for (int j = after.Predecessors.Count - 1; j >= 0; j--)
+        {
+            IControlFlowNode curr = after.Predecessors[j];
+
+            // Don't accidentally remove this BinaryBranch going into "after" itself.
+            if (curr == bb)
+            {
+                continue;
+            }
+
+            // Check that we're within the bounds of this BinaryBranch.
+            if (curr.StartAddress >= bb.StartAddress && curr.EndAddress <= bb.EndAddress)
+            {
+                // Here, we will additionally remove any "else" branch instructions.
+                if (bb.Else is not null && curr.EndAddress == bb.Else.StartAddress && curr is Block b)
+                {
+                    if (b.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
+                        throw new Exception("Expected branch to skip past else block");
+                    b.Instructions.RemoveAt(b.Instructions.Count - 1);
+                }
+
+                // Get rid of this connection to "after" from this internal node.
+                curr.Successors.RemoveAll(a => a == after);
+                after.Predecessors.RemoveAt(j);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Computes the largest possible address any given if statement can have its "after" node, or successor,
+    /// by constraining it based on previous branches and loops. Computes for each binary branch block.
+    /// </summary>
+    private static Dictionary<Block, int> ComputeBlockAfterLimits(List<Block> blocks, Dictionary<Block, Loop> surroundingLoops)
+    {
+        Dictionary<Block, int> blockToAfterLimit = new();
+
+        Stack<int> limitStack = new();
+        limitStack.Push(blocks[^1].EndAddress);
+
+        foreach (Block b in blocks)
+        {
+            // If we've passed the address of our smallest limit, remove it.
+            if (b.StartAddress >= limitStack.Peek())
+            {
+                limitStack.Pop();
+            }
+
+            // We only care about processing binary branches (e.g. if statements, switch cases).
+            if (b.Instructions is not [.., { Kind: IGMInstruction.Opcode.BranchFalse }] &&
+                b.Instructions is not [.., { Kind: IGMInstruction.Opcode.BranchTrue }]) // TODO: not sure if necessary, but may be for switch statements
+            {
+                continue;
+            }
+
+            // Compute the limit for this specific branch block.
+            // If the surrounding loop ends earlier, use that instead.
+            int thisLimit = limitStack.Peek();
+            if (surroundingLoops.TryGetValue(b, out Loop loop))
+            {
+                if (loop.EndAddress < thisLimit)
+                {
+                    thisLimit = loop.EndAddress;
+                }
+            }
+            blockToAfterLimit[b] = thisLimit;
+
+            // If we have a smaller limit in our jump, push that to the stack.
+            int newLimit = b.Successors[1].StartAddress;
+            if (newLimit < limitStack.Peek())
+            {
+                limitStack.Push(newLimit);
+            }
+        }
+
+        return blockToAfterLimit;
+    }
+
+    public static List<BinaryBranch> FindBinaryBranches(List<Block> blocks, List<Loop> loops, List<IControlFlowNode> breakContinueOutput = null)
     {
         List<BinaryBranch> res = new();
 
         Dictionary<Block, Loop> surroundingLoops = FindSurroundingLoops(blocks, loops);
+        Dictionary<Block, int> blockAfterLimits = ComputeBlockAfterLimits(blocks, surroundingLoops);
         HashSet<IControlFlowNode> visited = new();
 
         // Resolve continue statements that jump backwards
-        ResolveBasicBreakContinue(blocks, surroundingLoops);
+        ResolveBasicBreakContinue(blocks, surroundingLoops, breakContinueOutput);
 
         // Iterate over blocks in reverse, as the compiler generates them in the order we want
         for (int i = blocks.Count - 1; i >= 0; i--)
@@ -201,19 +419,23 @@ public class BinaryBranch : IControlFlowNode
             if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchFalse }])
             {
                 // Follow "jump" path first, marking off all visited blocks
-                VisitAll(block.Successors[1], visited);
+                VisitAll(block, block.Successors[1], visited, blockAfterLimits);
 
                 // Locate meetpoint, by following the non-jump path
-                IControlFlowNode after = FindMeetpoint(block.Successors[0], block.Successors[1], visited);
+                IControlFlowNode after = FindMeetpoint(block, block.Successors[0], block.Successors[1], visited, blockAfterLimits);
 
                 // Insert new node!
                 BinaryBranch bb = new(block.StartAddress, after.StartAddress);
                 bb.Condition = block;
                 bb.True = block.Successors[0];
                 bb.False = block.Successors[1];
-                if (bb.False != after)
-                    bb.Else = bb.False;
                 res.Add(bb);
+
+                // Assign else block if we can immediately detect it
+                if (bb.False != after)
+                {
+                    bb.Else = bb.False;
+                }
 
                 // Rewire graph
                 if (bb.True == after)
@@ -226,7 +448,7 @@ public class BinaryBranch : IControlFlowNode
                     // Disconnect start of "true" block from the condition
                     IControlFlowNode.DisconnectPredecessor(bb.True, 0);
                 }
-                if (bb.Else != null)
+                if (bb.Else is not null)
                 {
                     // Disconnect start of "else" block from the condition
                     IControlFlowNode.DisconnectPredecessor(bb.Else, 0);
@@ -271,26 +493,24 @@ public class BinaryBranch : IControlFlowNode
                 }
                 bb.Successors.Add(after);
 
-                // All branches going into "after" from this branch should come from this branch
-                for (int j = after.Predecessors.Count - 1; j >= 0; j--)
-                {
-                    IControlFlowNode curr = after.Predecessors[j];
-                    if (curr.StartAddress >= bb.StartAddress && curr.EndAddress <= bb.EndAddress)
-                    {
-                        curr.Successors.RemoveAll(a => a == after);
-                        after.Predecessors.RemoveAt(j);
-                    }
-                }
+                // Reroute all predecessors to "after" to come from this branch
+                CleanupAfterPredecessors(bb, after);
                 after.Predecessors.Add(bb);
 
                 // Update parent status of nodes
                 block.Parent = bb;
                 bb.True.Parent = bb;
-                if (bb.Else != null)
+                if (bb.Else is not null)
+                {
                     bb.Else.Parent = bb;
+                }
 
-                // TODO: Remove branch instructions from else branches
-                // Also will want to add test assertions to existing tests for this, and this will likely affect loops too
+                // Resolve any remaining break/continue statements inside of this loop.
+                // This is primarily a problem in "for" loops, "do...until" loops, and "repeat" loops,
+                // where continue jumps to the bottom of the loop rather than the top.
+                // It's also a problem with using break/continue inside of switch statements.
+                ResolveOtherBreakContinue(bb, blocks, surroundingLoops, breakContinueOutput);
+                CleanupAfterPredecessors(bb, after);
             }
         }
 

@@ -111,6 +111,8 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Empty(b.True.Predecessors);
         Assert.Empty(b.Else.Predecessors);
 
+        Assert.Empty(blocks[1].Instructions);
+
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
@@ -155,6 +157,8 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal(blocks[2], b.Else);
         Assert.Empty(b.True.Predecessors);
         Assert.Empty(b.Else.Predecessors);
+
+        Assert.Equal(2, blocks[1].Instructions.Count);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -402,6 +406,10 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Empty(b2.True.Predecessors);
         Assert.Empty(b2.Else.Predecessors);
 
+        Assert.Equal(2, blocks[2].Instructions.Count);
+        Assert.Empty(blocks[4].Instructions);
+        Assert.Equal(2, blocks[6].Instructions.Count);
+
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
@@ -454,6 +462,8 @@ public class BinaryBranch_FindBinaryBranches
         Assert.IsType<EmptyNode>(b1.Else);
         Assert.Empty(b1.True.Predecessors);
         Assert.Empty(b1.Else.Predecessors);
+
+        Assert.Empty(blocks[2].Instructions);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -531,6 +541,10 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Empty(b2.True.Predecessors);
         Assert.Empty(b2.Else.Predecessors);
 
+        Assert.Empty(blocks[2].Instructions);
+        Assert.Empty(blocks[3].Instructions);
+        Assert.Empty(blocks[5].Instructions);
+
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
@@ -584,6 +598,8 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal(blocks[3], b1.False);
         Assert.Null(b1.Else);
         Assert.Empty(b1.True.Predecessors);
+
+        Assert.Empty(blocks[1].Instructions);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -642,6 +658,8 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal(blocks[3], b1.False);
         Assert.Null(b1.Else);
         Assert.Empty(b1.True.Predecessors);
+
+        Assert.Empty(blocks[3].Instructions);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);

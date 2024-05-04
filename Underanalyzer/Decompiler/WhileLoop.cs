@@ -9,7 +9,7 @@ namespace Underanalyzer.Decompiler;
 /// </summary>
 public class WhileLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [null, null, null, null];
+    public override List<IControlFlowNode> Children { get; } = [null, null, null, null, null];
 
     /// <summary>
     /// The top loop point of the while loop. This is where the loop condition begins to be evaluated.
@@ -44,11 +44,12 @@ public class WhileLoop : Loop
     public IControlFlowNode Body { get => Children[3]; private set => Children[3] = value; }
 
     /// <summary>
-    /// If true, then it was detected that this while loop must be written as a for loop.
+    /// If not null, then it was detected that this while loop must be written as a for loop.
     /// This can occur when "continue" statements are used within the loop, which otherwise
     /// could not be written using normal if/else statements.
+    /// This points to the start of the "incrementing" code of the for loop.
     /// </summary>
-    public bool IsForLoopNecessary { get; set; }
+    public IControlFlowNode ForLoopIncrementor { get => Children[4]; set => Children[4] = value; }
 
     public WhileLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
         : base(startAddress, endAddress)
