@@ -666,4 +666,135 @@ public class BinaryBranch_FindBinaryBranches
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
     }
+
+    [Fact]
+    public void TestIfExit()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [2]
+
+            :[1]
+            exit.i
+
+            :[2]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+
+        Assert.Single(branches);
+        BinaryBranch b0 = branches[0];
+
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[2]], b0.Successors);
+        Assert.Equal(blocks[0], b0.Condition);
+        Assert.Equal(blocks[1], b0.True);
+        Assert.Empty(blocks[1].Successors);
+        Assert.Equal(blocks[2], b0.False);
+        Assert.Null(b0.Else);
+        Assert.Empty(b0.True.Predecessors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+    }
+
+    [Fact]
+    public void TestIfExitUnreachable()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [3]
+
+            :[1]
+            exit.i
+
+            :[2]
+            exit.i
+
+            :[3]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+
+        Assert.Single(branches);
+        BinaryBranch b0 = branches[0];
+
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[3]], b0.Successors);
+        Assert.Equal(blocks[0], b0.Condition);
+        Assert.Equal(blocks[1], b0.True);
+        Assert.Equal([blocks[2]], blocks[1].Successors);
+        Assert.Empty(blocks[2].Successors);
+        Assert.Equal(blocks[3], b0.False);
+        Assert.Null(b0.Else);
+        Assert.Empty(b0.True.Predecessors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+    }
+
+    [Fact]
+    public void TestIfElseExit()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [3]
+
+            :[1]
+            exit.i
+
+            :[2]
+            b [4]
+
+            :[3]
+            exit.i
+
+            :[4]
+            """
+        );
+        List<Block> blocks = Block.FindBlocks(code);
+        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
+        List<Loop> loops = Loop.FindLoops(blocks);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+
+        Assert.Single(branches);
+        BinaryBranch b0 = branches[0];
+
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[4]], b0.Successors);
+        Assert.Equal(blocks[0], b0.Condition);
+        Assert.Equal(blocks[1], b0.True);
+        Assert.Equal([blocks[2]], blocks[1].Successors);
+        Assert.Empty(blocks[2].Successors);
+        Assert.Equal(blocks[3], b0.Else);
+        Assert.Equal(blocks[3], b0.False);
+        Assert.Empty(b0.True.Predecessors);
+        Assert.Empty(b0.Else.Predecessors);
+
+        Assert.Empty(blocks[2].Instructions);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+    }
 }
