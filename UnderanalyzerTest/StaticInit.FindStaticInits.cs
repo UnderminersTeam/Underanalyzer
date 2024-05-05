@@ -1,5 +1,6 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;
@@ -30,9 +31,10 @@ public class StaticInit_FindStaticInits
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<StaticInit> sis = StaticInit.FindStaticInits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<StaticInit> sis = StaticInit.FindStaticInits(ctx);
 
         Assert.Single(sis);
         Assert.Equal([blocks[1]], sis[0].Predecessors);
@@ -92,9 +94,10 @@ public class StaticInit_FindStaticInits
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<StaticInit> sis = StaticInit.FindStaticInits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<StaticInit> sis = StaticInit.FindStaticInits(ctx);
 
         Assert.Single(sis);
         Assert.Equal([blocks[1]], sis[0].Predecessors);

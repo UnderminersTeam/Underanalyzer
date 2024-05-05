@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
-public class WithLoop : Loop
+internal class WithLoop : Loop
 {
     public override List<IControlFlowNode> Children { get; } = [null, null, null, null];
 
@@ -14,8 +14,8 @@ public class WithLoop : Loop
 
     public IControlFlowNode BreakBlock { get => Children[3]; private set => Children[3] = value; }
 
-    public WithLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, 
-                    IControlFlowNode after, IControlFlowNode breakBlock) 
+    public WithLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail,
+                    IControlFlowNode after, IControlFlowNode breakBlock)
         : base(startAddress, endAddress)
     {
         Head = head;

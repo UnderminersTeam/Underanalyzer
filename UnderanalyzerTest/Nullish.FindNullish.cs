@@ -1,5 +1,6 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;
@@ -23,9 +24,10 @@ public class Nullish_FindNullish
             :[2]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Nullish> nulls = Nullish.FindNullish(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Nullish> nulls = Nullish.FindNullish(ctx);
 
         Assert.Single(nulls);
         Assert.Equal(Nullish.NullishType.Expression, nulls[0].NullishKind);
@@ -66,9 +68,10 @@ public class Nullish_FindNullish
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Nullish> nulls = Nullish.FindNullish(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Nullish> nulls = Nullish.FindNullish(ctx);
 
         Assert.Single(nulls);
         Assert.Equal(Nullish.NullishType.Assignment, nulls[0].NullishKind);
@@ -114,9 +117,10 @@ public class Nullish_FindNullish
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Nullish> nulls = Nullish.FindNullish(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Nullish> nulls = Nullish.FindNullish(ctx);
 
         Assert.Equal(2, nulls.Count);
         Assert.Equal(Nullish.NullishType.Expression, nulls[0].NullishKind);
@@ -177,9 +181,10 @@ public class Nullish_FindNullish
             :[5]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Nullish> nulls = Nullish.FindNullish(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Nullish> nulls = Nullish.FindNullish(ctx);
 
         Assert.Equal(2, nulls.Count);
         Assert.Equal(Nullish.NullishType.Assignment, nulls[0].NullishKind);

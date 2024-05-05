@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a static initialization block for a function.
 /// </summary>
-public class StaticInit : IControlFlowNode
+internal class StaticInit : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -39,15 +39,17 @@ public class StaticInit : IControlFlowNode
     /// <summary>
     /// Finds all static initialization blocks present in a list of blocks, and updates the control flow graph accordingly.
     /// </summary>
-    public static List<StaticInit> FindStaticInits(List<Block> blocks)
+    public static List<StaticInit> FindStaticInits(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+
         List<StaticInit> res = new();
 
         foreach (var block in blocks)
         {
             // Check for pattern
-            if (block.Instructions is [.., 
-                { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.HasStaticInitialized }, 
+            if (block.Instructions is [..,
+                { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.HasStaticInitialized },
                 { Kind: IGMInstruction.Opcode.BranchTrue }])
             {
                 StaticInit si = new(block.EndAddress, block.Successors[1].StartAddress, block.Successors[0]);
@@ -77,6 +79,7 @@ public class StaticInit : IControlFlowNode
             }
         }
 
+        ctx.StaticInitNodes = res;
         return res;
     }
 }

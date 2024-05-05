@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a break statement in the control flow graph.
 /// </summary>
-public class BreakNode(int address, bool mayBeContinue = false) : IControlFlowNode
+internal class BreakNode(int address, bool mayBeContinue = false) : IControlFlowNode
 {
     public int StartAddress { get; set; } = address;
 

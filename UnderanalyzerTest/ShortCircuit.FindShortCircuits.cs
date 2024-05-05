@@ -1,5 +1,6 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;
@@ -27,9 +28,10 @@ public class ShortCircuit_FindShortCircuits
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
         Assert.Equal(ShortCircuit.LogicType.And, scs[0].LogicKind);
@@ -73,9 +75,10 @@ public class ShortCircuit_FindShortCircuits
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
         Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
@@ -124,9 +127,10 @@ public class ShortCircuit_FindShortCircuits
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
         Assert.Equal(ShortCircuit.LogicType.And, scs[0].LogicKind);
@@ -187,9 +191,10 @@ public class ShortCircuit_FindShortCircuits
             :[7]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
         Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
@@ -255,9 +260,10 @@ public class ShortCircuit_FindShortCircuits
             :[7]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
         Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
@@ -328,9 +334,10 @@ public class ShortCircuit_FindShortCircuits
             :[7]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
         Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
@@ -423,9 +430,10 @@ public class ShortCircuit_FindShortCircuits
             :[13]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(4, scs.Count);
         Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);

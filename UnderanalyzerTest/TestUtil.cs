@@ -1,4 +1,5 @@
 ﻿using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;

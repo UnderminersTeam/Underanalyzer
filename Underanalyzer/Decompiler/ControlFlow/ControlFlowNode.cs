@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
-public interface IControlFlowNode
+internal interface IControlFlowNode
 {
     /// <summary>
     /// The address of the first instruction from the original bytecode, where this node begins.

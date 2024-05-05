@@ -4,12 +4,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Underanalyzer.Mock;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a basic block of VM instructions.
 /// </summary>
-public class Block : IControlFlowNode
+internal class Block : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -74,14 +74,14 @@ public class Block : IControlFlowNode
                         // If too close to end, bail
                         if (i >= code.InstructionCount - 1)
                             break;
-                        
+
                         // Check instructions
                         IGMInstruction finallyInstr = code.GetInstruction(i - 4);
                         IGMInstruction catchInstr = code.GetInstruction(i - 2);
                         IGMInstruction popInstr = code.GetInstruction(i + 1);
                         if (finallyInstr is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
-                            catchInstr   is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
-                            popInstr     is not { Kind: IGMInstruction.Opcode.PopDelete })
+                            catchInstr is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
+                            popInstr is not { Kind: IGMInstruction.Opcode.PopDelete })
                         {
                             throw new Exception("Expected Push with type Int32 before try hook");
                         }
@@ -108,8 +108,9 @@ public class Block : IControlFlowNode
     /// <summary>
     /// Finds all blocks from a given code entry, generating a basic control flow graph.
     /// </summary>
-    public static List<Block> FindBlocks(IGMCode code)
+    public static List<Block> FindBlocks(DecompileContext ctx)
     {
+        IGMCode code = ctx.Code;
         HashSet<int> addresses = FindBlockAddresses(code);
 
         Dictionary<int, Block> blocksByAddress = new();
@@ -245,7 +246,7 @@ public class Block : IControlFlowNode
                     break;
             }
         }
-        
+
         // Compute blocks that are unreachable
         for (int i = 1; i < blocks.Count; i++)
         {
@@ -257,6 +258,7 @@ public class Block : IControlFlowNode
             }
         }
 
+        ctx.Blocks = blocks;
         return blocks;
     }
 

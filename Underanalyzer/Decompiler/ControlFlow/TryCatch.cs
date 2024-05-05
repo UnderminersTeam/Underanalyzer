@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a try..catch statement in GML code.
 /// Notably, this does NOT include the "finally" block, which is detected later on in the process.
 /// </summary>
-public class TryCatch : IControlFlowNode
+internal class TryCatch : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -52,8 +52,10 @@ public class TryCatch : IControlFlowNode
     /// <summary>
     /// Finds all try/catch statements present in a list of blocks, and updates the control flow graph accordingly.
     /// </summary>
-    public static List<TryCatch> FindTryCatch(List<Block> blocks)
+    public static List<TryCatch> FindTryCatch(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+
         List<TryCatch> res = new();
 
         foreach (var block in blocks)
@@ -67,7 +69,7 @@ public class TryCatch : IControlFlowNode
                 {
                     // Get components of our try..catch statement
                     IControlFlowNode tryNode = block.Successors[0];
-                    IControlFlowNode catchNode = (block.Successors.Count >= 3) ? block.Successors[2] : null;
+                    IControlFlowNode catchNode = block.Successors.Count >= 3 ? block.Successors[2] : null;
                     IControlFlowNode endNode = block.Successors[1];
 
                     TryCatch tc = new(block.StartAddress, endNode.StartAddress, tryNode, catchNode);
@@ -97,9 +99,9 @@ public class TryCatch : IControlFlowNode
 
                         // Remove instructions from the end of the catch block
                         Block catchEndBlock = blocks[(endNode as Block).BlockIndex - 1];
-                        if (catchEndBlock.Instructions is not 
+                        if (catchEndBlock.Instructions is not
                             [.., { Kind: IGMInstruction.Opcode.Call }, { Kind: IGMInstruction.Opcode.PopDelete },
-                             { Kind: IGMInstruction.Opcode.Branch }])
+                            { Kind: IGMInstruction.Opcode.Branch }])
                         {
                             throw new Exception("Expected finish catch and Branch at end of catch block");
                         }
@@ -151,7 +153,7 @@ public class TryCatch : IControlFlowNode
             if (block.Instructions.Count >= 3)
             {
                 IGMInstruction call = block.Instructions[^3];
-                if (call.Kind == IGMInstruction.Opcode.Call && 
+                if (call.Kind == IGMInstruction.Opcode.Call &&
                     call.Function.Name?.Content == VMConstants.FinishFinallyFunction)
                 {
                     // Remove redundant branch instruction for later operation.

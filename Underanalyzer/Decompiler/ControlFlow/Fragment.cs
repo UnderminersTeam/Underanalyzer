@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a single VM code fragment, used for single function contexts.
 /// </summary>
-public class Fragment : IControlFlowNode
+internal class Fragment : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -36,8 +36,11 @@ public class Fragment : IControlFlowNode
     /// Finds code fragments from a code entry and its list of blocks.
     /// Note that this will modify the control flow and instructions of the existing blocks.
     /// </summary>
-    public static List<Fragment> FindFragments(IGMCode code, List<Block> blocks)
+    public static List<Fragment> FindFragments(DecompileContext ctx)
     {
+        IGMCode code = ctx.Code;
+        List<Block> blocks = ctx.Blocks;
+
         if (code.Parent is not null)
             throw new ArgumentException("Expected code entry to be root level.", nameof(code));
 
@@ -125,6 +128,7 @@ public class Fragment : IControlFlowNode
         if (stack.Count > 0)
             throw new Exception("Failed to close all fragments.");
 
+        ctx.FragmentNodes = fragments;
         return fragments;
     }
 

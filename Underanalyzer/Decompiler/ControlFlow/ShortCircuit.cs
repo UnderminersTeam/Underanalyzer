@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
-public class ShortCircuit : IControlFlowNode
+internal class ShortCircuit : IControlFlowNode
 {
     public enum LogicType
     {
@@ -37,21 +37,36 @@ public class ShortCircuit : IControlFlowNode
     /// <summary>
     /// Finds all short-circuit operations contained within a list of blocks, and updates the control flow graph accordingly.
     /// </summary>
-    public static List<ShortCircuit> FindShortCircuits(List<Block> blocks, bool oldBytecodeVersion = false)
+    public static List<ShortCircuit> FindShortCircuits(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+        bool oldBytecodeVersion = ctx.OlderThanBytecode15;
+
         List<ShortCircuit> shortCircuits = new();
 
         // Identify and restructure short circuits
         foreach (var block in blocks)
         {
             // Match push.e (or on old versions, pushi.e) instruction, standalone in a block
-            if (( oldBytecodeVersion &&  
-                    block is { Instructions: [{ Kind: IGMInstruction.Opcode.PushImmediate, 
-                                                Type1: IGMInstruction.DataType.Int16 }] })
+            if (oldBytecodeVersion &&
+                    block is
+                    {
+                        Instructions: [
+                        {
+                            Kind: IGMInstruction.Opcode.PushImmediate,
+                            Type1: IGMInstruction.DataType.Int16
+                        }]
+                    }
                     ||
-                (!oldBytecodeVersion && 
-                    block is { Instructions: [{ Kind: IGMInstruction.Opcode.Push,
-                                                Type1: IGMInstruction.DataType.Int16 }] }))
+                !oldBytecodeVersion &&
+                    block is
+                    {
+                        Instructions: [
+                        {
+                            Kind: IGMInstruction.Opcode.Push,
+                            Type1: IGMInstruction.DataType.Int16
+                        }]
+                    })
             {
                 // Add child nodes
                 List<IControlFlowNode> children = [block.Predecessors[0]];
@@ -62,7 +77,7 @@ public class ShortCircuit : IControlFlowNode
                 }
 
                 // Create actual node
-                LogicType logicKind = (block.Instructions[0].ValueShort == 0) ? LogicType.And : LogicType.Or;
+                LogicType logicKind = block.Instructions[0].ValueShort == 0 ? LogicType.And : LogicType.Or;
                 ShortCircuit sc = new(children[0].StartAddress, block.EndAddress, logicKind, children);
                 shortCircuits.Add(sc);
 
@@ -94,6 +109,7 @@ public class ShortCircuit : IControlFlowNode
             }
         }
 
+        ctx.ShortCircuitNodes = shortCircuits;
         return shortCircuits;
     }
 

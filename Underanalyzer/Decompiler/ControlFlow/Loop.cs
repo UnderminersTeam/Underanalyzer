@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a loop (jump/branch backwards) node in a control flow graph.
 /// </summary>
-public abstract class Loop : IControlFlowNode
+internal abstract class Loop : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -38,8 +38,10 @@ public abstract class Loop : IControlFlowNode
     /// <summary>
     /// Finds all loops present in a list of blocks, and updates the control flow graph with special nodes for loops.
     /// </summary>
-    public static List<Loop> FindLoops(List<Block> blocks)
+    public static List<Loop> FindLoops(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+
         List<Loop> loops = new();
         HashSet<int> whileLoopsFound = new();
 
@@ -95,7 +97,7 @@ public abstract class Loop : IControlFlowNode
                         {
                             Block potentialBreakBlock = blocks[afterBlock.BlockIndex + 1];
                             if (potentialBreakBlock.EndAddress == afterBlock.Successors[0].StartAddress &&
-                                potentialBreakBlock.Instructions is 
+                                potentialBreakBlock.Instructions is
                                     [{ Kind: IGMInstruction.Opcode.PopWithContext, PopWithContextExit: true }])
                             {
                                 breakBlock = potentialBreakBlock;
@@ -113,13 +115,14 @@ public abstract class Loop : IControlFlowNode
         {
             if (a.StartAddress < b.StartAddress)
                 return -1;
-            if (a.StartAddress > b.StartAddress) 
+            if (a.StartAddress > b.StartAddress)
                 return 1;
             return b.EndAddress - a.EndAddress;
         });
         foreach (var loop in loops)
             loop.UpdateFlowGraph();
 
+        ctx.LoopNodes = loops;
         return loops;
     }
 }

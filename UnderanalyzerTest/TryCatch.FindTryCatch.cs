@@ -1,7 +1,7 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace UnderanalyzerTest;
 
@@ -36,9 +36,10 @@ public class TryCatch_FindTryCatch
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<TryCatch> tryCatch = TryCatch.FindTryCatch(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<TryCatch> tryCatch = TryCatch.FindTryCatch(ctx);
 
         Assert.Single(tryCatch);
         TryCatch tc = tryCatch[0];
@@ -99,9 +100,10 @@ public class TryCatch_FindTryCatch
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<TryCatch> tryCatch = TryCatch.FindTryCatch(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<TryCatch> tryCatch = TryCatch.FindTryCatch(ctx);
 
         Assert.Single(tryCatch);
         TryCatch tc = tryCatch[0];
@@ -209,9 +211,10 @@ public class TryCatch_FindTryCatch
             :[13]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<TryCatch> tryCatch = TryCatch.FindTryCatch(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<TryCatch> tryCatch = TryCatch.FindTryCatch(ctx);
 
         Assert.Equal(14, blocks.Count);
         Assert.Equal(3, tryCatch.Count);

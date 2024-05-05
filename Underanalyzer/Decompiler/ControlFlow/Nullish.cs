@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using static Underanalyzer.Decompiler.ShortCircuit;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
-public class Nullish : IControlFlowNode
+internal class Nullish : IControlFlowNode
 {
     public enum NullishType
     {
@@ -47,17 +46,19 @@ public class Nullish : IControlFlowNode
     /// <summary>
     /// Finds all nullish operations present in a list of blocks, and updates the control flow graph accordingly.
     /// </summary>
-    public static List<Nullish> FindNullish(List<Block> blocks)
+    public static List<Nullish> FindNullish(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+
         List<Nullish> res = new();
 
         foreach (var block in blocks)
         {
             // Search for pattern
-            if (block.Instructions is 
-                [.., 
-                    { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.IsNullishValue },
-                    { Kind: IGMInstruction.Opcode.BranchFalse }
+            if (block.Instructions is
+                [..,
+                { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.IsNullishValue },
+                { Kind: IGMInstruction.Opcode.BranchFalse }
                 ])
             {
                 Block ifNullishBlock = block.Successors[0] as Block;
@@ -105,6 +106,7 @@ public class Nullish : IControlFlowNode
             }
         }
 
+        ctx.NullishNodes = res;
         return res;
     }
 }

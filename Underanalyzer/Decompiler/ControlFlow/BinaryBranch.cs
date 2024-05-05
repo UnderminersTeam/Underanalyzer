@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
 /// Represents a general binary branch operation. Specifically, only either an if statement or a ternary/conditional operator.
 /// </summary>
-public class BinaryBranch : IControlFlowNode
+internal class BinaryBranch : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 
@@ -215,10 +211,9 @@ public class BinaryBranch : IControlFlowNode
     /// These are relatively trivial to find on a linear pass, especially with "after limits."
     /// </summary>
     private static void ResolveExternalJumps(
-        List<Block> blocks, Dictionary<Block, Loop> surroundingLoops, 
-        Dictionary<Block, int> blockAfterLimits, 
-        HashSet<Block> switchEndBlocks, HashSet<Block> switchContinueBlocks,
-        List<IControlFlowNode> output)
+        List<Block> blocks, Dictionary<Block, Loop> surroundingLoops,
+        Dictionary<Block, int> blockAfterLimits,
+        HashSet<Block> switchEndBlocks, HashSet<Block> switchContinueBlocks)
     {
         foreach (Block block in blocks)
         {
@@ -253,7 +248,7 @@ public class BinaryBranch : IControlFlowNode
                         {
                             // This is a continue from inside of a switch
                             node = new ContinueNode(block.EndAddress);
-                        }    
+                        }
                     }
 
                     if (node == null)
@@ -301,7 +296,6 @@ public class BinaryBranch : IControlFlowNode
                         }
                     }
                 }
-                output?.Add(node);
 
                 // Update control flow graph
                 InsertContinueOrBreak(node, block, blocks);
@@ -359,7 +353,7 @@ public class BinaryBranch : IControlFlowNode
         }
     }
 
-    private struct LimitEntry(int limit, bool fromBinary)
+    private readonly struct LimitEntry(int limit, bool fromBinary)
     {
         public int Limit { get; } = limit;
         public bool FromBinary { get; } = fromBinary;
@@ -499,7 +493,7 @@ public class BinaryBranch : IControlFlowNode
                     earliestPredecessor = block.Predecessors[j];
                 }
             }
-            if (earliestPredecessor is not Block predBlock || 
+            if (earliestPredecessor is not Block predBlock ||
                 predBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
             {
                 continue;
@@ -537,7 +531,7 @@ public class BinaryBranch : IControlFlowNode
                 continue;
             }
             Block previousBlock = blocks[block.BlockIndex - 1];
-            if (previousBlock.Instructions is not 
+            if (previousBlock.Instructions is not
                 [{ Kind: IGMInstruction.Opcode.PopDelete }, { Kind: IGMInstruction.Opcode.Branch }])
             {
                 continue;
@@ -563,8 +557,11 @@ public class BinaryBranch : IControlFlowNode
         }
     }
 
-    public static List<BinaryBranch> FindBinaryBranches(List<Block> blocks, List<Loop> loops, List<IControlFlowNode> breakContinueOutput = null)
+    public static List<BinaryBranch> FindBinaryBranches(DecompileContext ctx)
     {
+        List<Block> blocks = ctx.Blocks;
+        List<Loop> loops = ctx.LoopNodes;
+
         List<BinaryBranch> res = new();
 
         Dictionary<Block, Loop> surroundingLoops = FindSurroundingLoops(blocks, loops);
@@ -575,7 +572,7 @@ public class BinaryBranch : IControlFlowNode
         FindAllSwitchEnds(blocks, out HashSet<Block> switchEndBlocks, out HashSet<Block> switchContinueBlocks);
 
         // Resolve all continue/break statements
-        ResolveExternalJumps(blocks, surroundingLoops, blockAfterLimits, switchEndBlocks, switchContinueBlocks, breakContinueOutput);
+        ResolveExternalJumps(blocks, surroundingLoops, blockAfterLimits, switchEndBlocks, switchContinueBlocks);
 
         // Iterate over blocks in reverse, as the compiler generates them in the order we want
         for (int i = blocks.Count - 1; i >= 0; i--)
@@ -678,6 +675,7 @@ public class BinaryBranch : IControlFlowNode
         // Sort in order from start to finish
         res.Reverse();
 
+        ctx.BinaryBranchNodes = res;
         return res;
     }
 }

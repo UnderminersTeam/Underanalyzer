@@ -1,5 +1,6 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 using static System.Reflection.Metadata.BlobBuilder;
 
@@ -15,9 +16,10 @@ public class Loop_FindLoops
             pushi.e 123
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Empty(loops);
 
@@ -47,9 +49,10 @@ public class Loop_FindLoops
             :[end]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WhileLoop>(loops[0]);
@@ -106,9 +109,10 @@ public class Loop_FindLoops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WhileLoop>(loops[0]);
@@ -168,9 +172,10 @@ public class Loop_FindLoops
             :[end]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<WhileLoop>(loops[0]);
@@ -230,9 +235,10 @@ public class Loop_FindLoops
             :[end]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<WhileLoop>(loops[0]);
@@ -277,9 +283,10 @@ public class Loop_FindLoops
             bf [0]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -330,9 +337,10 @@ public class Loop_FindLoops
             :[5]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -377,9 +385,10 @@ public class Loop_FindLoops
             bf [0]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -435,9 +444,10 @@ public class Loop_FindLoops
             bf [0]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -484,9 +494,10 @@ public class Loop_FindLoops
             bf [1]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -537,9 +548,10 @@ public class Loop_FindLoops
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<WhileLoop>(loops[0]);
@@ -593,9 +605,10 @@ public class Loop_FindLoops
             bf [0]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<DoUntilLoop>(loops[0]);
@@ -651,9 +664,10 @@ public class Loop_FindLoops
             popz.i
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<RepeatLoop>(loops[0]);
@@ -715,9 +729,10 @@ public class Loop_FindLoops
             popz.i
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<RepeatLoop>(loops[0]);
@@ -780,9 +795,10 @@ public class Loop_FindLoops
             popz.i
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<RepeatLoop>(loops[0]);
@@ -829,9 +845,10 @@ public class Loop_FindLoops
             popenv [1]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WithLoop>(loops[0]);
@@ -868,9 +885,10 @@ public class Loop_FindLoops
             popenv [1]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WithLoop>(loops[0]);
@@ -919,9 +937,10 @@ public class Loop_FindLoops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WithLoop>(loops[0]);
@@ -981,9 +1000,10 @@ public class Loop_FindLoops
             :[8]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Single(loops);
         Assert.IsType<WithLoop>(loops[0]);
@@ -1033,9 +1053,10 @@ public class Loop_FindLoops
             :[5]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<WithLoop>(loops[0]);
@@ -1103,9 +1124,10 @@ public class Loop_FindLoops
             :[10]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
 
         Assert.Equal(2, loops.Count);
         Assert.IsType<WithLoop>(loops[0]);

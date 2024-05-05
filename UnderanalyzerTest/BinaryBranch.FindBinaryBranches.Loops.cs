@@ -1,5 +1,6 @@
 ﻿using Underanalyzer;
 using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;
@@ -36,10 +37,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[5]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -95,10 +97,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[3]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -153,10 +156,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -214,10 +218,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -287,10 +292,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -357,10 +363,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -442,10 +449,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[8]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -514,10 +522,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[4]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -585,10 +594,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -655,10 +665,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop = (WhileLoop)loops[0];
@@ -740,10 +751,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[8]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -817,10 +829,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[5]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -898,10 +911,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[6]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -984,10 +998,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[7]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -1074,10 +1089,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[8]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop0 = (WhileLoop)loops[0];
@@ -1175,10 +1191,11 @@ public class BinaryBranch_FindBinaryBranches_Loops
             :[8]
             """
         );
-        List<Block> blocks = Block.FindBlocks(code);
-        List<Fragment> fragments = Fragment.FindFragments(code, blocks);
-        List<Loop> loops = Loop.FindLoops(blocks);
-        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(blocks, loops);
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
         WhileLoop loop0 = (WhileLoop)loops[0];

@@ -5,4 +5,10 @@
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>UnderanalyzerTest</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

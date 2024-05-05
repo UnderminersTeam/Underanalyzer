@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 
-namespace Underanalyzer.Decompiler;
+namespace Underanalyzer.Decompiler.ControlFlow;
 
 /// <summary>
-/// Represents a continue statement in the control flow graph.
+/// Represents an empty node in the control flow graph.
+/// This is generally used for reshaping control flow to make later analysis easier.
 /// </summary>
-public class ContinueNode(int address) : IControlFlowNode
+internal class EmptyNode(int address) : IControlFlowNode
 {
     public int StartAddress { get; set; } = address;
 
@@ -23,6 +24,6 @@ public class ContinueNode(int address) : IControlFlowNode
 
     public override string ToString()
     {
-        return $"{nameof(ContinueNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+        return $"{nameof(EmptyNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 }
