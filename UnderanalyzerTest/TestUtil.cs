@@ -1,4 +1,5 @@
-﻿using Underanalyzer.Decompiler;
+﻿using Underanalyzer;
+using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
 
@@ -34,6 +35,31 @@ internal static class TestUtil
             if (node.Parent is not null)
             {
                 Assert.Contains(node, node.Parent.Children);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Throws an exception if there's any detected continue/break statements that have yet to be
+    /// processed. This indicates continue/break detection and/or processing is broken.
+    /// </summary>
+    public static void EnsureNoRemainingJumps(DecompileContext ctx)
+    {
+        List<Block> blocks = ctx.Blocks;
+        List<BinaryBranch> branches = ctx.BinaryBranchNodes;
+
+        foreach (BinaryBranch bb in branches)
+        {
+            int startIndex = ((Block)bb.Condition).BlockIndex;
+            int endAddress = bb.Successors[0].StartAddress;
+            for (int i = startIndex + 1; i < blocks.Count && blocks[i].StartAddress < endAddress; i++)
+            {
+                Block block = blocks[i];
+                if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] &&
+                    block.Successors.Count >= 1 && block.Successors[0].StartAddress >= endAddress)
+                {
+                    throw new Exception("Found unprocessed break/continue");
+                }
             }
         }
     }

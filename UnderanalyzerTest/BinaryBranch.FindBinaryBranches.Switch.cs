@@ -47,6 +47,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -104,6 +105,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -168,6 +170,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -247,6 +250,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -327,6 +331,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -441,6 +446,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -483,6 +489,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 
     [Fact]
@@ -545,5 +552,6 @@ public class BinaryBranch_FindBinaryBranches_Switch
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
         TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
     }
 }

@@ -284,21 +284,6 @@ internal class BinaryBranch : IControlFlowNode
         }
     }
 
-    // TODO: Remove this once all tests implemented; this is to verify this solution actually works (by throwing an error early)
-    private static void ErrorCheckBreakContinue(BinaryBranch bb, List<Block> blocks)
-    {
-        int startIndex = (bb.Condition as Block).BlockIndex;
-        int endAddress = bb.Successors[0].StartAddress;
-        for (int i = startIndex + 1; i < blocks.Count && blocks[i].StartAddress < endAddress; i++)
-        {
-            Block block = blocks[i];
-            if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] &&
-                block.Successors.Count >= 1 && block.Successors[0].StartAddress >= endAddress)
-            {
-                throw new Exception("Found late break/continue");
-            }
-        }
-    }
 
     /// <summary>
     /// Removes any branches coming from inside the given BinaryBranch, and exiting into "after".
@@ -660,9 +645,6 @@ internal class BinaryBranch : IControlFlowNode
                 {
                     bb.Else.Parent = bb;
                 }
-
-                // TODO: remove once all tests implemented
-                ErrorCheckBreakContinue(bb, blocks);
             }
         }
 
