@@ -51,7 +51,7 @@ internal static class TestUtil
         foreach (BinaryBranch bb in branches)
         {
             int startIndex = ((Block)bb.Condition).BlockIndex;
-            int endAddress = bb.Successors[0].StartAddress;
+            int endAddress = bb.EndAddress;
             for (int i = startIndex + 1; i < blocks.Count && blocks[i].StartAddress < endAddress; i++)
             {
                 Block block = blocks[i];

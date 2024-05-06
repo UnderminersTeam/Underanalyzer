@@ -1312,4 +1312,106 @@ public class BinaryBranch_FindBinaryBranches_Loops
         TestUtil.VerifyFlowDirections(branches);
         TestUtil.EnsureNoRemainingJumps(ctx);
     }
+
+    [Fact]
+    public void TestForNestedIfElseContinue2()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            # for (;;)
+            # {
+            #     if (a)
+            #     {
+            #         if (b)
+            #         {
+            #         }
+            #         else
+            #         {
+            #             continue
+            #         }
+            #         c = 1
+            #     }
+            # }
+
+            :[0]
+            push.l 1
+            conv.l.b
+            bf [7]
+
+            :[1]
+            push.v self.a
+            conv.v.b
+            bf [6]
+
+            :[2]
+            push.v self.b
+            conv.v.b
+            bf [4]
+
+            :[3]
+            b [5]
+
+            :[4]
+            b [6]
+
+            :[5]
+            pushi.e 1
+            pop.v.i self.c
+
+            :[6]
+            b [0]
+
+            :[7]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+
+        Assert.Single(loops);
+        WhileLoop loop0 = (WhileLoop)loops[0];
+
+        Assert.Equal(2, branches.Count);
+        BinaryBranch b0 = branches[0];
+        BinaryBranch b1 = branches[1];
+
+        Assert.Equal(blocks[6], loop0.ForLoopIncrementor);
+        Assert.Equal([], loop0.Predecessors);
+        Assert.Equal([blocks[7]], loop0.Successors);
+        Assert.Equal(blocks[0], loop0.Head);
+        Assert.Equal(b0, loop0.Body);
+        Assert.Equal(blocks[6], loop0.Tail);
+        Assert.IsType<EmptyNode>(loop0.After);
+
+        Assert.Equal(loop0, b0.Parent);
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[6]], b0.Successors);
+        Assert.Equal(blocks[1], b0.Condition);
+        Assert.Equal(b1, b0.True);
+        Assert.Null(b0.Else);
+        Assert.Empty(b0.True.Predecessors);
+
+        Assert.Empty(b1.Predecessors);
+        Assert.Equal([blocks[5]], b1.Successors);
+        Assert.Equal(blocks[2], b1.Condition);
+        Assert.Equal(blocks[3], b1.True);
+        Assert.Equal(blocks[4], b1.Else);
+        Assert.Equal(blocks[4], b1.False);
+        Assert.Empty(b1.True.Predecessors);
+        Assert.Empty(b1.Else.Predecessors);
+        Assert.Empty(blocks[3].Instructions);
+
+        Assert.Empty(blocks[4].Instructions);
+        Assert.Single(blocks[4].Successors);
+        Assert.IsType<ContinueNode>(blocks[4].Successors[0]);
+        Assert.Empty(blocks[4].Successors[0].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
 }

@@ -404,11 +404,17 @@ internal class BinaryBranch : IControlFlowNode
                 {
                     // If our limit is larger, but we have an identical limit already on the stack,
                     // from a BranchTrue/False, we mark it as no longer from a binary block.
+                    // If there's a slot between two other limits available, use that as well.
                     for (int i = limitStack.Count - 2; i >= 0; i--)
                     {
                         if (limitStack[i].Limit == newLimit)
                         {
                             limitStack[i] = new(newLimit, false);
+                            break;
+                        }
+                        else if (limitStack[i].Limit > newLimit)
+                        {
+                            limitStack.Insert(i + 1, new(newLimit, false));
                             break;
                         }
                     }
