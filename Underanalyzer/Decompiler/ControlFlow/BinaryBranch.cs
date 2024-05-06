@@ -217,25 +217,27 @@ internal class BinaryBranch : IControlFlowNode
     {
         foreach (Block block in blocks)
         {
-            if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] &&
-                block.Successors.Count >= 1 && surroundingLoops.TryGetValue(block, out Loop loop))
+            if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] && block.Successors.Count >= 1)
             {
-                IControlFlowNode node;
-                if (block.Successors[0] == loop)
-                {
-                    // Detected trivial continue
-                    node = new ContinueNode(block.EndAddress);
-                }
-                else if (block.Successors[0].StartAddress >= loop.EndAddress)
-                {
-                    // Detected trivial break
-                    node = new BreakNode(block.EndAddress);
-                }
-                else
-                {
-                    // Didn't detect either a trivial break or continue.
-                    node = null;
+                IControlFlowNode node = null;
 
+                // Look for a trivial branch to top or end of surrounding loop
+                if (surroundingLoops.TryGetValue(block, out Loop loop))
+                {
+                    if (block.Successors[0] == loop)
+                    {
+                        // Detected trivial continue
+                        node = new ContinueNode(block.EndAddress);
+                    }
+                    else if (block.Successors[0].StartAddress >= loop.EndAddress)
+                    {
+                        // Detected trivial break
+                        node = new BreakNode(block.EndAddress);
+                    }
+                }
+
+                if (node is null)
+                {
                     // Check if we're breaking/continuing from inside of a switch statement.
                     if (block.Successors[0] is Block succBlock)
                     {
@@ -250,51 +252,30 @@ internal class BinaryBranch : IControlFlowNode
                             node = new ContinueNode(block.EndAddress);
                         }
                     }
+                }
 
-                    if (node == null)
+                if (node is null && loop is not null)
+                {
+                    // Look at after limits and see if we can deduce anything there.
+                    int afterLimit = blockAfterLimits[block];
+                    if (block.Successors[0].StartAddress > afterLimit)
                     {
-                        // Look at after limits and see if we can deduce anything there.
-                        int afterLimit = blockAfterLimits[block];
-                        if (block.Successors[0].StartAddress > afterLimit)
-                        {
-                            // We found either a break or continue. Check which one we think it is.
-                            if (loop is not null &&
-                                (block.Successors[0] is not Block ||
-                                (block.Successors[0] as Block).Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..]))
-                            {
-                                // Detected continue (we're definitely *not* breaking out of a switch)
-                                node = new ContinueNode(block.EndAddress);
+                        // Detected continue
+                        node = new ContinueNode(block.EndAddress);
 
-                                // If enclosing loop is a while loop, it must actually be a for loop - otherwise we would
-                                // be branching to the top of the loop, which would have been detected by now.
-                                // TODO: In switch statement processing, while loop -> for loop conversion needs to happen too
-                                if (loop is WhileLoop whileLoop)
-                                {
-                                    whileLoop.ForLoopIncrementor = block.Successors[0];
-                                }
-                            }
-                            else
-                            {
-                                // Detected break (in switch statements specifically - we detected a PopDelete at destination).
-                                // Technically, this can still be a continue in certain situations, so we set a
-                                // flag for switch statements to verify this later.
-                                //
-                                // To be specific, this can be a continue if the last part of a for loop involves a return/exit,
-                                // and the for loop is contained inside of a repeat loop, OR if this is a continue inside of
-                                // a switch statement, which branches to a special block generated at the end of the switch.
-                                //
-                                // When processing switch statements, we check if this "break" branches to the end of the
-                                // enclosing switch statement. Otherwise, it must be a continue statement.
-                                node = new BreakNode(block.EndAddress, true);
-                                node.Children.AddRange(block.Successors);
-                            }
-                        }
-                        else
+                        // If enclosing loop is a while loop, it must actually be a for loop - otherwise we would
+                        // be branching to the top of the loop, which would have been detected by now.
+                        if (loop is WhileLoop whileLoop)
                         {
-                            // Didn't find anything.
-                            continue;
+                            whileLoop.ForLoopIncrementor = block.Successors[0];
                         }
                     }
+                }
+
+                if (node is null)
+                {
+                    // Didn't find anything.
+                    continue;
                 }
 
                 // Update control flow graph
@@ -367,15 +348,14 @@ internal class BinaryBranch : IControlFlowNode
     {
         Dictionary<Block, int> blockToAfterLimit = new();
 
-        List<LimitEntry> limitStack = new();
-        limitStack.Insert(0, new(blocks[^1].EndAddress, false));
+        List<LimitEntry> limitStack = [new(blocks[^1].EndAddress, false)];
 
         foreach (Block b in blocks)
         {
             // If we've passed the address of our smallest limit, remove it.
-            while (b.StartAddress >= limitStack[0].Limit)
+            while (b.StartAddress >= limitStack[^1].Limit)
             {
-                limitStack.RemoveAt(0);
+                limitStack.RemoveAt(limitStack.Count - 1);
                 if (limitStack.Count == 0)
                 {
                     break;
@@ -386,31 +366,34 @@ internal class BinaryBranch : IControlFlowNode
                 break;
             }
 
-            // Compute the limit for this specific branch block.
-            // If the surrounding loop ends earlier, use that instead.
+            // Find the limit for this block
             int thisLimit;
             if (b.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
             {
-                if (limitStack[0].FromBinary)
+                if (limitStack[^1].FromBinary)
                 {
-                    thisLimit = limitStack[1].Limit;
+                    // Most recent limit is from a binary branch - look one further
+                    thisLimit = limitStack[^2].Limit;
                 }
                 else
                 {
-                    thisLimit = limitStack[0].Limit;
+                    // Most recent limit is from a direct jump - use that directly
+                    thisLimit = limitStack[^1].Limit;
                 }
             }
             else
             {
-                // We only care about processing binary branches (e.g. if statements, switch cases).
+                // If we're not Branch, nor BranchFalse/True, we don't really care about determining the limit
                 if (b.Instructions is not [.., { Kind: IGMInstruction.Opcode.BranchFalse }] &&
                     b.Instructions is not [.., { Kind: IGMInstruction.Opcode.BranchTrue }]) // TODO: not sure if necessary, but may be for switch statements
                 {
                     continue;
                 }
 
-                thisLimit = limitStack[0].Limit;
+                thisLimit = limitStack[^1].Limit;
             }
+
+            // If we have a loop surrounding this block, we can also use that
             if (surroundingLoops.TryGetValue(b, out Loop loop))
             {
                 if (loop.EndAddress < thisLimit)
@@ -418,19 +401,25 @@ internal class BinaryBranch : IControlFlowNode
                     thisLimit = loop.EndAddress;
                 }
             }
+
+            // Set resulting limit
             blockToAfterLimit[b] = thisLimit;
 
-            // If we have a smaller limit in our jump, push that to the stack.
+            // Update limit stack based on this block
             if (b.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
             {
+                // We're in a Branch block.
+                // If we have a smaller limit based on our jump destination address, push that to the stack.
                 int newLimit = b.Successors[0].StartAddress;
-                if (newLimit <= limitStack[0].Limit)
+                if (newLimit <= limitStack[^1].Limit)
                 {
-                    limitStack.Insert(0, new(newLimit, false));
+                    limitStack.Add(new(newLimit, false));
                 }
                 else
                 {
-                    for (int i = 1; i < limitStack.Count; i++)
+                    // If our limit is larger, but we have an identical limit already on the stack,
+                    // from a BranchTrue/False, we mark it as no longer from a binary block.
+                    for (int i = limitStack.Count - 2; i >= 0; i--)
                     {
                         if (limitStack[i].Limit == newLimit)
                         {
@@ -442,10 +431,12 @@ internal class BinaryBranch : IControlFlowNode
             }
             else
             {
+                // We're in a BranchFalse/BranchTrue block.
+                // If we have a smaller limit based on our jump destination address, push that to the stack.
                 int newLimit = b.Successors[1].StartAddress;
-                if (newLimit <= limitStack[0].Limit)
+                if (newLimit <= limitStack[^1].Limit)
                 {
-                    limitStack.Insert(0, new(newLimit, true));
+                    limitStack.Add(new(newLimit, true));
                 }
             }
         }
@@ -507,7 +498,7 @@ internal class BinaryBranch : IControlFlowNode
                 int numPopDeletes = 1;
                 for (int j = 1; j < block.Instructions.Count; j++)
                 {
-                    if (block.Instructions[i].Kind == IGMInstruction.Opcode.PopDelete)
+                    if (block.Instructions[j].Kind == IGMInstruction.Opcode.PopDelete)
                     {
                         numPopDeletes++;
                     }
@@ -554,6 +545,9 @@ internal class BinaryBranch : IControlFlowNode
 
             // This is definitely a switch continue block
             switchContinueBlocks.Add(previousBlock);
+
+            // Prevent this block from processing during the next iteration
+            i--;
         }
     }
 
@@ -676,6 +670,8 @@ internal class BinaryBranch : IControlFlowNode
         res.Reverse();
 
         ctx.BinaryBranchNodes = res;
+        ctx.SwitchEndBlocks = switchEndBlocks;
+        ctx.SwitchContinueBlocks = switchContinueBlocks;
         return res;
     }
 }

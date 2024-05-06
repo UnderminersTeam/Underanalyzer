@@ -20,6 +20,8 @@ public class DecompileContext
     internal List<TryCatch> TryCatchNodes { get; set; }
     internal List<Nullish> NullishNodes { get; set; }
     internal List<BinaryBranch> BinaryBranchNodes { get; set; }
+    internal HashSet<Block> SwitchEndBlocks { get; set; }
+    internal HashSet<Block> SwitchContinueBlocks { get; set; }
 
     // Constructor used for control flow tests
     internal DecompileContext(IGMCode code) 
