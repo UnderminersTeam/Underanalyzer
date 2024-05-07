@@ -210,16 +210,19 @@ internal class BinaryBranch : IControlFlowNode
     /// Resolves continue statements and break statements.
     /// These are relatively trivial to find on a linear pass, especially with "after limits."
     /// </summary>
-    private static void ResolveExternalJumps(
-        List<Block> blocks, Dictionary<Block, Loop> surroundingLoops,
-        Dictionary<Block, int> blockAfterLimits,
-        HashSet<Block> switchEndBlocks, HashSet<Block> switchContinueBlocks)
+    private static void ResolveExternalJumps(DecompileContext ctx, Dictionary<Block, Loop> surroundingLoops, Dictionary<Block, int> blockAfterLimits)
     {
-        foreach (Block block in blocks)
+        foreach (Block block in ctx.Blocks)
         {
             if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] && block.Successors.Count >= 1)
             {
                 IControlFlowNode node = null;
+
+                // Check that we're not supposed to be ignored
+                if (ctx.SwitchIgnoreJumpBlocks.Contains(block))
+                {
+                    continue;
+                }
 
                 // Look for a trivial branch to top or end of surrounding loop
                 if (surroundingLoops.TryGetValue(block, out Loop loop))
@@ -241,12 +244,12 @@ internal class BinaryBranch : IControlFlowNode
                     // Check if we're breaking/continuing from inside of a switch statement.
                     if (block.Successors[0] is Block succBlock)
                     {
-                        if (switchEndBlocks.Contains(succBlock))
+                        if (ctx.SwitchEndBlocks.Contains(succBlock))
                         {
                             // This is a break from inside of a switch
                             node = new BreakNode(block.EndAddress);
                         }
-                        else if (switchContinueBlocks.Contains(succBlock))
+                        else if (ctx.SwitchContinueBlocks.Contains(succBlock))
                         {
                             // This is a continue from inside of a switch
                             node = new ContinueNode(block.EndAddress);
@@ -279,7 +282,7 @@ internal class BinaryBranch : IControlFlowNode
                 }
 
                 // Update control flow graph
-                InsertContinueOrBreak(node, block, blocks);
+                InsertContinueOrBreak(node, block, ctx.Blocks);
             }
         }
     }
@@ -435,113 +438,6 @@ internal class BinaryBranch : IControlFlowNode
         return blockToAfterLimit;
     }
 
-    /// <summary>
-    /// Scans for all blocks representing the end of a switch statement, and the "continue" block of a switch statement.
-    /// </summary>
-    private static void FindAllSwitchEnds(List<Block> blocks, out HashSet<Block> switchEndBlocks, out HashSet<Block> switchContinueBlocks)
-    {
-        switchEndBlocks = new();
-        switchContinueBlocks = new();
-
-        Stack<int> switchTops = new();
-
-        // Go backwards; first good candidate block must be the end of a switch statement
-        for (int i = blocks.Count - 1; i >= 0; i--)
-        {
-            Block block = blocks[i];
-
-            // Leave switch statements that we're already past
-            if (switchTops.Count > 0 && block.StartAddress <= switchTops.Peek())
-            {
-                switchTops.Pop();
-            }
-
-            // Ensure PopDelete is at start of block
-            if (block.Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..])
-            {
-                continue;
-            }
-
-            // Ensure our earliest predecessor is a block ending with Branch
-            if (block.Predecessors.Count == 0)
-            {
-                continue;
-            }
-            IControlFlowNode earliestPredecessor = block.Predecessors[0];
-            for (int j = 1; j < block.Predecessors.Count; j++)
-            {
-                if (block.Predecessors[j].StartAddress < earliestPredecessor.StartAddress)
-                {
-                    earliestPredecessor = block.Predecessors[j];
-                }
-            }
-            if (earliestPredecessor is not Block predBlock ||
-                predBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-
-            // If this block ends with return/exit, we need to check that this isn't an early
-            // return/exit from within a switch statement.
-            if (block.Instructions[^1].Kind is IGMInstruction.Opcode.Exit or IGMInstruction.Opcode.Return)
-            {
-                // Count how many PopDelete instructions we have in this block.
-                int numPopDeletes = 1;
-                for (int j = 1; j < block.Instructions.Count; j++)
-                {
-                    if (block.Instructions[j].Kind == IGMInstruction.Opcode.PopDelete)
-                    {
-                        numPopDeletes++;
-                    }
-                }
-
-                // If this number isn't equal to the number of switches we're inside of + 1,
-                // then this is an early return/exit.
-                if (numPopDeletes != switchTops.Count + 1)
-                {
-                    continue;
-                }
-            }
-
-            // We've found the end of a switch statement
-            switchEndBlocks.Add(block);
-            switchTops.Push(earliestPredecessor.StartAddress);
-
-            // Check if we have a continue block immediately preceding this end block
-            if (block.BlockIndex == 0)
-            {
-                continue;
-            }
-            Block previousBlock = blocks[block.BlockIndex - 1];
-            if (previousBlock.Instructions is not
-                [{ Kind: IGMInstruction.Opcode.PopDelete }, { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-
-            // This block should be a continue block, but additionally check we have a branch around it
-            if (previousBlock.BlockIndex == 0)
-            {
-                continue;
-            }
-            Block previousPreviousBlock = blocks[previousBlock.BlockIndex - 1];
-            if (previousPreviousBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-            if (previousPreviousBlock.Successors.Count != 1 || previousPreviousBlock.Successors[0] != block)
-            {
-                continue;
-            }
-
-            // This is definitely a switch continue block
-            switchContinueBlocks.Add(previousBlock);
-
-            // Prevent this block from processing during the next iteration
-            i--;
-        }
-    }
-
     public static List<BinaryBranch> FindBinaryBranches(DecompileContext ctx)
     {
         List<Block> blocks = ctx.Blocks;
@@ -553,11 +449,8 @@ internal class BinaryBranch : IControlFlowNode
         Dictionary<Block, int> blockAfterLimits = ComputeBlockAfterLimits(blocks, surroundingLoops);
         HashSet<IControlFlowNode> visited = new();
 
-        // Find the ending blocks and continue blocks of all switch statements
-        FindAllSwitchEnds(blocks, out HashSet<Block> switchEndBlocks, out HashSet<Block> switchContinueBlocks);
-
         // Resolve all continue/break statements
-        ResolveExternalJumps(blocks, surroundingLoops, blockAfterLimits, switchEndBlocks, switchContinueBlocks);
+        ResolveExternalJumps(ctx, surroundingLoops, blockAfterLimits);
 
         // Iterate over blocks in reverse, as the compiler generates them in the order we want
         for (int i = blocks.Count - 1; i >= 0; i--)
@@ -658,8 +551,6 @@ internal class BinaryBranch : IControlFlowNode
         res.Reverse();
 
         ctx.BinaryBranchNodes = res;
-        ctx.SwitchEndBlocks = switchEndBlocks;
-        ctx.SwitchContinueBlocks = switchContinueBlocks;
         return res;
     }
 }

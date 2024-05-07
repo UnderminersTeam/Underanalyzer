@@ -41,6 +41,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -102,6 +103,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -162,6 +164,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -225,6 +228,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -300,6 +304,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
@@ -372,6 +377,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -459,6 +465,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
@@ -533,6 +540,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -606,6 +614,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
@@ -678,6 +687,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -765,6 +775,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Equal(2, loops.Count);
@@ -844,6 +855,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -927,6 +939,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -1015,6 +1028,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -1107,6 +1121,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -1210,6 +1225,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -1294,6 +1310,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);
@@ -1368,6 +1385,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         List<Block> blocks = Block.FindBlocks(ctx);
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
         List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
 
         Assert.Single(loops);

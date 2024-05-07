@@ -21,7 +21,10 @@ public class DecompileContext
     internal List<Nullish> NullishNodes { get; set; }
     internal List<BinaryBranch> BinaryBranchNodes { get; set; }
     internal HashSet<Block> SwitchEndBlocks { get; set; }
+    internal List<Switch.SwitchDetectionData> SwitchData { get; set; }
     internal HashSet<Block> SwitchContinueBlocks { get; set; }
+    internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
+    internal List<Switch> SwitchNodes { get; set; }
 
     // Constructor used for control flow tests
     internal DecompileContext(IGMCode code) 
