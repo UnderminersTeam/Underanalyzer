@@ -51,6 +51,12 @@ internal class WhileLoop : Loop
     /// </summary>
     public IControlFlowNode ForLoopIncrementor { get => Children[4]; set => Children[4] = value; }
 
+    /// <summary>
+    /// If true, this loop was detected to definitively be a while loop.
+    /// This currently happens if a "continue" statement is used within the while loop.
+    /// </summary>
+    public bool MustBeWhileLoop { get; set; } = false;
+
     public WhileLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
         : base(startAddress, endAddress)
     {

@@ -231,6 +231,13 @@ internal class BinaryBranch : IControlFlowNode
                     {
                         // Detected trivial continue
                         node = new ContinueNode(block.EndAddress);
+
+                        // If enclosing loop is a while loop, it must definitively be a while loop,
+                        // as we branch to the very top condition (and not to a for loop incrementor).
+                        if (loop is WhileLoop whileLoop)
+                        {
+                            whileLoop.MustBeWhileLoop = true;
+                        }
                     }
                     else if (block.Successors[0].StartAddress >= loop.EndAddress)
                     {

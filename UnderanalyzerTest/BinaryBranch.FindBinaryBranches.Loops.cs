@@ -237,6 +237,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Single(branches);
         BinaryBranch b = branches[0];
 
+        Assert.True(loop.MustBeWhileLoop);
         Assert.Equal([], loop.Predecessors);
         Assert.Equal([blocks[4]], loop.Successors);
         Assert.Equal(blocks[0], loop.Head);
@@ -314,6 +315,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Single(branches);
         BinaryBranch b = branches[0];
 
+        Assert.True(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[6]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -386,6 +388,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Single(branches);
         BinaryBranch b = branches[0];
 
+        Assert.True(loop.MustBeWhileLoop);
         Assert.Equal([], loop.Predecessors);
         Assert.Equal([blocks[6]], loop.Successors);
         Assert.Equal(blocks[0], loop.Head);
@@ -475,6 +478,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Single(branches);
         BinaryBranch b = branches[0];
 
+        Assert.True(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[8]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -865,6 +869,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b0 = branches[0];
         BinaryBranch b1 = branches[1];
 
+        Assert.True(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[5]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -950,6 +955,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b1 = branches[1];
 
         Assert.Equal(blocks[5], loop0.ForLoopIncrementor);
+        Assert.False(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[6]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -1039,6 +1045,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b1 = branches[1];
 
         Assert.Equal(blocks[6], loop0.ForLoopIncrementor);
+        Assert.False(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[7]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -1133,6 +1140,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b2 = branches[2];
 
         Assert.Equal(blocks[7], loop0.ForLoopIncrementor);
+        Assert.False(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[8]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -1236,6 +1244,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b1 = branches[1];
 
         Assert.Equal(blocks[7], loop0.ForLoopIncrementor);
+        Assert.False(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[8]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
@@ -1396,6 +1405,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         BinaryBranch b1 = branches[1];
 
         Assert.Equal(blocks[6], loop0.ForLoopIncrementor);
+        Assert.False(loop0.MustBeWhileLoop);
         Assert.Equal([], loop0.Predecessors);
         Assert.Equal([blocks[7]], loop0.Successors);
         Assert.Equal(blocks[0], loop0.Head);
