@@ -449,7 +449,7 @@ internal class Switch : IControlFlowNode
                 }
                 else
                 {
-                    IControlFlowNode.InsertPredecessors(defaultDestinationNode, caseDestNode, 0);
+                    IControlFlowNode.InsertPredecessorsAll(defaultDestinationNode, caseDestNode);
 
                     // Update the start of the switch body
                     if (startOfBody is null)
