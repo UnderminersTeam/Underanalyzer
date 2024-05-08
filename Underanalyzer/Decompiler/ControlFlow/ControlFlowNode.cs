@@ -105,6 +105,26 @@ internal interface IControlFlowNode
     }
 
     /// <summary>
+    /// Utility function to insert a new node to the control flow graph, which is a 
+    /// sole predecessor of "node", and takes on all predecessors of "node".
+    /// </summary>
+    internal static void InsertPredecessorsAll(IControlFlowNode node, IControlFlowNode newPredecessor)
+    {
+        // Reroute all earlier predecessors of "node" to "newPredecessor"
+        for (int i = 0; i < node.Predecessors.Count; i++)
+        {
+            IControlFlowNode currPred = node.Predecessors[i];
+            newPredecessor.Predecessors.Add(currPred);
+            ReplaceConnections(currPred.Successors, node, newPredecessor);
+        }
+        node.Predecessors.Clear();
+
+        // Route "newPredecessor" into "node"
+        newPredecessor.Successors.Add(node);
+        node.Predecessors.Add(newPredecessor);
+    }
+
+    /// <summary>
     /// Utility function to disconnect a node from one of its predecessors.
     /// </summary>
     internal static void DisconnectPredecessor(IControlFlowNode node, int predecessorIndex)
@@ -165,8 +185,15 @@ internal interface IControlFlowNode
         start.Predecessors.Clear();
 
         // Reroute predecessor at index 0 from "after" to instead come from "newStructure"
-        after.Predecessors[0].Successors.RemoveAll(a => a == after);
-        after.Predecessors[0] = newStructure;
+        if (after.Predecessors.Count > 0)
+        {
+            after.Predecessors[0].Successors.RemoveAll(a => a == after);
+            after.Predecessors[0] = newStructure;
+        }
+        else
+        {
+            after.Predecessors.Add(newStructure);
+        }
         newStructure.Successors.Add(after);
     }
 }
