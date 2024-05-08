@@ -2007,4 +2007,261 @@ public class Switch_InsertSwitchStatements
         TestUtil.VerifyFlowDirections(switches);
         TestUtil.EnsureNoRemainingJumps(ctx);
     }
+
+    [Fact]
+    public void TestDoubleEmpty()
+    {
+        // NOTE: GameMaker itself can't generate this, but modding tools can
+        GMCode code = TestUtil.GetCode(
+            """
+            # switch (a) { }
+            # switch (b) { }
+
+            :[0]
+            push.v self.a
+            b [1]
+
+            :[1]
+            popz.v
+            push.v self.b
+            b [2]
+
+            :[2]
+            popz.v
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+        List<Switch> switches = Switch.InsertSwitchStatements(ctx);
+
+        Assert.Equal(2, switches.Count);
+        Switch s0 = switches[0];
+        Switch s1 = switches[1];
+
+        Assert.Equal(s0, fragments[0].Children[0]);
+        Assert.Equal(blocks[0], s0.Cases);
+        Assert.Null(s0.Body);
+        Assert.Null(s0.EndCaseDestinations);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Empty(blocks[0].Successors);
+        Assert.Single(blocks[0].Instructions);
+        Assert.Equal([s1], s0.Successors);
+        Assert.Equal([s0], s1.Predecessors);
+        Assert.Equal(blocks[1], s1.Cases);
+        Assert.Null(s1.Body);
+        Assert.Null(s1.EndCaseDestinations);
+        Assert.Empty(blocks[1].Predecessors);
+        Assert.Empty(blocks[1].Successors);
+        Assert.Single(blocks[1].Instructions);
+        Assert.Empty(blocks[2].Instructions);
+        Assert.Equal([blocks[2]], s1.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.VerifyFlowDirections(switches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
+
+    [Fact]
+    public void TestDoubleDefault()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            # switch (a) { default: }
+            # switch (b) { default: }
+
+            :[0]
+            push.v self.a
+            b [2]
+
+            :[1]
+            b [2]
+
+            :[2]
+            popz.v
+            push.v self.b
+            b [4]
+
+            :[3]
+            b [4]
+
+            :[4]
+            popz.v
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+        List<Switch> switches = Switch.InsertSwitchStatements(ctx);
+
+        Assert.Equal(2, switches.Count);
+        Switch s0 = switches[0];
+        Switch s1 = switches[1];
+
+        Assert.Equal(s0, fragments[0].Children[0]);
+        Assert.Equal(blocks[0], s0.Cases);
+        Assert.Null(s0.Body);
+        Assert.IsType<Switch.CaseDestinationNode>(s0.EndCaseDestinations);
+        var destNode = (Switch.CaseDestinationNode)s0.EndCaseDestinations;
+        Assert.Empty(destNode.Predecessors);
+        Assert.Empty(destNode.Successors);
+        Assert.True(destNode.IsDefault);
+        Assert.Empty(blocks[0].Predecessors);
+        Assert.Empty(blocks[0].Successors);
+        Assert.Single(blocks[0].Instructions);
+        Assert.Empty(blocks[1].Predecessors);
+        Assert.Empty(blocks[1].Successors);
+        Assert.Empty(blocks[1].Instructions);
+        Assert.Equal([s1], s0.Successors);
+        Assert.Equal([s0], s1.Predecessors);
+        Assert.Equal(blocks[2], s1.Cases);
+        Assert.Null(s1.Body);
+        Assert.IsType<Switch.CaseDestinationNode>(s1.EndCaseDestinations);
+        destNode = (Switch.CaseDestinationNode)s1.EndCaseDestinations;
+        Assert.Empty(destNode.Predecessors);
+        Assert.Empty(destNode.Successors);
+        Assert.True(destNode.IsDefault);
+        Assert.Empty(blocks[2].Predecessors);
+        Assert.Empty(blocks[2].Successors);
+        Assert.Single(blocks[2].Instructions);
+        Assert.Empty(blocks[3].Predecessors);
+        Assert.Empty(blocks[3].Successors);
+        Assert.Empty(blocks[3].Instructions);
+        Assert.Empty(blocks[4].Instructions);
+        Assert.Equal([blocks[4]], s1.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.VerifyFlowDirections(switches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
+
+    [Fact]
+    public void TestDoubleNonConstant()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            # switch (a) { case b[c ? d : e]: }
+            # switch (f) { case g[h ? i : j]: }
+
+            :[0]
+            push.v self.a
+            dup.v 0
+            pushi.e -1
+            push.v self.c
+            conv.v.b
+            bf [2]
+
+            :[1]
+            push.v self.d
+            b [3]
+
+            :[2]
+            push.v self.e
+
+            :[3]
+            conv.v.i
+            push.v [array]self.b
+            cmp.v.v EQ
+            bt [5]
+
+            :[4]
+            b [5]
+
+            :[5]
+            popz.v
+            push.v self.f
+            dup.v 0
+            pushi.e -1
+            push.v self.h
+            conv.v.b
+            bf [7]
+
+            :[6]
+            push.v self.i
+            b [8]
+
+            :[7]
+            push.v self.j
+
+            :[8]
+            conv.v.i
+            push.v [array]self.g
+            cmp.v.v EQ
+            bt [10]
+
+            :[9]
+            b [10]
+
+            :[10]
+            popz.v
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+        List<Switch> switches = Switch.InsertSwitchStatements(ctx);
+
+        Assert.Equal(2, switches.Count);
+        Switch s0 = switches[0];
+        Switch s1 = switches[1];
+
+        Assert.Equal(branches[0], fragments[0].Children[0]);
+        Assert.Equal([s0], branches[0].Successors);
+        Assert.Equal(blocks[3], s0.Cases);
+        Assert.Null(s0.Body);
+        Assert.IsType<Switch.CaseDestinationNode>(s0.EndCaseDestinations);
+        var destNode = (Switch.CaseDestinationNode)s0.EndCaseDestinations;
+        Assert.Empty(destNode.Predecessors);
+        Assert.Empty(destNode.Successors);
+        Assert.False(destNode.IsDefault);
+        Assert.Empty(blocks[3].Predecessors);
+        Assert.Single(blocks[3].Successors);
+        Assert.IsType<Switch.CaseJumpNode>(blocks[3].Successors[0]);
+        Assert.Empty(blocks[3].Successors[0].Successors);
+        Assert.Equal(2, blocks[3].Instructions.Count);
+        Assert.Empty(blocks[4].Predecessors);
+        Assert.Empty(blocks[4].Successors);
+        Assert.Empty(blocks[4].Instructions);
+        Assert.Equal([branches[1]], s0.Successors);
+        Assert.Equal([branches[1]], s1.Predecessors);
+        Assert.Equal(blocks[8], s1.Cases);
+        Assert.Null(s1.Body);
+        Assert.IsType<Switch.CaseDestinationNode>(s1.EndCaseDestinations);
+        destNode = (Switch.CaseDestinationNode)s1.EndCaseDestinations;
+        Assert.Empty(destNode.Predecessors);
+        Assert.Empty(destNode.Successors);
+        Assert.False(destNode.IsDefault);
+        Assert.Empty(blocks[8].Predecessors);
+        Assert.Single(blocks[8].Successors);
+        Assert.IsType<Switch.CaseJumpNode>(blocks[8].Successors[0]);
+        Assert.Empty(blocks[8].Successors[0].Successors);
+        Assert.Equal(2, blocks[8].Instructions.Count);
+        Assert.Empty(blocks[9].Predecessors);
+        Assert.Empty(blocks[9].Successors);
+        Assert.Empty(blocks[9].Instructions);
+        Assert.Empty(blocks[10].Instructions);
+        Assert.Equal([blocks[10]], s1.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.VerifyFlowDirections(switches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
 }

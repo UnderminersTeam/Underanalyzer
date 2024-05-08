@@ -244,6 +244,7 @@ internal class Switch : IControlFlowNode
             // Need to detect whether or not we have a default case in this switch.
             // If previous block ends with Branch, then:
             //  - If it branches beyond the end of the switch (or backwards), then it can't be the default branch itself.
+            //    Also, if the current block is a switch end block, the previous block is also not a default branch...
             //      -> Fall into case where previous block doesn't end with Branch
             //  - If it branches into the switch, then it's clearly the default branch
             // If the previous block doesn't end with Branch, then:
@@ -251,7 +252,7 @@ internal class Switch : IControlFlowNode
             //  - Otherwise, there's no default branch
             data.EndOfCaseBlock = firstBranchPredecessor;
             bool prevBlockIsDefaultBranch;
-            if (firstBranchPredecessor.BlockIndex >= 1)
+            if (firstBranchPredecessor.BlockIndex >= 1 && !ctx.SwitchEndBlocks.Contains(firstBranchPredecessor))
             {
                 Block prevBlock = blocks[firstBranchPredecessor.BlockIndex - 1];
                 if (prevBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
@@ -321,8 +322,10 @@ internal class Switch : IControlFlowNode
     {
         List<Switch> res = new();
 
-        foreach (SwitchDetectionData data in ctx.SwitchData)
+        for (int j = ctx.SwitchData.Count - 1; j >= 0; j--)
         {
+            SwitchDetectionData data = ctx.SwitchData[j];
+
             // Find all cases
             IControlFlowNode currentNode = data.EndOfCaseBlock;
             List<Block> caseBranches = new();
@@ -499,18 +502,23 @@ internal class Switch : IControlFlowNode
                 }
             }
 
-            // Disconnect all branches going into the end block, and remove PopDelete
+            // Disconnect all branches going into the end node, and remove PopDelete
             Block endBlock = data.EndBlock;
             endBlock.Instructions.RemoveAt(0);
-            for (int i = endBlock.Predecessors.Count - 1; i >= 0; i--)
+            IControlFlowNode endNode = endBlock;
+            while (endNode.Parent is not null)
             {
-                IControlFlowNode.DisconnectPredecessor(endBlock, i);
+                endNode = endNode.Parent;
+            }
+            for (int i = endNode.Predecessors.Count - 1; i >= 0; i--)
+            {
+                IControlFlowNode.DisconnectPredecessor(endNode, i);
             }
 
             // Construct actual switch node
             Block startOfStatement = (caseBranches.Count > 0) ? caseBranches[^1] : (data.DefaultBranchBlock ?? data.EndOfCaseBlock);
-            Switch switchNode = new(startOfStatement.StartAddress, endBlock.StartAddress, startOfStatement, startOfBody, endCaseDestinations);
-            IControlFlowNode.InsertStructure(startOfStatement, endBlock, switchNode);
+            Switch switchNode = new(startOfStatement.StartAddress, endNode.StartAddress, startOfStatement, startOfBody, endCaseDestinations);
+            IControlFlowNode.InsertStructure(startOfStatement, endNode, switchNode);
             res.Add(switchNode);
 
             // Update parent status of Cases/Body
