@@ -45,10 +45,16 @@ internal interface IControlFlowNode
     public bool Unreachable { get; set; }
 
     /// <summary>
+    /// Outputs AST nodes for this control flow node. This shouldn't follow any 
+    /// predecessors/successors, but can freely follow children.
+    /// </summary>
+    public void BuildAST(AST.ASTBuilder builder, List<AST.IASTNode> output);
+
+    /// <summary>
     /// Utility function to insert a new control flow node into the graph,
     /// as a successor to an existing node, in the place of an existing successor.
     /// </summary>
-    internal static void InsertSuccessor(IControlFlowNode node, int successorIndex, IControlFlowNode newSuccessor)
+    public static void InsertSuccessor(IControlFlowNode node, int successorIndex, IControlFlowNode newSuccessor)
     {
         IControlFlowNode oldSuccessor = node.Successors[successorIndex];
 
@@ -67,7 +73,7 @@ internal interface IControlFlowNode
     /// <summary>
     /// Utility function to disconnect a node from one of its successors.
     /// </summary>
-    internal static void DisconnectSuccessor(IControlFlowNode node, int successorIndex)
+    public static void DisconnectSuccessor(IControlFlowNode node, int successorIndex)
     {
         IControlFlowNode oldSuccessor = node.Successors[successorIndex];
 
@@ -84,7 +90,7 @@ internal interface IControlFlowNode
     /// sole predecessor of "node", and takes on all predecessors of "node" that are
     /// within a range of addresses, ending at "node"'s address.
     /// </summary>
-    internal static void InsertPredecessors(IControlFlowNode node, IControlFlowNode newPredecessor, int startAddr)
+    public static void InsertPredecessors(IControlFlowNode node, IControlFlowNode newPredecessor, int startAddr)
     {
         // Reroute all earlier predecessors of "node" to "newPredecessor"
         for (int i = 0; i < node.Predecessors.Count; i++)
@@ -108,7 +114,7 @@ internal interface IControlFlowNode
     /// Utility function to insert a new node to the control flow graph, which is a 
     /// sole predecessor of "node", and takes on all predecessors of "node".
     /// </summary>
-    internal static void InsertPredecessorsAll(IControlFlowNode node, IControlFlowNode newPredecessor)
+    public static void InsertPredecessorsAll(IControlFlowNode node, IControlFlowNode newPredecessor)
     {
         // Reroute all earlier predecessors of "node" to "newPredecessor"
         for (int i = 0; i < node.Predecessors.Count; i++)
@@ -127,7 +133,7 @@ internal interface IControlFlowNode
     /// <summary>
     /// Utility function to disconnect a node from one of its predecessors.
     /// </summary>
-    internal static void DisconnectPredecessor(IControlFlowNode node, int predecessorIndex)
+    public static void DisconnectPredecessor(IControlFlowNode node, int predecessorIndex)
     {
         IControlFlowNode oldPredecessor = node.Predecessors[predecessorIndex];
 
@@ -162,7 +168,7 @@ internal interface IControlFlowNode
     /// This assumes that there are no connections between any nodes contained in "newStructure" to any external nodes,
     /// except for "start" and "after" explicitly. If that is not the case, those will need to be manually cleaned up.
     /// </remarks>
-    internal static void InsertStructure(IControlFlowNode start, IControlFlowNode after, IControlFlowNode newStructure)
+    public static void InsertStructure(IControlFlowNode start, IControlFlowNode after, IControlFlowNode newStructure)
     {
         // If the start node is unreachable, then so is our new structure
         if (start.Unreachable)

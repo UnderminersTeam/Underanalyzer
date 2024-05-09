@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -125,4 +126,6 @@ internal abstract class Loop : IControlFlowNode
         ctx.LoopNodes = loops;
         return loops;
     }
+
+    public abstract void BuildAST(ASTBuilder builder, List<IASTNode> output);
 }

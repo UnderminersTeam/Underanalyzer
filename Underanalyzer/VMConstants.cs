@@ -3,11 +3,16 @@
 /// <summary>
 /// Contains constant values used by the GameMaker VM.
 /// </summary>
-public class VMConstants
+internal static class VMConstants
 {
     // Function names used for try..catch..finally statements
-    public static string TryHookFunction { get; } = "@@try_hook@@";
-    public static string TryUnhookFunction { get; } = "@@try_unhook@@";
-    public static string FinishCatchFunction { get; } = "@@finish_catch@@";
-    public static string FinishFinallyFunction { get; } = "@@finish_finally@@";
+    public const string TryHookFunction = "@@try_hook@@";
+    public const string TryUnhookFunction = "@@try_unhook@@";
+    public const string FinishCatchFunction = "@@finish_catch@@";
+    public const string FinishFinallyFunction = "@@finish_finally@@";
+
+    // Function name for creating methods/structs
+    public const string MethodFunction = "method";
+    public const string NullObjectFunction = "@@NullObject@@";
+    public const string NewObjectFunction = "@@NewGMLObject@@";
 }

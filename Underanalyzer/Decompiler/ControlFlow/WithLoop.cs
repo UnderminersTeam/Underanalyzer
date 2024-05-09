@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -73,5 +75,10 @@ internal class WithLoop : Loop
     public override string ToString()
     {
         return $"{nameof(WithLoop)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public override void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        throw new NotImplementedException();
     }
 }

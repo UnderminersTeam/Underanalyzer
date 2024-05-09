@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -31,5 +33,10 @@ internal class BreakNode(int address, bool mayBeContinue = false) : IControlFlow
     public override string ToString()
     {
         return $"{nameof(BreakNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        throw new NotImplementedException();
     }
 }

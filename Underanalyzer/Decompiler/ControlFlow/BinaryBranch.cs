@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -559,5 +560,10 @@ internal class BinaryBranch : IControlFlowNode
 
         ctx.BinaryBranchNodes = res;
         return res;
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        throw new NotImplementedException();
     }
 }

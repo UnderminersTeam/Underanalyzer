@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -135,5 +136,10 @@ internal class Fragment : IControlFlowNode
     public override string ToString()
     {
         return $"{nameof(Fragment)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        output.Add(IFragmentNode.Create(builder, this));
     }
 }

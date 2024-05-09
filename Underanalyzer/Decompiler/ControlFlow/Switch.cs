@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -39,6 +40,11 @@ internal class Switch : IControlFlowNode
         {
             return $"{nameof(CaseJumpNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
         }
+
+        public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class CaseDestinationNode(int address) : IControlFlowNode
@@ -62,6 +68,11 @@ internal class Switch : IControlFlowNode
         public override string ToString()
         {
             return $"{nameof(CaseDestinationNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+        }
+
+        public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -532,5 +543,9 @@ internal class Switch : IControlFlowNode
 
         ctx.SwitchNodes = res;
         return res;
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
     }
 }

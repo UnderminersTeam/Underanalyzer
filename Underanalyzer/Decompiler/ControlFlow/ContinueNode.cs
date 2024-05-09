@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -24,5 +26,10 @@ internal class ContinueNode(int address) : IControlFlowNode
     public override string ToString()
     {
         return $"{nameof(ContinueNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        throw new NotImplementedException();
     }
 }

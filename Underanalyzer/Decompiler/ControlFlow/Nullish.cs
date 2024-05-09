@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -108,5 +110,10 @@ internal class Nullish : IControlFlowNode
 
         ctx.NullishNodes = res;
         return res;
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        throw new NotImplementedException();
     }
 }

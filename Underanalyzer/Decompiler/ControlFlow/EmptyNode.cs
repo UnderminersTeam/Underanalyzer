@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -25,5 +27,10 @@ internal class EmptyNode(int address) : IControlFlowNode
     public override string ToString()
     {
         return $"{nameof(EmptyNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        // Do nothing
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using Underanalyzer.Decompiler.AST;
 using Underanalyzer.Mock;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
@@ -265,5 +266,10 @@ internal class Block : IControlFlowNode
     public override string ToString()
     {
         return $"{nameof(Block)} {BlockIndex} ({Instructions.Count} instructions, {Predecessors.Count} predecessors, {Successors.Count} successors)";
+    }
+
+    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    {
+        BlockSimulator.Simulate(builder, output, this);
     }
 }
