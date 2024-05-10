@@ -69,14 +69,18 @@ internal class Fragment : IControlFlowNode
                 {
                     // We're an inner fragment - mark first block as no longer unreachable
                     if (!current.Children[0].Unreachable)
-                        throw new Exception("Expected first block of fragment to be unreachable.");
+                    {
+                        throw new DecompilerException("Expected first block of fragment to be unreachable.");
+                    }
                     current.Children[0].Unreachable = false;
                     IControlFlowNode.DisconnectPredecessor(current.Children[0], 0);
 
                     // We're an inner fragment - remove "exit" instruction
                     var lastBlockInstructions = (current.Children[^1] as Block).Instructions;
                     if (lastBlockInstructions[^1].Kind != IGMInstruction.Opcode.Exit)
-                        throw new Exception("Expected exit at end of fragment.");
+                    {
+                        throw new DecompilerException("Expected exit at end of fragment.");
+                    }
                     lastBlockInstructions.RemoveAt(lastBlockInstructions.Count - 1);
 
                     // Go to the fragment the next level up
@@ -88,7 +92,9 @@ internal class Fragment : IControlFlowNode
                     current.Children.Add(block);
 
                     if (block.StartAddress != code.Length)
-                        throw new Exception("Code length mismatches final block address.");
+                    {
+                        throw new DecompilerException("Code length mismatches final block address.");
+                    }
 
                     break;
                 }
@@ -103,7 +109,9 @@ internal class Fragment : IControlFlowNode
                 // Compute the end address of this fragment, by looking at previous block
                 Block previous = blocks[i - 1];
                 if (previous.Instructions[^1].Kind != IGMInstruction.Opcode.Branch)
-                    throw new Exception("Expected branch before fragment start.");
+                {
+                    throw new DecompilerException("Expected branch before fragment start.");
+                }
                 int endAddr = previous.Successors[0].StartAddress;
 
                 // Remove previous block's branch instruction
@@ -120,14 +128,18 @@ internal class Fragment : IControlFlowNode
 
             // If we're at the start of the fragment, track parent node on the block
             if (current.Children.Count == 0)
+            {
                 block.Parent = current;
+            }
 
             // Add this block to our current fragment
             current.Children.Add(block);
         }
 
         if (stack.Count > 0)
-            throw new Exception("Failed to close all fragments.");
+        {
+            throw new DecompilerException("Failed to close all fragments.");
+        }
 
         ctx.FragmentNodes = fragments;
         return fragments;
@@ -140,6 +152,14 @@ internal class Fragment : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IASTNode> output)
     {
-        output.Add(IFragmentNode.Create(builder, this));
+        IFragmentNode node = IFragmentNode.Create(builder, this);
+        if (node is IExpressionNode exprNode)
+        {
+            builder.ExpressionStack.Push(exprNode);
+        }
+        else
+        {
+            output.Add(node);
+        }
     }
 }

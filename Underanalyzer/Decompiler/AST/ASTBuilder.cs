@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -14,7 +15,7 @@ public class ASTBuilder
     /// Reusable expression stack for instruction simulation. When non-empty after building a control flow node,
     /// usually signifies data that needs to get processed by the following control flow node.
     /// </summary>
-    internal Stack<IASTNode> ExpressionStack { get => TopFragmentContext.ExpressionStack; }
+    internal Stack<IExpressionNode> ExpressionStack { get => TopFragmentContext.ExpressionStack; }
 
     /// <summary>
     /// The index to start processing instructions for the next ControlFlow.Block we encounter.
@@ -25,11 +26,22 @@ public class ASTBuilder
     /// <summary>
     /// List of arguments passed into a struct fragment.
     /// </summary>
-    internal List<IASTNode> StructArguments { get => TopFragmentContext.StructArguments; set => TopFragmentContext.StructArguments = value; }
+    internal List<IExpressionNode> StructArguments { get => TopFragmentContext.StructArguments; set => TopFragmentContext.StructArguments = value; }
 
-    // Variables managing the fragment context stack state
+    /// <summary>
+    /// Set of all local variables present in the current fragment.
+    /// </summary>
+    internal HashSet<string> LocalVariableNames { get => TopFragmentContext.LocalVariableNames; }
+
+    /// <summary>
+    /// The stack used to manage fragment contexts.
+    /// </summary>
     private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();
-    private ASTFragmentContext TopFragmentContext { get; set; }
+
+    /// <summary>
+    /// The current/top fragment context.
+    /// </summary>
+    internal ASTFragmentContext TopFragmentContext { get; private set; }
 
     /// <summary>
     /// Initializes a new AST builder from the given code context.
@@ -55,7 +67,7 @@ public class ASTBuilder
     /// </summary>
     internal BlockNode BuildBlock(ControlFlow.IControlFlowNode startNode)
     {
-        BlockNode block = new();
+        BlockNode block = new(TopFragmentContext);
 
         // Advance through all successors, building out this block
         var currentNode = startNode;
@@ -65,7 +77,7 @@ public class ASTBuilder
 
             if (currentNode.Successors.Count > 1)
             {
-                throw new Exception("Unexpected branch");
+                throw new DecompilerException("Unexpected branch when building AST");
             }
             if (currentNode.Successors.Count == 1)
             {

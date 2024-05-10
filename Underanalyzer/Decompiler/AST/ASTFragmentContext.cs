@@ -1,15 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
-/// Helper class used solely by <see cref="ASTBuilder"/> to manage the fragment context stack.
+/// Represents a single fragment context within the AST.
 /// </summary>
-internal class ASTFragmentContext
+public class ASTFragmentContext
 {
-    public Stack<IASTNode> ExpressionStack { get; } = new();
+    /// <summary>
+    /// Current working VM expression stack.
+    /// </summary>
+    internal Stack<IExpressionNode> ExpressionStack { get; } = new();
 
-    public List<IASTNode> StructArguments { get; set; } = null;
+    /// <summary>
+    /// If not null, represents the list of arguments getting passed into this fragment (which is a struct).
+    /// </summary>
+    public List<IExpressionNode> StructArguments { get; internal set; } = null;
+
+    /// <summary>
+    /// Contains all local variables referenced from within this fragment.
+    /// </summary>
+    public HashSet<string> LocalVariableNames { get; } = new();
 }

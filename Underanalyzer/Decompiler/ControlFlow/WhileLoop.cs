@@ -76,7 +76,9 @@ internal class WhileLoop : Loop
         // Find branch location after head
         Block branchBlock = After.Predecessors[0] as Block;
         if (branchBlock.Instructions[^1].Kind != IGMInstruction.Opcode.BranchFalse)
-            throw new Exception("Expected BranchFalse in branch block - misidentified");
+        {
+            throw new DecompilerException("Expected BranchFalse in branch block - misidentified");
+        }
 
         // Identify body node by using branch location's first target (the one that doesn't jump)
         Body = branchBlock.Successors[0];

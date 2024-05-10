@@ -10,6 +10,12 @@ namespace Underanalyzer.Decompiler.AST;
 public interface IFragmentNode : IASTNode
 {
     /// <summary>
+    /// Context for this fragment. Includes information on struct arguments, locals, etc.
+    /// Note that for function declaration/struct nodes, it is often their inner block that has a new context.
+    /// </summary>
+    public ASTFragmentContext FragmentContext { get; }
+
+    /// <summary>
     /// Creates and builds new AST fragment node from the given control flow fragment.
     /// Determines which type of fragment node it is, and returns that type.
     /// </summary>
@@ -26,25 +32,25 @@ public interface IFragmentNode : IASTNode
         // Ensure we have a block after this fragment, so we can determine what it is
         if (fragment.Successors.Count != 1 || fragment.Successors[0] is not Block followingBlock)
         {
-            throw new Exception("Expected block after fragment");
+            throw new DecompilerException("Expected block after fragment");
         }
 
         // Ensure we have enough instructions to work with
         if (followingBlock.Instructions.Count < 3)
         {
-            throw new Exception("Missing instructions after fragment");
+            throw new DecompilerException("Missing instructions after fragment");
         }
 
         // Get function reference for fragment
         if (followingBlock.Instructions[0] is not { Kind: Opcode.Push, Type1: DataType.Int32, Function: IGMFunction function } || function is null)
         {
-            throw new Exception("Expected push.i with function reference after fragment");
+            throw new DecompilerException("Expected push.i with function reference after fragment");
         }
 
         // Ensure conv instruction exists
         if (followingBlock.Instructions[1] is not { Kind: Opcode.Convert, Type1: DataType.Int32, Type2: DataType.Variable})
         {
-            throw new Exception("Expected conv.i.v instruction after fragment");
+            throw new DecompilerException("Expected conv.i.v instruction after fragment");
         }
 
         switch (followingBlock.Instructions[2].Kind)
@@ -61,7 +67,7 @@ public interface IFragmentNode : IASTNode
                             ..
                         ])
                     {
-                        throw new Exception("Fragment instruction match failure (normal function)");
+                        throw new DecompilerException("Fragment instruction match failure (normal function)");
                     }
 
                     // Build body of the function
@@ -81,12 +87,12 @@ public interface IFragmentNode : IASTNode
                     {
                         // We have a name! Build and return result
                         builder.StartBlockInstructionIndex = 8;
-                        return new FunctionDeclNode(funcName, false, block);
+                        return new FunctionDeclNode(funcName, false, block, builder.TopFragmentContext);
                     }
 
                     // We're anonymous!
                     builder.StartBlockInstructionIndex = 5;
-                    return new FunctionDeclNode(null, false, block);
+                    return new FunctionDeclNode(null, false, block, builder.TopFragmentContext);
                 }
             case Opcode.Call:
                 {
@@ -99,7 +105,7 @@ public interface IFragmentNode : IASTNode
                             ..
                         ])
                     {
-                        throw new Exception("Fragment instruction match failure (struct/constructor)");
+                        throw new DecompilerException("Fragment instruction match failure (struct/constructor)");
                     }
 
                     // Check if we're a struct or function constructor (named)
@@ -124,7 +130,7 @@ public interface IFragmentNode : IASTNode
                                     ArgumentCount: int argumentCount
                                 })
                             {
-                                throw new Exception("Fragment instruction match failure (struct)");
+                                throw new DecompilerException("Fragment instruction match failure (struct)");
                             }
 
                             // Load struct arguments from stack (in reverse)
@@ -140,7 +146,7 @@ public interface IFragmentNode : IASTNode
                             builder.PopFragmentContext();
 
                             builder.StartBlockInstructionIndex = 8;
-                            return new StructNode(block);
+                            return new StructNode(block, builder.TopFragmentContext);
                         }
                         else
                         {
@@ -152,7 +158,7 @@ public interface IFragmentNode : IASTNode
                             builder.PopFragmentContext();
 
                             builder.StartBlockInstructionIndex = 7;
-                            return new FunctionDeclNode(funcName, true, block);
+                            return new FunctionDeclNode(funcName, true, block, builder.TopFragmentContext);
                         }
                     }
                     else
@@ -165,11 +171,11 @@ public interface IFragmentNode : IASTNode
                         builder.PopFragmentContext();
 
                         builder.StartBlockInstructionIndex = 4;
-                        return new FunctionDeclNode(null, true, block);
+                        return new FunctionDeclNode(null, true, block, builder.TopFragmentContext);
                     }
                 }
         }
 
-        throw new Exception("Failed to detect type of fragment");
+        throw new DecompilerException("Failed to detect type of fragment");
     }
 }

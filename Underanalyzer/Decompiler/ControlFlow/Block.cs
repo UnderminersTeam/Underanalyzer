@@ -84,7 +84,7 @@ internal class Block : IControlFlowNode
                             catchInstr is not { Kind: IGMInstruction.Opcode.Push, Type1: IGMInstruction.DataType.Int32 } ||
                             popInstr is not { Kind: IGMInstruction.Opcode.PopDelete })
                         {
-                            throw new Exception("Expected Push with type Int32 before try hook");
+                            throw new DecompilerException("Expected Push with type Int32 before try hook");
                         }
 
                         // Add connections to referenced blocks
@@ -125,7 +125,9 @@ internal class Block : IControlFlowNode
             {
                 // End previous block
                 if (current != null)
+                {
                     current.EndAddress = instr.Address;
+                }
 
                 // Make new block
                 current = new(instr.Address, -1, blocks.Count, []);
@@ -139,7 +141,9 @@ internal class Block : IControlFlowNode
 
         // End current block, if applicable
         if (current != null)
+        {
             current.EndAddress = code.Length;
+        }
 
         // Add ending block
         Block end = new(code.Length, code.Length, blocks.Count, []);
@@ -150,7 +154,9 @@ internal class Block : IControlFlowNode
         foreach (Block b in blocks)
         {
             if (b.StartAddress == code.Length)
+            {
                 continue;
+            }
 
             IGMInstruction last = b.Instructions[^1];
             switch (last.Kind)

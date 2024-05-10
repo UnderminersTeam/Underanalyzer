@@ -113,7 +113,9 @@ internal class BinaryBranch : IControlFlowNode
             foreach (IControlFlowNode successor in node.Successors)
             {
                 if (successor.StartAddress < node.StartAddress || successor == node)
-                    throw new Exception("Unresolved loop");
+                {
+                    throw new DecompilerException("Unresolved loop when following binary branches");
+                }
                 if (!visited.Contains(successor))
                 {
                     work.Push(successor);
@@ -164,12 +166,14 @@ internal class BinaryBranch : IControlFlowNode
             foreach (IControlFlowNode successor in node.Successors)
             {
                 if (successor.StartAddress < node.StartAddress || successor == node)
-                    throw new Exception("Unresolved loop");
+                {
+                    throw new DecompilerException("Unresolved loop when following binary branches");
+                }
                 work.Push(successor);
             }
         }
 
-        throw new Exception("Failed to find meetpoint");
+        throw new DecompilerException("Failed to find binary branch meetpoint");
     }
 
     /// <summary>
@@ -190,10 +194,14 @@ internal class BinaryBranch : IControlFlowNode
             // Now, we want to connect to the following block.
             // However, we may have some other structure there, so we need to follow the parent(s) of the block.
             if (block.BlockIndex + 1 >= blocks.Count)
-                throw new Exception("Expected following block after break/continue");
+            {
+                throw new DecompilerException("Expected following block after break/continue");
+            }
             IControlFlowNode following = blocks[block.BlockIndex + 1];
             while (following.Parent is not null)
+            {
                 following = following.Parent;
+            }
             node.Successors.Add(following);
             following.Predecessors.Add(node);
         }
@@ -202,7 +210,9 @@ internal class BinaryBranch : IControlFlowNode
             // We already have a node after us - it's an unreachable node.
             // Just insert this break/continue statement between this block and that node.
             if (block.Successors.Count != 1 || !block.Successors[0].Unreachable)
-                throw new Exception("Expected unreachable block after break/continue");
+            {
+                throw new DecompilerException("Expected unreachable block after break/continue");
+            }
             IControlFlowNode.InsertSuccessor(block, 0, node);
         }
     }
@@ -319,7 +329,9 @@ internal class BinaryBranch : IControlFlowNode
                 if (bb.Else is not null && curr.EndAddress == bb.Else.StartAddress && curr is Block b)
                 {
                     if (b.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
-                        throw new Exception("Expected branch to skip past else block");
+                    {
+                        throw new DecompilerException("Expected branch to skip past else block");
+                    }
                     b.Instructions.RemoveAt(b.Instructions.Count - 1);
                 }
 

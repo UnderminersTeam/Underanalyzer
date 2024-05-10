@@ -11,6 +11,7 @@ public class DecompileContext
 
     // TODO: probably refer to global data here
     internal bool OlderThanBytecode15 { get => false; }
+    internal bool GMLv2 { get => false; }
 
     internal List<Block> Blocks { get; set; }
     internal List<Fragment> FragmentNodes { get; set; }

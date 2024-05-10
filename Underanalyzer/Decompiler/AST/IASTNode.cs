@@ -1,4 +1,6 @@
 ﻿using System;
+using static Underanalyzer.IGMInstruction;
+
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
@@ -6,11 +8,6 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public interface IASTNode
 {
-    /// <summary>
-    /// If true, this node was duplicated during simulation.
-    /// </summary>
-    public bool Duplicated { get; internal set; }
-
     /// <summary>
     /// Prints this node using the provided printer.
     /// </summary>

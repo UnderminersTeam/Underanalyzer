@@ -5,7 +5,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// A function declaration within the AST.
 /// </summary>
-public class FunctionDeclNode : IFragmentNode
+public class FunctionDeclNode : IFragmentNode, IExpressionNode
 {
     /// <summary>
     /// Name of the function, or null if anonymous.
@@ -27,13 +27,16 @@ public class FunctionDeclNode : IFragmentNode
     /// </summary>
     public IASTNode Body { get; }
 
-    bool IASTNode.Duplicated { get; set; } = false;
+    public bool Duplicated { get; set; } = false;
+    public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+    public ASTFragmentContext FragmentContext { get; }
 
-    public FunctionDeclNode(string name, bool isConstructor, IASTNode body)
+    public FunctionDeclNode(string name, bool isConstructor, IASTNode body, ASTFragmentContext fragmentContext)
     {
         Name = name;
         IsConstructor = isConstructor;
         Body = body;
+        FragmentContext = fragmentContext;
     }
 
     public void Print(ASTPrinter printer)

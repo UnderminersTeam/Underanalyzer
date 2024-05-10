@@ -89,12 +89,12 @@ internal class TryCatch : IControlFlowNode
                         Block tryEndBlock = endNode.Predecessors[1] as Block;
                         if (tryEndBlock == block || tryEndBlock.StartAddress >= catchNode.StartAddress)
                         {
-                            throw new Exception("Failed to find end of try block");
+                            throw new DecompilerException("Failed to find end of try block");
                         }
                         if (tryEndBlock.Instructions.Count < 1 ||
                             tryEndBlock.Instructions[^1].Kind != IGMInstruction.Opcode.Branch)
                         {
-                            throw new Exception("Expected Branch at end of try block");
+                            throw new DecompilerException("Expected Branch at end of try block");
                         }
                         tryEndBlock.Instructions.RemoveAt(tryEndBlock.Instructions.Count - 1);
 
@@ -104,7 +104,7 @@ internal class TryCatch : IControlFlowNode
                             [.., { Kind: IGMInstruction.Opcode.Call }, { Kind: IGMInstruction.Opcode.PopDelete },
                             { Kind: IGMInstruction.Opcode.Branch }])
                         {
-                            throw new Exception("Expected finish catch and Branch at end of catch block");
+                            throw new DecompilerException("Expected finish catch and Branch at end of catch block");
                         }
                         catchEndBlock.Instructions.RemoveRange(catchEndBlock.Instructions.Count - 3, 3);
 
@@ -132,17 +132,21 @@ internal class TryCatch : IControlFlowNode
                     if (endBlock.Instructions[0].Kind != IGMInstruction.Opcode.Call ||
                         endBlock.Instructions[0].Function.Name?.Content != VMConstants.TryUnhookFunction)
                     {
-                        throw new Exception("Expected try unhook in end node");
+                        throw new DecompilerException("Expected try unhook in end node");
                     }
                     endBlock.Instructions.RemoveRange(0, 2);
 
                     // Insert into graph (manually, here)
                     if (block.Successors.Count != 0)
-                        throw new Exception("Expected no successors for try start block");
+                    {
+                        throw new DecompilerException("Expected no successors for try start block");
+                    }
                     block.Successors.Add(tc);
                     tc.Predecessors.Add(block);
                     if (endNode.Predecessors.Count != 0)
-                        throw new Exception("Expected no predecessors for try end block");
+                    {
+                        throw new DecompilerException("Expected no predecessors for try end block");
+                    }
                     tc.Successors.Add(endNode);
                     endNode.Predecessors.Add(tc);
 
@@ -160,7 +164,9 @@ internal class TryCatch : IControlFlowNode
                     // Remove redundant branch instruction for later operation.
                     // We leave final blocks for post-processing on the syntax tree due to complexity.
                     if (block.Instructions[^1].Kind != IGMInstruction.Opcode.Branch)
-                        throw new Exception("Expected Branch after finally block");
+                    {
+                        throw new DecompilerException("Expected Branch after finally block");
+                    }
                     block.Instructions.RemoveAt(block.Instructions.Count - 1);
                 }
             }

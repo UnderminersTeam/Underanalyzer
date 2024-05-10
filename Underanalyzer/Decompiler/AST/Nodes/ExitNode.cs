@@ -7,8 +7,6 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public class ExitNode : IASTNode
 {
-    bool IASTNode.Duplicated { get; set; } = false;
-
     public void Print(ASTPrinter printer)
     {
         throw new NotImplementedException();

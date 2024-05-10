@@ -11,8 +11,6 @@ public class ReturnNode : IASTNode
     /// </summary>
     public IASTNode Value { get; }
 
-    bool IASTNode.Duplicated { get; set; } = false;
-
     public ReturnNode(IASTNode value)
     {
         Value = value;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -20,7 +19,12 @@ public class BlockNode : IFragmentNode
     /// </summary>
     public List<IASTNode> Children { get; internal set; } = new();
 
-    bool IASTNode.Duplicated { get; set; } = false;
+    public ASTFragmentContext FragmentContext { get; }
+
+    public BlockNode(ASTFragmentContext fragmentContext)
+    {
+        FragmentContext = fragmentContext;
+    }
 
     public void Print(ASTPrinter printer)
     {

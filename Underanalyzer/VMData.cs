@@ -499,7 +499,12 @@ public interface IGMInstruction
         /// Represents a 16-bit integer.
         /// </summary>
         [DataTypeInfo('e', 4)]
-        Int16 = 15
+        Int16 = 15,
+
+        /// <summary>
+        /// Represents an unknown/unset data type. Should never be seen in the actual VM.
+        /// </summary>
+        Unset
     }
 
     /// <summary>
@@ -701,6 +706,11 @@ public interface IGMInstruction
     /// Returns the number of arguments encoded in this instruction, for call instructions.
     /// </summary>
     public int ArgumentCount { get; }
+
+    /// <summary>
+    /// For pop.e.v instructions, this should return either 5 or 6, depending on the "pop swap" size.
+    /// </summary>
+    public int PopSwapSize { get; }
 
     /// <summary>
     /// Returns size of an instruction, in bytes.

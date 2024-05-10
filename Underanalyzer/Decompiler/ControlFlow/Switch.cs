@@ -250,7 +250,9 @@ internal class Switch : IControlFlowNode
                 }
             }
             if (firstBranchPredecessor == null)
-                throw new Exception("Failed to find end of switch cases");
+            {
+                throw new DecompilerException("Failed to find end of switch cases");
+            }
 
             // Need to detect whether or not we have a default case in this switch.
             // If previous block ends with Branch, then:
@@ -379,7 +381,9 @@ internal class Switch : IControlFlowNode
 
                 // Clear out the Compare & BranchTrue and replace it with a CaseJumpNode
                 if (currentBlock.Instructions[^2].Kind != IGMInstruction.Opcode.Compare)
-                    throw new Exception("Expected Compare instruction in switch case");
+                {
+                    throw new DecompilerException("Expected Compare instruction in switch case");
+                }
                 currentBlock.Instructions.RemoveRange(currentBlock.Instructions.Count - 2, 2);
                 IControlFlowNode.DisconnectSuccessor(currentBlock, 1);
                 CaseJumpNode caseJumpNode = new(currentBlock.EndAddress);
