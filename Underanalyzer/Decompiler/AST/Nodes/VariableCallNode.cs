@@ -4,26 +4,32 @@ using System.Collections.Generic;
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
-/// Represents the "new" keyword being used to instantiate an object in the AST.
+/// Represents a variable being called as a method/function in the AST.
 /// </summary>
-public class NewObjectNode : IExpressionNode
+public class VariableCallNode : IExpressionNode
 {
     /// <summary>
-    /// The function (constructor) being used.
+    /// The function/method variable being called.
     /// </summary>
     public IExpressionNode Function { get; }
 
     /// <summary>
-    /// The arguments passed into the function (constructor).
+    /// The instance the method is being called on.
+    /// </summary>
+    public IExpressionNode Instance { get; }
+
+    /// <summary>
+    /// The arguments used in the call.
     /// </summary>
     public List<IExpressionNode> Arguments { get; }
 
     public bool Duplicated { get; set; }
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
-    public NewObjectNode(IExpressionNode function, List<IExpressionNode> arguments)
+    public VariableCallNode(IExpressionNode function, IExpressionNode instance, List<IExpressionNode> arguments)
     {
         Function = function;
+        Instance = instance;
         Arguments = arguments;
     }
 

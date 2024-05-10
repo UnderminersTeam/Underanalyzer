@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Underanalyzer.Mock;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -12,6 +10,23 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 internal class BlockSimulator
 {
+    private static readonly Dictionary<DataType, int> DataTypeToSize = new();
+
+    /// <summary>
+    /// Initializes precomputed data for VM simulation.
+    /// </summary>
+    static BlockSimulator()
+    {
+        // Load in data type sizes
+        Type typeDataType = typeof(DataType);
+        foreach (DataType dataType in Enum.GetValues(typeDataType))
+        {
+            var field = typeDataType.GetField(Enum.GetName(typeDataType, dataType));
+            var info = field.GetCustomAttribute<DataTypeInfo>();
+            DataTypeToSize[dataType] = info.Size;
+        }
+    }
+
     /// <summary>
     /// Simulates a single control flow block, outputting to the output list.
     /// </summary>
@@ -56,6 +71,9 @@ internal class BlockSimulator
                 case Opcode.Call:
                     SimulateCall(builder, instr);
                     break;
+                case Opcode.CallVariable:
+                    SimulateCallVariable(builder, instr);
+                    break;
                 case Opcode.Push:
                 case Opcode.PushLocal:
                 case Opcode.PushGlobal:
@@ -66,16 +84,108 @@ internal class BlockSimulator
                     builder.ExpressionStack.Push(new Int16Node(instr.ValueShort));
                     break;
                 case Opcode.Pop:
-                    SimulatePop(builder, output, instr);
+                    SimulatePopVariable(builder, output, instr);
+                    break;
+                case Opcode.Duplicate:
+                    SimulateDuplicate(builder, instr);
                     break;
                 case Opcode.Extended:
                     SimulateExtended(builder, output, instr);
                     break;
-                // TODO: many operations
             }
         }
 
         builder.StartBlockInstructionIndex = 0;
+    }
+
+    /// <summary>
+    /// Simulates a single Duplicate instruction.
+    /// </summary>
+    private static void SimulateDuplicate(ASTBuilder builder, IGMInstruction instr)
+    {
+        DataType dupType = instr.Type1;
+        int dupTypeSize = DataTypeToSize[dupType];
+        int dupSize = instr.DuplicationSize;
+        int dupSwapSize = instr.DuplicationSize2;
+
+        if (dupSwapSize != 0)
+        {
+            // "Dup Swap" mode (GMLv2 version of "Pop Swap" mode)
+            if (dupType == DataType.Variable && dupSize == 0)
+            {
+                // Exit early; basically a no-op instruction
+                return;
+            }
+
+            // Load top data from stack
+            int topSize = dupSize * dupTypeSize;
+            Stack<IExpressionNode> topStack = new();
+            while (topSize > 0)
+            {
+                IExpressionNode curr = builder.ExpressionStack.Pop();
+                topStack.Push(curr);
+                topSize -= DataTypeToSize[curr.StackType];
+            }
+
+            // Load bottom data from stack
+            int bottomSize = dupSwapSize * dupTypeSize;
+            Stack<IExpressionNode> bottomStack = new();
+            while (bottomSize > 0)
+            {
+                IExpressionNode curr = builder.ExpressionStack.Pop();
+                bottomStack.Push(curr);
+                bottomSize -= DataTypeToSize[curr.StackType];
+            }
+
+            // Ensure we didn't read too much data accidentally
+            if (topSize < 0 || bottomSize < 0)
+            {
+                throw new DecompilerException(
+                    $"Dup swap read too much data from stack " +
+                    $"({dupSize * dupTypeSize} -> {topSize}, {dupSwapSize * dupTypeSize} -> {bottomSize})");
+            }
+
+            // Push top data back first (so that it ends up at the bottom)
+            while (topStack.Count > 0)
+            {
+                builder.ExpressionStack.Push(topStack.Pop());
+            }
+
+            // Push bottom data back second (so that it ends up at the top)
+            while (bottomStack.Count > 0)
+            {
+                builder.ExpressionStack.Push(bottomStack.Pop());
+            }
+        }
+        else
+        {
+            // Normal duplication mode
+            int size = (dupSize + 1) * dupTypeSize;
+            List<IExpressionNode> toDuplicate = new();
+            while (size > 0)
+            {
+                IExpressionNode curr = builder.ExpressionStack.Pop();
+                toDuplicate.Add(curr);
+                curr.Duplicated = true;
+                size -= DataTypeToSize[curr.StackType];
+            }
+
+            // Ensure we didn't read too much data accidentally
+            if (size < 0)
+            {
+                throw new DecompilerException(
+                    $"Dup read too much data from stack ({(dupSize + 1) * dupTypeSize} -> {size})");
+            }
+
+            // Push data back to the stack twice (duplicating it, while maintaining internal order)
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = toDuplicate.Count - 1; j >= 0; j--)
+                {
+                    builder.ExpressionStack.Push(toDuplicate[j]);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -110,19 +220,66 @@ internal class BlockSimulator
                 builder.ExpressionStack.Push(new Int16Node(instr.ValueShort));
                 break;
             case DataType.Variable:
-                // TODO
+                SimulatePushVariable(builder, instr);
                 break;
         }
     }
 
     /// <summary>
+    /// Simulates a single variable push instruction.
+    /// </summary>
+    private static void SimulatePushVariable(ASTBuilder builder, IGMInstruction instr)
+    {
+        VariableNode variable = new(instr.Variable, instr.ReferenceVarType, instr.Kind == Opcode.Push);
+
+        // If this is a local variable, add it to the set in this fragment context
+        if (variable.Variable.InstanceType == InstanceType.Local)
+        {
+            builder.TopFragmentContext.LocalVariableNames.Add(variable.Variable.Name.Content);
+        }
+
+        // Update left side of the variable
+        if (instr.InstType == InstanceType.StackTop || variable.ReferenceType == VariableType.StackTop)
+        {
+            // Left side is just on the top of the stack
+            variable.Left = builder.ExpressionStack.Pop();
+        }
+        else if (variable.ReferenceType == VariableType.Array)
+        {
+            // Left side comes after basic array indices
+            variable.ArrayIndices = SimulateArrayIndices(builder);
+            variable.Left = builder.ExpressionStack.Pop();
+        }
+        else if (variable.ReferenceType is VariableType.MultiPush or VariableType.MultiPushPop)
+        {
+            // Left side comes after a single array index
+            variable.ArrayIndices = new() { builder.ExpressionStack.Pop() };
+            variable.Left = builder.ExpressionStack.Pop();
+        }
+        else
+        {
+            // Simply use the instance type stored on the instruction as the left side
+            variable.Left = new InstanceTypeNode(instr.InstType);
+        }
+
+        // If the left side of the variable is the instance type of StackTop, then we go one level further.
+        // This is done in the VM for GMLv2's structs/objects, as they don't have instance IDs.
+        if (variable.Left is Int16Node i16 && i16.Value == (short)InstanceType.StackTop)
+        {
+            variable.Left = builder.ExpressionStack.Pop();
+        }
+
+        builder.ExpressionStack.Push(variable);
+    }
+
+    /// <summary>
     /// Simulates a single Pop instruction.
     /// </summary>
-    private static void SimulatePop(ASTBuilder builder, List<IASTNode> output, IGMInstruction instr)
+    private static void SimulatePopVariable(ASTBuilder builder, List<IASTNode> output, IGMInstruction instr)
     {
         if (instr.Variable is null)
         {
-            // "Pop Swap" instruction
+            // "Pop Swap" instruction variant - just moves stuff around on the stack
             IExpressionNode e1 = builder.ExpressionStack.Pop();
             IExpressionNode e2 = builder.ExpressionStack.Pop();
             for (int j = 0; j < (short)instr.ValueInt - 4; j++)
@@ -263,6 +420,26 @@ internal class BlockSimulator
         }
 
         builder.ExpressionStack.Push(new NewObjectNode(function, args));
+    }
+
+    /// <summary>
+    /// Simulates a single CallVariable instruction.
+    /// </summary>
+    private static void SimulateCallVariable(ASTBuilder builder, IGMInstruction instr)
+    {
+        // Load function/method and the instance to call it on from the stack
+        IExpressionNode function = builder.ExpressionStack.Pop();
+        IExpressionNode instance = builder.ExpressionStack.Pop();
+
+        // Load all arguments on stack into list
+        int numArgs = instr.ArgumentCount;
+        List<IExpressionNode> args = new(numArgs);
+        for (int j = 0; j < numArgs; j++)
+        {
+            args.Add(builder.ExpressionStack.Pop());
+        }
+
+        builder.ExpressionStack.Push(new VariableCallNode(function, instance, args));
     }
 
     /// <summary>

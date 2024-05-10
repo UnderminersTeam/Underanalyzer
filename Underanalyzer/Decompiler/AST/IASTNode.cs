@@ -1,7 +1,4 @@
-﻿using System;
-using static Underanalyzer.IGMInstruction;
-
-namespace Underanalyzer.Decompiler.AST;
+﻿namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Base interface for all nodes in the AST.

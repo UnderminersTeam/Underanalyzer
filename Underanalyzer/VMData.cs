@@ -499,12 +499,7 @@ public interface IGMInstruction
         /// Represents a 16-bit integer.
         /// </summary>
         [DataTypeInfo('e', 4)]
-        Int16 = 15,
-
-        /// <summary>
-        /// Represents an unknown/unset data type. Should never be seen in the actual VM.
-        /// </summary>
-        Unset
+        Int16 = 15
     }
 
     /// <summary>
