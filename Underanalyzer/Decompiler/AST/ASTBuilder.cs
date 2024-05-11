@@ -104,7 +104,7 @@ public class ASTBuilder
     }
 
     // List used for output of expressions, which should never have any statements
-    private static readonly List<IStatementNode> expressionOutput = new();
+    private readonly List<IStatementNode> expressionOutput = new();
 
     /// <summary>
     /// Builds an expression (of unknown type) starting from a control flow node, 
