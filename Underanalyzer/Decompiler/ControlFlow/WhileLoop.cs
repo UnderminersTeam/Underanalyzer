@@ -111,7 +111,7 @@ internal class WhileLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        IExpressionNode condition = builder.BuildExpression(Head);
+        IExpressionNode condition = builder.BuildExpression(Head, output);
         if (ForLoopIncrementor is not null)
         {
             // For loop

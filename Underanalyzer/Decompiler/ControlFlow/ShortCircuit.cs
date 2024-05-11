@@ -124,8 +124,10 @@ internal class ShortCircuit : IControlFlowNode
     {
         List<IExpressionNode> conditions = new(Children.Count);
 
-        foreach (IControlFlowNode child in Children)
+        conditions.Add(builder.BuildExpression(Children[0], output));
+        for (int i = 1; i < Children.Count; i++)
         {
+            IControlFlowNode child = Children[i];
             conditions.Add(builder.BuildExpression(child));
         }
 

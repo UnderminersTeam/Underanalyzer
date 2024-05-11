@@ -110,15 +110,16 @@ public class ASTBuilder
     /// Builds an expression (of unknown type) starting from a control flow node, 
     /// following all of its successors linearly.
     /// </summary>
-    internal IExpressionNode BuildExpression(IControlFlowNode startNode)
+    internal IExpressionNode BuildExpression(IControlFlowNode startNode, List<IStatementNode> output = null)
     {
+        output ??= expressionOutput;
         int stackCountBefore = ExpressionStack.Count;
 
         // Advance through all successors, building expression
         var currentNode = startNode;
         while (currentNode is not null)
         {
-            currentNode.BuildAST(this, expressionOutput);
+            currentNode.BuildAST(this, output);
 
             if (currentNode.Successors.Count > 1)
             {
@@ -142,7 +143,7 @@ public class ASTBuilder
             throw new DecompilerException("Unexpected statement found while evaluating expression");
         }
 
-        // Ensure we added exactly 1 expression to the stack while evaluating this expression
+        // Ensure we added exactly 1 expression to the stack while evaluating this expression (if desired)
         if (stackCountAfter != stackCountBefore + 1)
         {
             throw new DecompilerException(
@@ -158,15 +159,16 @@ public class ASTBuilder
     /// Builds arbitrary expression AST starting from a control flow node, following all of its successors linearly.
     /// No statements can be created in this context, and at most a defined number of expressions can be created.
     /// </summary>
-    internal void BuildArbitrary(IControlFlowNode startNode, int numAllowedExpressions = 0)
+    internal void BuildArbitrary(IControlFlowNode startNode, List<IStatementNode> output = null, int numAllowedExpressions = 0)
     {
+        output ??= expressionOutput;
         int stackCountBefore = ExpressionStack.Count;
 
         // Advance through all successors, building expression
         var currentNode = startNode;
         while (currentNode is not null)
         {
-            currentNode.BuildAST(this, expressionOutput);
+            currentNode.BuildAST(this, output);
 
             if (currentNode.Successors.Count > 1)
             {
@@ -184,13 +186,13 @@ public class ASTBuilder
 
         int stackCountAfter = ExpressionStack.Count;
 
-        // Ensure we didn't produce any statements while evaluating expression
+        // Ensure we didn't produce any statements while evaluating (if desired)
         if (expressionOutput.Count > 0)
         {
             throw new DecompilerException("Unexpected statement found while evaluating arbitrary AST");
         }
 
-        // Ensure we added exactly 1 expression to the stack while evaluating this expression
+        // Ensure we didn't add too many expressions to the stack
         if (stackCountAfter > (stackCountBefore + numAllowedExpressions))
         {
             throw new DecompilerException(
