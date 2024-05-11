@@ -26,6 +26,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+    public bool SemicolonAfter { get => true; }
 
     public VariableCallNode(IExpressionNode function, IExpressionNode instance, List<IExpressionNode> arguments)
     {

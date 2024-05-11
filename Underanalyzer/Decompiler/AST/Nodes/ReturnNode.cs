@@ -11,6 +11,8 @@ public class ReturnNode : IStatementNode
     /// </summary>
     public IExpressionNode Value { get; private set; }
 
+    public bool SemicolonAfter { get => true; }
+
     public ReturnNode(IExpressionNode value)
     {
         Value = value;
@@ -26,6 +28,5 @@ public class ReturnNode : IStatementNode
     {
         printer.Write("return ");
         Value.Print(printer);
-        printer.Semicolon();
     }
 }

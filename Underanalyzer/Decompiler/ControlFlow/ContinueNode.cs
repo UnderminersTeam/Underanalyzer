@@ -30,6 +30,6 @@ internal class ContinueNode(int address) : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        output.Add(new AST.ContinueNode());
     }
 }

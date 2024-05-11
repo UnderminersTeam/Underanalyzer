@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Collections.Generic;
+using Underanalyzer.Decompiler.ControlFlow;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -44,6 +43,11 @@ public class ASTBuilder
     internal ASTFragmentContext TopFragmentContext { get; private set; }
 
     /// <summary>
+    /// Current queue of switch case expressions.
+    /// </summary>
+    internal Queue<IExpressionNode> SwitchCases { get; set; } = null;
+
+    /// <summary>
     /// Initializes a new AST builder from the given code context.
     /// </summary>
     public ASTBuilder(DecompileContext context)
@@ -63,15 +67,16 @@ public class ASTBuilder
     }
 
     /// <summary>
-    /// Builds a block starting from a control flow node, following all of its successors linearly.
+    /// Builds a block starting from a control flow node, following all of its successors linearly,
+    /// before stopping at a given node (or null, by default).
     /// </summary>
-    internal BlockNode BuildBlock(ControlFlow.IControlFlowNode startNode)
+    internal BlockNode BuildBlock(IControlFlowNode startNode, IControlFlowNode stopAtNode = null)
     {
         BlockNode block = new(TopFragmentContext);
 
         // Advance through all successors, building out this block
         var currentNode = startNode;
-        while (currentNode is not null)
+        while (currentNode is not null && currentNode != stopAtNode)
         {
             currentNode.BuildAST(this, block.Children);
 
@@ -96,6 +101,102 @@ public class ASTBuilder
         }
 
         return block;
+    }
+
+    // List used for output of expressions, which should never have any statements
+    private static readonly List<IStatementNode> expressionOutput = new();
+
+    /// <summary>
+    /// Builds an expression (of unknown type) starting from a control flow node, 
+    /// following all of its successors linearly.
+    /// </summary>
+    internal IExpressionNode BuildExpression(IControlFlowNode startNode)
+    {
+        int stackCountBefore = ExpressionStack.Count;
+
+        // Advance through all successors, building expression
+        var currentNode = startNode;
+        while (currentNode is not null)
+        {
+            currentNode.BuildAST(this, expressionOutput);
+
+            if (currentNode.Successors.Count > 1)
+            {
+                throw new DecompilerException("Unexpected branch when building AST");
+            }
+            if (currentNode.Successors.Count == 1)
+            {
+                currentNode = currentNode.Successors[0];
+            }
+            else
+            {
+                currentNode = null;
+            }
+        }
+
+        int stackCountAfter = ExpressionStack.Count;
+
+        // Ensure we didn't produce any statements while evaluating expression
+        if (expressionOutput.Count > 0)
+        {
+            throw new DecompilerException("Unexpected statement found while evaluating expression");
+        }
+
+        // Ensure we added exactly 1 expression to the stack while evaluating this expression
+        if (stackCountAfter != stackCountBefore + 1)
+        {
+            throw new DecompilerException(
+                $"Unexpected change of stack count from {stackCountBefore} to " +
+                $"{stackCountAfter} while evaluating expression");
+        }
+
+        // Return the expression that was evaluated
+        return ExpressionStack.Pop();
+    }
+
+    /// <summary>
+    /// Builds arbitrary expression AST starting from a control flow node, following all of its successors linearly.
+    /// No statements can be created in this context, and a defined number of expressions can be created.
+    /// </summary>
+    internal void BuildArbitrary(IControlFlowNode startNode, int numAllowedExpressions = 0)
+    {
+        int stackCountBefore = ExpressionStack.Count;
+
+        // Advance through all successors, building expression
+        var currentNode = startNode;
+        while (currentNode is not null)
+        {
+            currentNode.BuildAST(this, expressionOutput);
+
+            if (currentNode.Successors.Count > 1)
+            {
+                throw new DecompilerException("Unexpected branch when building AST");
+            }
+            if (currentNode.Successors.Count == 1)
+            {
+                currentNode = currentNode.Successors[0];
+            }
+            else
+            {
+                currentNode = null;
+            }
+        }
+
+        int stackCountAfter = ExpressionStack.Count;
+
+        // Ensure we didn't produce any statements while evaluating expression
+        if (expressionOutput.Count > 0)
+        {
+            throw new DecompilerException("Unexpected statement found while evaluating arbitrary AST");
+        }
+
+        // Ensure we added exactly 1 expression to the stack while evaluating this expression
+        if (stackCountAfter != stackCountBefore + numAllowedExpressions)
+        {
+            throw new DecompilerException(
+                $"Unexpected change of stack count from {stackCountBefore} to " +
+                $"{stackCountAfter} while evaluating arbitrary AST");
+        }
     }
 
     /// <summary>

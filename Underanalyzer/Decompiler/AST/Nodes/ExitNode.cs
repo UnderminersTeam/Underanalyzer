@@ -7,6 +7,8 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public class ExitNode : IStatementNode
 {
+    public bool SemicolonAfter { get => true; }
+
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         return this;
@@ -16,6 +18,5 @@ public class ExitNode : IStatementNode
     {
         // TODO: check if we're inside of a function (or script in GMS2) and use "return" instead
         printer.Write("exit");
-        printer.Semicolon();
     }
 }

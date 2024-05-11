@@ -16,6 +16,7 @@ public class StructNode : IFragmentNode, IExpressionNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
+    public bool SemicolonAfter { get => false; }
 
     public StructNode(BlockNode body, ASTFragmentContext fragmentContext)
     {

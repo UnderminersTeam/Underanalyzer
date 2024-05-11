@@ -43,7 +43,11 @@ internal class Switch : IControlFlowNode
 
         public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
         {
-            throw new NotImplementedException();
+            // Queue our expression to be used later, when the case destination is processed
+            builder.SwitchCases.Enqueue(builder.ExpressionStack.Pop());
+
+            // Get rid of duplicated expression
+            builder.ExpressionStack.Pop();
         }
     }
 
@@ -72,7 +76,16 @@ internal class Switch : IControlFlowNode
 
         public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
         {
-            throw new NotImplementedException();
+            if (IsDefault)
+            {
+                // Just a simple default
+                output.Add(new SwitchCaseNode(null));
+            }
+            else
+            {
+                // Retrieve expression from earlier evaluation
+                output.Add(new SwitchCaseNode(builder.SwitchCases.Dequeue()));
+            }
         }
     }
 
@@ -551,5 +564,25 @@ internal class Switch : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
+        // Begin new switch case queue for this statement
+        var prevSwitchCases = builder.SwitchCases;
+        builder.SwitchCases = new(8);
+
+        // Evaluate case expressions
+        builder.BuildArbitrary(Cases, 1);
+
+        // All that's left on stack is the expression we're switching on
+        IExpressionNode expression = builder.ExpressionStack.Pop();
+
+        // Evaluate block
+        BlockNode body = builder.BuildBlock(Body);
+        body.UseBraces = true;
+        body.PartOfSwitch = true;
+
+        // Add statement
+        output.Add(new SwitchNode(expression, body));
+
+        // Restore previous switch case queue
+        builder.SwitchCases = prevSwitchCases;
     }
 }

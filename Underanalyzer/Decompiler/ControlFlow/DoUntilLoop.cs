@@ -73,6 +73,18 @@ internal class DoUntilLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        int stackCountBefore = builder.ExpressionStack.Count;
+        BlockNode body = builder.BuildBlock(Head);
+        int stackCountAfter = builder.ExpressionStack.Count;
+
+        if (stackCountAfter != stackCountBefore + 1)
+        {
+            throw new DecompilerException(
+                $"Expected condition after do..until loop. Stack count: {stackCountBefore} -> {stackCountAfter}");
+        }
+
+        IExpressionNode condition = builder.ExpressionStack.Pop();
+
+        output.Add(new DoUntilLoopNode(body, condition));
     }
 }

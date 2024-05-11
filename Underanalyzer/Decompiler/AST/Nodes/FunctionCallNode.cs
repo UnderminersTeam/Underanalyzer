@@ -22,6 +22,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+    public bool SemicolonAfter { get => true; }
 
     public FunctionCallNode(IGMFunction function, List<IExpressionNode> arguments)
     {

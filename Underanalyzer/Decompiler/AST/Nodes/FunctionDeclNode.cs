@@ -31,6 +31,7 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
+    public bool SemicolonAfter { get => false; }
 
     public FunctionDeclNode(string name, bool isConstructor, BlockNode body, ASTFragmentContext fragmentContext)
     {

@@ -79,6 +79,8 @@ internal class WithLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        IExpressionNode target = builder.ExpressionStack.Pop();
+        BlockNode body = builder.BuildBlock(Head);
+        output.Add(new WithLoopNode(target, body));
     }
 }

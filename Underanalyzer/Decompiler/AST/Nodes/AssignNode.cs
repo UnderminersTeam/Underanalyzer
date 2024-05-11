@@ -10,12 +10,14 @@ public class AssignNode : IStatementNode
     /// <summary>
     /// The variable being assigned to.
     /// </summary>
-    public IExpressionNode Variable { get; }
+    public IExpressionNode Variable { get; private set; }
 
     /// <summary>
     /// The value being assigned.
     /// </summary>
-    public IExpressionNode Value { get; }
+    public IExpressionNode Value { get; private set; }
+
+    public bool SemicolonAfter { get => true; }
 
     public AssignNode(IExpressionNode variable, IExpressionNode value)
     {
@@ -27,7 +29,11 @@ public class AssignNode : IStatementNode
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
+        Variable = Variable.Clean(cleaner);
+        Value = Value.Clean(cleaner);
+
         // TODO: clean up compound assignment operations
+
         return this;
     }
 
@@ -40,6 +46,5 @@ public class AssignNode : IStatementNode
         Variable.Print(printer);
         printer.Write(" = ");
         Value.Print(printer);
-        printer.Semicolon();
     }
 }

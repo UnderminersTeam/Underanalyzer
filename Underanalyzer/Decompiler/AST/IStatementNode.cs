@@ -5,4 +5,5 @@
 /// </summary>
 public interface IStatementNode : IASTNode<IStatementNode>
 {
+    public bool SemicolonAfter { get; }
 }

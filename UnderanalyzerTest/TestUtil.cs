@@ -71,6 +71,7 @@ internal static class TestUtil
     {
         GameContextMock gameContext = new();
         DecompileContext decompilerContext = new(gameContext, TestUtil.GetCode(asm));
-        Assert.Equal(gml.Trim().ReplaceLineEndings("\n"), decompilerContext.DecompileToString().Trim());
+        string decompileResult = decompilerContext.DecompileToString().Trim();
+        Assert.Equal(gml.Trim().ReplaceLineEndings("\n"), decompileResult);
     }
 }

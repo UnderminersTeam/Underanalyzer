@@ -22,6 +22,8 @@ public class IfNode : IStatementNode
     /// </summary>
     public BlockNode ElseBlock { get; private set; }
 
+    public bool SemicolonAfter { get => false; }
+
     public IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode elseBlock = null)
     {
         Condition = condition;

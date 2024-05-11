@@ -126,16 +126,7 @@ internal class ShortCircuit : IControlFlowNode
 
         foreach (IControlFlowNode child in Children)
         {
-            int preConditionSize = builder.ExpressionStack.Count;
-            builder.BuildBlock(child);
-            int postConditionSize = builder.ExpressionStack.Count;
-
-            if (postConditionSize != preConditionSize + 1)
-            {
-                throw new DecompilerException($"Short circuit condition changed stack size from {preConditionSize} to {postConditionSize}");
-            }
-
-            conditions.Add(builder.ExpressionStack.Pop());
+            conditions.Add(builder.BuildExpression(child));
         }
 
         builder.ExpressionStack.Push(new ShortCircuitNode(conditions, LogicKind));

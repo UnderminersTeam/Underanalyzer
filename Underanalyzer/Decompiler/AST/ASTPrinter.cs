@@ -16,6 +16,11 @@ public class ASTPrinter
     public DecompileContext Context { get; private set; }
 
     /// <summary>
+    /// The current string output of this printer. This should be used only when the result is needed.
+    /// </summary>
+    public string OutputString { get => stringBuilder.ToString(); }
+
+    /// <summary>
     /// List of arguments passed into a struct fragment.
     /// </summary>
     internal List<IExpressionNode> StructArguments { get => TopFragmentContext.StructArguments; set => TopFragmentContext.StructArguments = value; }
@@ -36,9 +41,9 @@ public class ASTPrinter
     internal ASTFragmentContext TopFragmentContext { get; private set; }
 
     /// <summary>
-    /// The current string output of this printer. This should be used only when the result is needed.
+    /// If true, semicolon output is manually disabled.
     /// </summary>
-    public string OutputString { get => stringBuilder.ToString(); }
+    internal bool OverrideDisableSemicolons { get; set; } = false;
 
     // Builder used to store resulting code
     private StringBuilder stringBuilder = new(128);

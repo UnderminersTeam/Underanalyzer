@@ -85,6 +85,8 @@ internal class RepeatLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        IExpressionNode timesToRepeat = builder.ExpressionStack.Pop();
+        BlockNode body = builder.BuildBlock(Head);
+        output.Add(new RepeatLoopNode(timesToRepeat, body));
     }
 }
