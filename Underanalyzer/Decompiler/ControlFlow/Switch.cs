@@ -569,7 +569,7 @@ internal class Switch : IControlFlowNode
         builder.SwitchCases = new(8);
 
         // Evaluate case expressions
-        builder.BuildArbitrary(Cases, 1);
+        builder.BuildArbitrary(Cases, output, 1);
 
         // All that's left on stack is the expression we're switching on
         IExpressionNode expression = builder.ExpressionStack.Pop();
