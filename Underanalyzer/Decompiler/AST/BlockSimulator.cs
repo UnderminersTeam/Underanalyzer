@@ -282,7 +282,7 @@ internal class BlockSimulator
             // "Pop Swap" instruction variant - just moves stuff around on the stack
             IExpressionNode e1 = builder.ExpressionStack.Pop();
             IExpressionNode e2 = builder.ExpressionStack.Pop();
-            for (int j = 0; j < (short)instr.ValueInt - 4; j++)
+            for (int j = 0; j < (short)instr.PopSwapSize - 4; j++)
             {
                 builder.ExpressionStack.Pop();
             }

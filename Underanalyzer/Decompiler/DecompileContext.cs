@@ -43,6 +43,7 @@ public class DecompileContext
     internal DecompileContext(IGMCode code) 
     {
         Code = code;
+        GameContext = new Mock.GameContextMock();
     }
 
     // Solely decompiles control flow from the code entry
