@@ -10,6 +10,7 @@ public class Int16Node : IConstantNode<short>
     public short Value { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int16;
 
     public Int16Node(short value)
@@ -17,8 +18,14 @@ public class Int16Node : IConstantNode<short>
         Value = value;
     }
 
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        // TODO: handle asset/macro types
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(Value);
     }
 }

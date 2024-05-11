@@ -10,6 +10,7 @@ public class Int32Node : IConstantNode<int>
     public int Value { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
 
     public Int32Node(int value)
@@ -17,8 +18,14 @@ public class Int32Node : IConstantNode<int>
         Value = value;
     }
 
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        // TODO: macro (probably not asset) types
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(Value);
     }
 }

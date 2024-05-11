@@ -48,7 +48,7 @@ internal interface IControlFlowNode
     /// Outputs AST nodes for this control flow node. This shouldn't follow any 
     /// predecessors/successors, but can freely follow children.
     /// </summary>
-    public void BuildAST(AST.ASTBuilder builder, List<AST.IASTNode> output);
+    public void BuildAST(AST.ASTBuilder builder, List<AST.IStatementNode> output);
 
     /// <summary>
     /// Utility function to insert a new control flow node into the graph,

@@ -150,7 +150,7 @@ internal class Fragment : IControlFlowNode
         return $"{nameof(Fragment)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         IFragmentNode node = IFragmentNode.Create(builder, this);
         if (node is IExpressionNode exprNode)

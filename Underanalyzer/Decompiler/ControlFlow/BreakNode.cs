@@ -35,7 +35,7 @@ internal class BreakNode(int address, bool mayBeContinue = false) : IControlFlow
         return $"{nameof(BreakNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         throw new NotImplementedException();
     }

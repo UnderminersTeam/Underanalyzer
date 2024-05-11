@@ -34,6 +34,7 @@ public class VariableNode : IExpressionNode
     public bool RegularPush { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
     public VariableNode(IGMVariable variable, IGMInstruction.VariableType referenceType, bool regularPush = false)
@@ -41,6 +42,16 @@ public class VariableNode : IExpressionNode
         Variable = variable;
         ReferenceType = referenceType;
         RegularPush = regularPush;
+    }
+
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        Left = Left.Clean(cleaner);
+        for (int i = 0; i < ArrayIndices.Count; i++)
+        {
+            ArrayIndices[i] = ArrayIndices[i].Clean(cleaner);
+        }
+        return this;
     }
 
     public void Print(ASTPrinter printer)

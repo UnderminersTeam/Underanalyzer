@@ -10,6 +10,7 @@ public class DoubleNode : IConstantNode<double>
     public double Value { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Double;
 
     public DoubleNode(double value)
@@ -20,5 +21,10 @@ public class DoubleNode : IConstantNode<double>
     public void Print(ASTPrinter printer)
     {
         throw new NotImplementedException();
+    }
+
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        return this;
     }
 }

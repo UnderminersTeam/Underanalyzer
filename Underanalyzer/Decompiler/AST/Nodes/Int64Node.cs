@@ -10,6 +10,7 @@ public class Int64Node : IConstantNode<long>
     public long Value { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int64;
 
     public Int64Node(long value)
@@ -17,8 +18,13 @@ public class Int64Node : IConstantNode<long>
         Value = value;
     }
 
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(Value);
     }
 }

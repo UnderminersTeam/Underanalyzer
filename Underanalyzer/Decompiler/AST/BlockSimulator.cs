@@ -30,7 +30,7 @@ internal class BlockSimulator
     /// <summary>
     /// Simulates a single control flow block, outputting to the output list.
     /// </summary>
-    public static void Simulate(ASTBuilder builder, List<IASTNode> output, ControlFlow.Block block)
+    public static void Simulate(ASTBuilder builder, List<IStatementNode> output, ControlFlow.Block block)
     {
         for (int i = builder.StartBlockInstructionIndex; i < block.Instructions.Count; i++)
         {
@@ -54,7 +54,7 @@ internal class BlockSimulator
                     break;
                 case Opcode.Not:
                 case Opcode.Negate:
-                    output.Add(new UnaryNode(builder.ExpressionStack.Pop(), instr));
+                    builder.ExpressionStack.Push(new UnaryNode(builder.ExpressionStack.Pop(), instr));
                     break;
                 case Opcode.Convert:
                     SimulateConvert(builder, instr);
@@ -275,7 +275,7 @@ internal class BlockSimulator
     /// <summary>
     /// Simulates a single Pop instruction.
     /// </summary>
-    private static void SimulatePopVariable(ASTBuilder builder, List<IASTNode> output, IGMInstruction instr)
+    private static void SimulatePopVariable(ASTBuilder builder, List<IStatementNode> output, IGMInstruction instr)
     {
         if (instr.Variable is null)
         {
@@ -388,6 +388,9 @@ internal class BlockSimulator
                 case VMConstants.NewObjectFunction:
                     SimulateNew(builder, instr);
                     return;
+                case VMConstants.NewArrayFunction:
+                    SimulateArrayInit(builder, instr);
+                    return;
                 // TODO: other special functions need to go here
             }
         }
@@ -401,6 +404,22 @@ internal class BlockSimulator
         }
 
         builder.ExpressionStack.Push(new FunctionCallNode(instr.Function, args));
+    }
+
+    /// <summary>
+    /// Simulates array initialization literals.
+    /// </summary>
+    private static void SimulateArrayInit(ASTBuilder builder, IGMInstruction instr)
+    {
+        // Load all arguments on stack into list
+        int numArgs = instr.ArgumentCount;
+        List<IExpressionNode> elems = new(numArgs);
+        for (int j = 0; j < numArgs; j++)
+        {
+            elems.Add(builder.ExpressionStack.Pop());
+        }
+
+        builder.ExpressionStack.Push(new ArrayInitNode(elems));
     }
 
     /// <summary>
@@ -489,7 +508,7 @@ internal class BlockSimulator
     /// <summary>
     /// Simulates a single PopDelete instruction.
     /// </summary>
-    private static void SimulatePopDelete(ASTBuilder builder, List<IASTNode> output)
+    private static void SimulatePopDelete(ASTBuilder builder, List<IStatementNode> output)
     {
         if (builder.ExpressionStack.Count == 0)
         {
@@ -504,14 +523,23 @@ internal class BlockSimulator
             return;
         }
 
-        // Node is simply a normal statement (often seen with function calls)
-        output.Add(node);
+        if (node is IStatementNode statement)
+        {
+            // Node is simply a normal statement (often seen with function calls)
+            output.Add(statement);
+        }
+        else
+        {
+            // This is a free-floating expression, somehow
+            // TODO: probably just store this in a temp var instead of throwing this exception?
+            throw new DecompilerException("Free-floating expression found");
+        }
     }
 
     /// <summary>
     /// Simulates a single Extended instruction.
     /// </summary>
-    private static void SimulateExtended(ASTBuilder builder, List<IASTNode> output, IGMInstruction instr)
+    private static void SimulateExtended(ASTBuilder builder, List<IStatementNode> output, IGMInstruction instr)
     {
         switch (instr.ExtKind)
         {

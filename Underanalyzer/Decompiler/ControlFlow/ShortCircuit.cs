@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
+public enum ShortCircuitType
+{
+    And,
+    Or
+}
+
 internal class ShortCircuit : IControlFlowNode
 {
-    public enum LogicType
-    {
-        And,
-        Or
-    }
-
     public int StartAddress { get; private set; }
 
     public int EndAddress { get; private set; }
@@ -25,9 +26,9 @@ internal class ShortCircuit : IControlFlowNode
 
     public bool Unreachable { get; set; } = false;
 
-    public LogicType LogicKind { get; }
+    public ShortCircuitType LogicKind { get; }
 
-    public ShortCircuit(int startAddress, int endAddress, LogicType logicKind, List<IControlFlowNode> children)
+    public ShortCircuit(int startAddress, int endAddress, ShortCircuitType logicKind, List<IControlFlowNode> children)
     {
         StartAddress = startAddress;
         EndAddress = endAddress;
@@ -78,7 +79,7 @@ internal class ShortCircuit : IControlFlowNode
                 }
 
                 // Create actual node
-                LogicType logicKind = block.Instructions[0].ValueShort == 0 ? LogicType.And : LogicType.Or;
+                ShortCircuitType logicKind = block.Instructions[0].ValueShort == 0 ? ShortCircuitType.And : ShortCircuitType.Or;
                 ShortCircuit sc = new(children[0].StartAddress, block.EndAddress, logicKind, children);
                 shortCircuits.Add(sc);
 
@@ -119,8 +120,24 @@ internal class ShortCircuit : IControlFlowNode
         return $"{nameof(ShortCircuit)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        List<IExpressionNode> conditions = new(Children.Count);
+
+        foreach (IControlFlowNode child in Children)
+        {
+            int preConditionSize = builder.ExpressionStack.Count;
+            builder.BuildBlock(child);
+            int postConditionSize = builder.ExpressionStack.Count;
+
+            if (postConditionSize != preConditionSize + 1)
+            {
+                throw new DecompilerException($"Short circuit condition changed stack size from {preConditionSize} to {postConditionSize}");
+            }
+
+            conditions.Add(builder.ExpressionStack.Pop());
+        }
+
+        builder.ExpressionStack.Push(new ShortCircuitNode(conditions, LogicKind));
     }
 }

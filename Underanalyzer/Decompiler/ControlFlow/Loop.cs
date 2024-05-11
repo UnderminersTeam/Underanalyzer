@@ -127,5 +127,5 @@ internal abstract class Loop : IControlFlowNode
         return loops;
     }
 
-    public abstract void BuildAST(ASTBuilder builder, List<IASTNode> output);
+    public abstract void BuildAST(ASTBuilder builder, List<IStatementNode> output);
 }

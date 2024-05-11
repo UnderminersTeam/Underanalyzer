@@ -112,7 +112,7 @@ internal class Nullish : IControlFlowNode
         return res;
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         throw new NotImplementedException();
     }

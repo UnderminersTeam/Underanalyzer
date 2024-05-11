@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
@@ -574,8 +575,38 @@ internal class BinaryBranch : IControlFlowNode
         return res;
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        IExpressionNode condition = builder.ExpressionStack.Pop();
+
+        // Evaluate true block
+        int initialStackCount = builder.ExpressionStack.Count;
+        BlockNode trueBlock = builder.BuildBlock(True);
+        int postTrueStackCount = builder.ExpressionStack.Count;
+
+        if (Else is not null)
+        {
+            // Evaluate else block
+            BlockNode elseBlock = builder.BuildBlock(Else);
+            int postElseStackCount = builder.ExpressionStack.Count;
+
+            if (postTrueStackCount == initialStackCount + 1 && postElseStackCount == postTrueStackCount + 1)
+            {
+                // We're actually a conditional (ternary) expression
+                IExpressionNode falseExpr = builder.ExpressionStack.Pop();
+                IExpressionNode trueExpr = builder.ExpressionStack.Pop();
+                builder.ExpressionStack.Push(new ConditionalNode(condition, trueExpr, falseExpr));
+            }
+            else
+            {
+                // We're an if statement with an else block attached
+                output.Add(new IfNode(condition, trueBlock, elseBlock));
+            }
+        }
+        else
+        {
+            // We're just a simple if statement
+            output.Add(new IfNode(condition, trueBlock));
+        }
     }
 }

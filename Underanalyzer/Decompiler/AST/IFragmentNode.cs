@@ -7,7 +7,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Base type for all nodes which are valid fragments in the AST.
 /// </summary>
-public interface IFragmentNode : IASTNode
+public interface IFragmentNode : IStatementNode
 {
     /// <summary>
     /// Context for this fragment. Includes information on struct arguments, locals, etc.

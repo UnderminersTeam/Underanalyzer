@@ -5,7 +5,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an assignment statement in the AST.
 /// </summary>
-public class AssignNode : IASTNode
+public class AssignNode : IStatementNode
 {
     /// <summary>
     /// The variable being assigned to.
@@ -25,8 +25,21 @@ public class AssignNode : IASTNode
 
     // TODO: compound operations
 
+    public IStatementNode Clean(ASTCleaner cleaner)
+    {
+        // TODO: clean up compound assignment operations
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        // TODO: handle compound assignment operations
+        // TODO: handle struct variable initialization
+        // TODO: handle local variable declarations
+
+        Variable.Print(printer);
+        printer.Write(" = ");
+        Value.Print(printer);
+        printer.Semicolon();
     }
 }

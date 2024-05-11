@@ -4,20 +4,28 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a "return" statement (with a value) in the AST.
 /// </summary>
-public class ReturnNode : IASTNode
+public class ReturnNode : IStatementNode
 {
     /// <summary>
     /// Expression being returned.
     /// </summary>
-    public IASTNode Value { get; }
+    public IExpressionNode Value { get; private set; }
 
-    public ReturnNode(IASTNode value)
+    public ReturnNode(IExpressionNode value)
     {
         Value = value;
     }
 
+    public IStatementNode Clean(ASTCleaner cleaner)
+    {
+        Value = Value.Clean(cleaner);
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write("return ");
+        Value.Print(printer);
+        printer.Semicolon();
     }
 }

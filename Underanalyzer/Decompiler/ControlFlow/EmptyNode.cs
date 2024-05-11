@@ -29,7 +29,7 @@ internal class EmptyNode(int address) : IControlFlowNode
         return $"{nameof(EmptyNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         // Do nothing
     }

@@ -17,7 +17,7 @@ public class BlockNode : IFragmentNode
     /// <summary>
     /// All children contained within this block.
     /// </summary>
-    public List<IASTNode> Children { get; internal set; } = new();
+    public List<IStatementNode> Children { get; internal set; } = new();
 
     public ASTFragmentContext FragmentContext { get; }
 
@@ -26,8 +26,41 @@ public class BlockNode : IFragmentNode
         FragmentContext = fragmentContext;
     }
 
+    public IFragmentNode Clean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Children.Count; i++)
+        {
+            Children[i] = Children[i].Clean(cleaner);
+        }
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Children.Count; i++)
+        {
+            Children[i] = Children[i].Clean(cleaner);
+        }
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        if (UseBraces)
+        {
+            printer.OpenBlock();
+        }
+
+        for (int i = 0; i < Children.Count; i++)
+        {
+            printer.StartLine();
+            Children[i].Print(printer);
+            printer.EndLine();
+        }
+
+        if (UseBraces)
+        {
+            printer.CloseBlock();
+        }
     }
 }

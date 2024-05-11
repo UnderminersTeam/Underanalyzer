@@ -16,6 +16,15 @@ internal static class VMConstants
     public const string NullObjectFunction = "@@NullObject@@";
     public const string NewObjectFunction = "@@NewGMLObject@@";
 
+    // Instance type helpers used in GMLv2
+    public const string SelfFunction = "@@This@@";
+    public const string OtherFunction = "@@Other@@";
+    public const string GlobalFunction = "@@Global@@";
+    public const string GetInstanceFunction = "@@GetInstance@@";
+
     // The size limit of arrays in GMLv1 (old GML). Used for 2D array accesses in the VM.
     public const int OldArrayLimit = 32000;
+
+    // Used to create array literals in GML
+    public const string NewArrayFunction = "@@NewGMLArray@@";
 }

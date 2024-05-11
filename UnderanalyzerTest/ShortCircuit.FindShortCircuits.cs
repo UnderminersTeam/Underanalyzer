@@ -34,7 +34,7 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[0].LogicKind);
         Assert.Equal(fragments[0], scs[0].Parent);
         Assert.Equal([blocks[0], blocks[1]], scs[0].Children);
         Assert.Equal(2, blocks[0].Instructions.Count);
@@ -81,7 +81,7 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[0].LogicKind);
         Assert.Equal(fragments[0], scs[0].Parent);
         Assert.Equal([blocks[0], blocks[1]], scs[0].Children);
         Assert.Equal(2, blocks[0].Instructions.Count);
@@ -133,7 +133,7 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Single(scs);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[0].LogicKind);
         Assert.Equal(fragments[0], scs[0].Parent);
         Assert.Equal([blocks[0], blocks[1], blocks[2]], scs[0].Children);
         Assert.Equal(2, blocks[0].Instructions.Count);
@@ -197,8 +197,8 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[1].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[1].LogicKind);
         Assert.Equal(fragments[0], scs[0].Parent);
         Assert.Equal([blocks[0], blocks[1]], scs[0].Children);
         Assert.Equal([blocks[3], blocks[4], blocks[5]], scs[1].Children);
@@ -266,8 +266,8 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[1].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[1].LogicKind);
         Assert.Equal(scs[1], scs[0].Parent);
         Assert.Equal(fragments[0], scs[1].Parent);
         Assert.Equal([blocks[1], blocks[2]], scs[0].Children);
@@ -340,8 +340,8 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(2, scs.Count);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[1].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[1].LogicKind);
         Assert.Equal(scs[1], scs[0].Parent);
         Assert.Equal(fragments[0], scs[1].Parent);
         Assert.Equal([blocks[2], blocks[3]], scs[0].Children);
@@ -436,10 +436,10 @@ public class ShortCircuit_FindShortCircuits
         List<ShortCircuit> scs = ShortCircuit.FindShortCircuits(ctx);
 
         Assert.Equal(4, scs.Count);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[0].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[1].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.Or, scs[2].LogicKind);
-        Assert.Equal(ShortCircuit.LogicType.And, scs[3].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[0].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[1].LogicKind);
+        Assert.Equal(ShortCircuitType.Or, scs[2].LogicKind);
+        Assert.Equal(ShortCircuitType.And, scs[3].LogicKind);
         Assert.Equal(fragments[0], scs[0].Parent);
         Assert.Equal(scs[3], scs[1].Parent);
         Assert.Equal(scs[3], scs[2].Parent);

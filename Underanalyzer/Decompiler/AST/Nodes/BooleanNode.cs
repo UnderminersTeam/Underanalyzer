@@ -10,6 +10,7 @@ public class BooleanNode : IConstantNode<bool>
     public bool Value { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Boolean;
 
     public BooleanNode(bool value)
@@ -17,8 +18,13 @@ public class BooleanNode : IConstantNode<bool>
         Value = value;
     }
 
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(Value ? "true" : "false");
     }
 }

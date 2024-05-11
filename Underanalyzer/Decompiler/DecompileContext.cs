@@ -1,18 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Underanalyzer.Decompiler.ControlFlow;
 
 namespace Underanalyzer.Decompiler;
 
+/// <summary>
+/// A decompilation context belonging to a single code entry in a game.
+/// </summary>
 public class DecompileContext
 {
+    public IGameContext GameContext { get; }
     public IGMCode Code { get; private set; }
+    public DecompileSettings Settings { get; private set; }
 
-    // TODO: probably refer to global data here
-    internal bool OlderThanBytecode15 { get => false; }
-    internal bool GMLv2 { get => false; }
+    // Helpers to refer to data on game context
+    internal bool OlderThanBytecode15 { get => GameContext.Bytecode14OrLower; }
+    internal bool GMLv2 { get => GameContext.UsingGMLv2; }
 
+    // Data structures used (and re-used) for decompilation, as well as tests
     internal List<Block> Blocks { get; set; }
     internal List<Fragment> FragmentNodes { get; set; }
     internal List<Loop> LoopNodes { get; set; }
@@ -27,9 +32,104 @@ public class DecompileContext
     internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
     internal List<Switch> SwitchNodes { get; set; }
 
+    public DecompileContext(IGameContext gameContext, IGMCode code, DecompileSettings settings = null)
+    {
+        GameContext = gameContext;
+        Code = code;
+        Settings = settings ?? new();
+    }
+
     // Constructor used for control flow tests
     internal DecompileContext(IGMCode code) 
     {
         Code = code;
+    }
+
+    // Solely decompiles control flow from the code entry
+    private void DecompileControlFlow()
+    {
+        try
+        {
+            Block.FindBlocks(this);
+            Fragment.FindFragments(this);
+            Loop.FindLoops(this);
+            Switch.FindSwitchStatements(this);
+            BinaryBranch.FindBinaryBranches(this);
+            Switch.InsertSwitchStatements(this);
+        }
+        catch (DecompilerException ex)
+        {
+            throw new DecompilerException($"Decompiler error during control flow analysis: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new DecompilerException($"Unexpected exception thrown in decompiler during control flow analysis: {ex.Message}", ex);
+        }
+    }
+
+    // Decompiles the AST from the code entry
+    private AST.IStatementNode DecompileAST()
+    {
+        try
+        {
+            return new AST.ASTBuilder(this).Build();
+        }
+        catch (DecompilerException ex)
+        {
+            throw new DecompilerException($"Decompiler error during AST building: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new DecompilerException($"Unexpected exception thrown in decompiler during AST building: {ex.Message}", ex);
+        }
+    }
+
+    // Decompiles the AST from the code entry
+    private AST.IStatementNode CleanupAST(AST.IStatementNode ast)
+    {
+        try
+        {
+            return ast.Clean(new AST.ASTCleaner(this));
+        }
+        catch (DecompilerException ex)
+        {
+            throw new DecompilerException($"Decompiler error during AST cleanup: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new DecompilerException($"Unexpected exception thrown in decompiler during AST cleanup: {ex.Message}", ex);
+        }
+    }
+    
+    /// <summary>
+    /// Decompiles the code entry, and returns the AST output.
+    /// </summary>
+    public AST.IStatementNode DecompileToAST()
+    {
+        DecompileControlFlow();
+        AST.IStatementNode ast = DecompileAST();
+        return CleanupAST(ast);
+    }
+
+    /// <summary>
+    /// Decompiles the code entry, and returns the string output.
+    /// </summary>
+    public string DecompileToString()
+    {
+        AST.IStatementNode ast = DecompileToAST();
+        try
+        {
+            AST.ASTPrinter printer = new(this);
+            ast.Print(printer);
+            return printer.OutputString;
+        }
+        catch (DecompilerException ex)
+        {
+            throw new DecompilerException($"Decompiler error during AST printing: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            throw new DecompilerException($"Unexpected exception thrown in decompiler during AST printing: {ex.Message}", ex);
+        }
     }
 }

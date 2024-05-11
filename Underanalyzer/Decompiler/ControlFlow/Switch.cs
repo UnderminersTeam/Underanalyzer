@@ -41,7 +41,7 @@ internal class Switch : IControlFlowNode
             return $"{nameof(CaseJumpNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
         }
 
-        public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+        public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
         {
             throw new NotImplementedException();
         }
@@ -70,7 +70,7 @@ internal class Switch : IControlFlowNode
             return $"{nameof(CaseDestinationNode)} (address {StartAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
         }
 
-        public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+        public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
         {
             throw new NotImplementedException();
         }
@@ -549,7 +549,7 @@ internal class Switch : IControlFlowNode
         return res;
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
     }
 }

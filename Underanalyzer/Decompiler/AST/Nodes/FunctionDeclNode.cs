@@ -23,15 +23,16 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
     public bool IsConstructor { get; }
 
     /// <summary>
-    /// The body of the function (typically just a block).
+    /// The body of the function.
     /// </summary>
-    public IASTNode Body { get; }
+    public BlockNode Body { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
 
-    public FunctionDeclNode(string name, bool isConstructor, IASTNode body, ASTFragmentContext fragmentContext)
+    public FunctionDeclNode(string name, bool isConstructor, BlockNode body, ASTFragmentContext fragmentContext)
     {
         Name = name;
         IsConstructor = isConstructor;
@@ -39,12 +40,18 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
         FragmentContext = fragmentContext;
     }
 
-    public void Print(ASTPrinter printer)
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        Body.Clean(cleaner);
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         throw new NotImplementedException();
     }
 
-    void IASTNode.Print(ASTPrinter printer)
+    public void Print(ASTPrinter printer)
     {
         throw new NotImplementedException();
     }

@@ -54,9 +54,9 @@ public class ASTBuilder
     /// <summary>
     /// Builds the AST for an entire code entry, starting from the root fragment node.
     /// </summary>
-    public IASTNode Build()
+    public IStatementNode Build()
     {
-        List<IASTNode> output = new(1);
+        List<IStatementNode> output = new(1);
         PushFragmentContext();
         Context.FragmentNodes[0].BuildAST(this, output);
         return output[0];
@@ -114,7 +114,12 @@ public class ASTBuilder
     /// </summary>
     internal void PopFragmentContext()
     {
-        FragmentContextStack.Pop();
+        ASTFragmentContext context = FragmentContextStack.Pop();
+        if (context.ExpressionStack.Count > 0)
+        {
+            // TODO: maybe don't make this an exception, and instead use temp vars
+            throw new DecompilerException("Data left over on stack");
+        }
         TopFragmentContext = FragmentContextStack.Peek();
     }
 }

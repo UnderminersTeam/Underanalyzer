@@ -274,7 +274,7 @@ internal class Block : IControlFlowNode
         return $"{nameof(Block)} {BlockIndex} ({Instructions.Count} instructions, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         BlockSimulator.Simulate(builder, output, this);
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -10,7 +11,7 @@ public class UnaryNode : IExpressionNode
     /// <summary>
     /// The expression that this operation is being performed on.
     /// </summary>
-    public IExpressionNode Value { get; }
+    public IExpressionNode Value { get; private set; }
 
     /// <summary>
     /// The instruction that performs this operation, as in the code.
@@ -18,6 +19,7 @@ public class UnaryNode : IExpressionNode
     public IGMInstruction Instruction { get; }
 
     public bool Duplicated { get; set; } = false;
+    public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; }
 
     public UnaryNode(IExpressionNode value, IGMInstruction instruction)
@@ -27,8 +29,40 @@ public class UnaryNode : IExpressionNode
         StackType = instruction.Type1;
     }
 
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        Value = Value.Clean(cleaner);
+
+        // Ensure operation applies to entire node
+        if (Value is BinaryNode or ShortCircuitNode)
+        {
+            Value.Group = true;
+        }
+
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        if (Group)
+        {
+            printer.Write('(');
+        }
+
+        char op = Instruction switch
+        {
+            { Kind: Opcode.Negate } => '-',
+            { Kind: Opcode.Not, Type1: DataType.Boolean } => '!',
+            { Kind: Opcode.Not } => '~',
+            _ => throw new DecompilerException("Failed to match unary instruction to character")
+        };
+        printer.Write(op);
+
+        Value.Print(printer);
+
+        if (Group)
+        {
+            printer.Write(')');
+        }
     }
 }

@@ -109,7 +109,7 @@ internal class WhileLoop : Loop
         return $"{nameof(WhileLoop)} (start address {StartAddress}, end address {EndAddress}, {Predecessors.Count} predecessors, {Successors.Count} successors)";
     }
 
-    public override void BuildAST(ASTBuilder builder, List<IASTNode> output)
+    public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         throw new NotImplementedException();
     }
