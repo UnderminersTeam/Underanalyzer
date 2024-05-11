@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -47,15 +48,103 @@ public class VariableNode : IExpressionNode
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Left = Left.Clean(cleaner);
-        for (int i = 0; i < ArrayIndices.Count; i++)
+        if (ArrayIndices is not null)
         {
-            ArrayIndices[i] = ArrayIndices[i].Clean(cleaner);
+            for (int i = 0; i < ArrayIndices.Count; i++)
+            {
+                ArrayIndices[i] = ArrayIndices[i].Clean(cleaner);
+            }
         }
+        // TODO: check if we're a struct argument here?
+        // TODO: determine if Left needs to be grouped
         return this;
     }
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        // Print out left side, if necessary
+        Int16Node leftI16 = Left as Int16Node;
+        InstanceTypeNode leftInstType = Left as InstanceTypeNode;
+        if (leftI16 is not null || leftInstType is not null)
+        {
+            // Basic numerical instance type
+            int value = leftI16?.Value ?? (int)leftInstType.InstanceType;
+            if (value < 0)
+            {
+                // GameMaker constant instance types
+                switch (value)
+                {
+                    case (int)InstanceType.Self:
+                        if (printer.LocalVariableNames.Contains(Variable.Name.Content))
+                        {
+                            // Need an explicit self in order to not conflict with local
+                            printer.Write("self.");
+                        }
+                        break;
+                    case (int)InstanceType.Other:
+                        printer.Write("other.");
+                        break;
+                    case (int)InstanceType.All:
+                        printer.Write("all.");
+                        break;
+                    case (int)InstanceType.Global:
+                        printer.Write("global.");
+                        break;
+                    // TODO: unsure if we need to handle static
+                }
+            }
+            else if (ReferenceType == VariableType.Instance)
+            {
+                // Room instance ID
+                // TODO: verify this is correct
+                printer.Write('(');
+                printer.Write(value + 100000);
+                printer.Write(')');
+            }
+            else
+            {
+                // TODO: add another condition for object assets above
+
+                // Unknown number ID
+                printer.Write('(');
+                printer.Write(value);
+                printer.Write(')');
+            }
+        }
+        else
+        {
+            // Some expression on the left
+            Left.Print(printer);
+        }
+
+        // Variable name
+        printer.Write(Variable.Name.Content);
+
+        if (ArrayIndices is not null)
+        {
+            // Print array indices
+            if (printer.Context.GMLv2)
+            {
+                // For GMLv2
+                foreach (IExpressionNode index in ArrayIndices)
+                {
+                    printer.Write('[');
+                    index.Print(printer);
+                    printer.Write(']');
+                }
+            }
+            else
+            {
+                // For GMLv1
+                printer.Write('[');
+                ArrayIndices[0].Print(printer);
+                if (ArrayIndices.Count == 2)
+                {
+                    printer.Write(", ");
+                    ArrayIndices[1].Print(printer);
+                }
+                printer.Write(']');
+            }
+        }
     }
 }

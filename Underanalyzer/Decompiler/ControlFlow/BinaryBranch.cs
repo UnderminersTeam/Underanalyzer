@@ -577,6 +577,11 @@ internal class BinaryBranch : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
+        // Evaluate condition block
+        BlockNode conditionBlock = builder.BuildBlock(Condition);
+        conditionBlock.UseBraces = false;
+        output.Add(conditionBlock);
+
         IExpressionNode condition = builder.ExpressionStack.Pop();
 
         // Evaluate true block

@@ -28,24 +28,42 @@ public class BlockNode : IFragmentNode
 
     public IFragmentNode Clean(ASTCleaner cleaner)
     {
+        cleaner.PushFragmentContext(FragmentContext);
         for (int i = 0; i < Children.Count; i++)
         {
             Children[i] = Children[i].Clean(cleaner);
+            if (Children[i] is BlockNode block && block.Children.Count == 0)
+            {
+                // Remove this empty node
+                Children.RemoveAt(i);
+                i--;
+            }
         }
+        cleaner.PopFragmentContext();
         return this;
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
+        cleaner.PushFragmentContext(FragmentContext);
         for (int i = 0; i < Children.Count; i++)
         {
             Children[i] = Children[i].Clean(cleaner);
+            if (Children[i] is BlockNode block && block.Children.Count == 0)
+            {
+                // Remove this empty node
+                Children.RemoveAt(i);
+                i--;
+            }
         }
+        cleaner.PopFragmentContext();
         return this;
     }
 
     public void Print(ASTPrinter printer)
     {
+        printer.PushFragmentContext(FragmentContext);
+
         if (UseBraces)
         {
             printer.OpenBlock();
@@ -62,5 +80,7 @@ public class BlockNode : IFragmentNode
         {
             printer.CloseBlock();
         }
+
+        printer.PopFragmentContext();
     }
 }

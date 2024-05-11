@@ -34,7 +34,7 @@ public class IfNode : IStatementNode
         Condition = Condition.Clean(cleaner);
         Condition.Group = false;
         TrueBlock.Clean(cleaner);
-        ElseBlock.Clean(cleaner);
+        ElseBlock?.Clean(cleaner);
         return this;
     }
 
@@ -50,6 +50,7 @@ public class IfNode : IStatementNode
             printer.Write("else");
             if (ElseBlock is { Children: [IfNode elseIf] })
             {
+                printer.Write(' ');
                 elseIf.Print(printer);
             }
             else
