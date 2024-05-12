@@ -27,4 +27,7 @@ internal static class VMConstants
 
     // Used to create array literals in GML
     public const string NewArrayFunction = "@@NewGMLArray@@";
+
+    // Used to store return values before cleaning up stack
+    public const string TempReturnVariable = "$$$$temp$$$$";
 }

@@ -44,6 +44,22 @@ public class BlockNode : IFragmentNode
                 Children.RemoveAt(i);
                 i--;
             }
+            else if (Children[i] is ReturnNode returnNode)
+            {
+                // Check for return temp variable
+                if (i > 0 && returnNode.Value is VariableNode returnVariable &&
+                    returnVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
+                {
+                    if (Children[i] is AssignNode assign && assign.Variable is VariableNode assignVariable &&
+                        assignVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
+                    {
+                        // We found one - rewrite it as a normal return
+                        Children[i - 1] = new ReturnNode(assign.Value);
+                        Children.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
         }
         cleaner.PopFragmentContext();
         return this;
