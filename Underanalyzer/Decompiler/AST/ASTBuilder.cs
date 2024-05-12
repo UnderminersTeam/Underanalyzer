@@ -86,6 +86,11 @@ public class ASTBuilder
             }
             if (currentNode.Successors.Count == 1)
             {
+                if (currentNode.Successors[0] == currentNode ||
+                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
+                {
+                    throw new DecompilerException("Unresolved loop when building AST");
+                }
                 currentNode = currentNode.Successors[0];
             }
             else
@@ -127,6 +132,11 @@ public class ASTBuilder
             }
             if (currentNode.Successors.Count == 1)
             {
+                if (currentNode.Successors[0] == currentNode || 
+                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
+                {
+                    throw new DecompilerException("Unresolved loop when building AST");
+                }
                 currentNode = currentNode.Successors[0];
             }
             else
@@ -176,6 +186,11 @@ public class ASTBuilder
             }
             if (currentNode.Successors.Count == 1)
             {
+                if (currentNode.Successors[0] == currentNode ||
+                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
+                {
+                    throw new DecompilerException("Unresolved loop when building AST");
+                }
                 currentNode = currentNode.Successors[0];
             }
             else
