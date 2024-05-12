@@ -99,22 +99,33 @@ public class VariableNode : IExpressionNode
                 // TODO: verify this is correct
                 printer.Write('(');
                 printer.Write(value + 100000);
-                printer.Write(')');
+                printer.Write(").");
             }
             else
             {
-                // TODO: add another condition for object assets above
+                // Check if we have an object asset name to use
+                string objectName = printer.Context.GameContext.GetAssetName(value, AssetType.Object);
 
-                // Unknown number ID
-                printer.Write('(');
-                printer.Write(value);
-                printer.Write(')');
+                if (objectName is not null)
+                {
+                    // Object asset
+                    printer.Write(objectName);
+                    printer.Write('.');
+                }
+                else
+                {
+                    // Unknown number ID
+                    printer.Write('(');
+                    printer.Write(value);
+                    printer.Write(").");
+                }
             }
         }
         else
         {
             // Some expression on the left
             Left.Print(printer);
+            printer.Write('.');
         }
 
         // Variable name
