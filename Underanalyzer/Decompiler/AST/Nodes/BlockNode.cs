@@ -119,6 +119,19 @@ public class BlockNode : IFragmentNode
         return this;
     }
 
+    /// <summary>
+    /// If this block has 0 or 2+ statements, returns this block.
+    /// If this block has one statement, returns that statement.
+    /// </summary>
+    public IStatementNode GetShortestStatement()
+    {
+        if (Children.Count == 1)
+        {
+            return Children[0];
+        }
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.PushFragmentContext(FragmentContext);

@@ -84,7 +84,7 @@ public class ForLoopNode : IStatementNode
             printer.Write("; ");
             Condition.Print(printer);
             printer.Write("; ");
-            Incrementor.Print(printer);
+            Incrementor.GetShortestStatement().Print(printer);
         }
         printer.Write(')');
 
