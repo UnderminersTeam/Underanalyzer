@@ -100,6 +100,10 @@ public class StringNode : IConstantNode<IGMString>
                     printer.Write(" + ");
                     printer.Write(quoteChar);
                 }
+                else
+                {
+                    printer.Write(c);
+                }
             }
             printer.Write(quoteChar);
         }
