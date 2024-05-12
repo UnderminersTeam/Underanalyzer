@@ -734,7 +734,9 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal([blocks[2]], b0.Successors);
         Assert.Equal(blocks[0], b0.Condition);
         Assert.Equal(blocks[1], b0.True);
-        Assert.Empty(blocks[1].Successors);
+        Assert.Single(blocks[1].Successors);
+        Assert.IsType<ExitNode>(blocks[1].Successors[0]);
+        Assert.Empty(blocks[1].Successors[0].Successors);
         Assert.Equal(blocks[2], b0.False);
         Assert.Null(b0.Else);
         Assert.Empty(b0.True.Predecessors);
@@ -779,8 +781,12 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal([blocks[3]], b0.Successors);
         Assert.Equal(blocks[0], b0.Condition);
         Assert.Equal(blocks[1], b0.True);
-        Assert.Equal([blocks[2]], blocks[1].Successors);
-        Assert.Empty(blocks[2].Successors);
+        Assert.Single(blocks[1].Successors);
+        Assert.IsType<ExitNode>(blocks[1].Successors[0]);
+        Assert.Equal([blocks[2]], blocks[1].Successors[0].Successors);
+        Assert.Single(blocks[2].Successors);
+        Assert.IsType<ExitNode>(blocks[2].Successors[0]);
+        Assert.Empty(blocks[2].Successors[0].Successors);
         Assert.Equal(blocks[3], b0.False);
         Assert.Null(b0.Else);
         Assert.Empty(b0.True.Predecessors);
@@ -828,7 +834,9 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Equal([blocks[4]], b0.Successors);
         Assert.Equal(blocks[0], b0.Condition);
         Assert.Equal(blocks[1], b0.True);
-        Assert.Equal([blocks[2]], blocks[1].Successors);
+        Assert.Single(blocks[1].Successors);
+        Assert.IsType<ExitNode>(blocks[1].Successors[0]);
+        Assert.Equal([blocks[2]], blocks[1].Successors[0].Successors);
         Assert.Empty(blocks[2].Successors);
         Assert.Equal(blocks[3], b0.Else);
         Assert.Equal(blocks[3], b0.False);

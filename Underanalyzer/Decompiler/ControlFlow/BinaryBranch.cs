@@ -86,25 +86,6 @@ internal class BinaryBranch : IControlFlowNode
             IControlFlowNode node = work.Pop();
             visited.Add(node);
 
-            if (node is Block block &&
-                (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Exit }] ||
-                 block.Instructions is [.., { Kind: IGMInstruction.Opcode.Return }]))
-            {
-                // Exit/return statement: flow to following block if one exists, and isn't already a successor
-                if (block.BlockIndex + 1 < blocks.Count)
-                {
-                    IControlFlowNode following = blocks[block.BlockIndex + 1];
-                    while (following.Parent is not null)
-                    {
-                        following = following.Parent;
-                    }
-                    if (!node.Successors.Contains(following))
-                    {
-                        work.Push(following);
-                    }
-                }
-            }
-
             foreach (IControlFlowNode successor in node.Successors)
             {
                 if (successor.StartAddress < node.StartAddress || successor == node)
@@ -139,25 +120,6 @@ internal class BinaryBranch : IControlFlowNode
                 return node;
             }
 
-            if (node is Block block &&
-                (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Exit }] ||
-                 block.Instructions is [.., { Kind: IGMInstruction.Opcode.Return }]))
-            {
-                // Exit/return statement: flow to following block if one exists, and isn't already a successor
-                if (block.BlockIndex + 1 < blocks.Count)
-                {
-                    IControlFlowNode following = blocks[block.BlockIndex + 1];
-                    while (following.Parent is not null)
-                    {
-                        following = following.Parent;
-                    }
-                    if (!node.Successors.Contains(following))
-                    {
-                        work.Push(following);
-                    }
-                }
-            }
-
             foreach (IControlFlowNode successor in node.Successors)
             {
                 if (successor.StartAddress < node.StartAddress || successor == node)
@@ -172,15 +134,18 @@ internal class BinaryBranch : IControlFlowNode
     }
 
     /// <summary>
-    /// Helper function to insert a continue/break node into the graph.
+    /// Helper function to insert a continue/break/returne/exit node into the graph.
     /// </summary>
-    private static void InsertContinueOrBreak(IControlFlowNode node, Block block, List<Block> blocks)
+    private static void InsertExternalJumpNode(IControlFlowNode node, Block block, List<Block> blocks, bool disconnectExistingSuccessor = true)
     {
         // Remove branch instruction
         block.Instructions.RemoveAt(block.Instructions.Count - 1);
 
-        // Reroute into break/continue node
-        IControlFlowNode.DisconnectSuccessor(block, 0);
+        // Reroute into a unique node
+        if (disconnectExistingSuccessor)
+        {
+            IControlFlowNode.DisconnectSuccessor(block, 0);
+        }
         if (block.Successors.Count == 0)
         {
             block.Successors.Add(node);
@@ -190,7 +155,7 @@ internal class BinaryBranch : IControlFlowNode
             // However, we may have some other structure there, so we need to follow the parent(s) of the block.
             if (block.BlockIndex + 1 >= blocks.Count)
             {
-                throw new DecompilerException("Expected following block after break/continue");
+                throw new DecompilerException("Expected following block after external jump");
             }
             IControlFlowNode following = blocks[block.BlockIndex + 1];
             while (following.Parent is not null)
@@ -206,14 +171,14 @@ internal class BinaryBranch : IControlFlowNode
             // Just insert this break/continue statement between this block and that node.
             if (block.Successors.Count != 1 || !block.Successors[0].Unreachable)
             {
-                throw new DecompilerException("Expected unreachable block after break/continue");
+                throw new DecompilerException("Expected unreachable block after external jump");
             }
             IControlFlowNode.InsertSuccessor(block, 0, node);
         }
     }
 
     /// <summary>
-    /// Resolves continue statements and break statements.
+    /// Resolves continue statements, break statements, and return/exit statements.
     /// These are relatively trivial to find on a linear pass, especially with "after limits."
     /// </summary>
     private static void ResolveExternalJumps(DecompileContext ctx, Dictionary<Block, Loop> surroundingLoops, Dictionary<Block, int> blockAfterLimits)
@@ -295,7 +260,17 @@ internal class BinaryBranch : IControlFlowNode
                 }
 
                 // Update control flow graph
-                InsertContinueOrBreak(node, block, ctx.Blocks);
+                InsertExternalJumpNode(node, block, ctx.Blocks);
+            }
+            else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Exit }])
+            {
+                // We have an exit statement; update control flow graph
+                InsertExternalJumpNode(new ExitNode(block.EndAddress), block, ctx.Blocks, false);
+            }
+            else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Return }])
+            {
+                // We have a return statement; update control flow graph
+                InsertExternalJumpNode(new ReturnNode(block.EndAddress), block, ctx.Blocks, false);
             }
         }
     }

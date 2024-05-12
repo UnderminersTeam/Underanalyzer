@@ -59,12 +59,6 @@ internal class BlockSimulator
                 case Opcode.Convert:
                     SimulateConvert(builder, instr);
                     break;
-                case Opcode.Return:
-                    output.Add(new ReturnNode(builder.ExpressionStack.Pop()));
-                    break;
-                case Opcode.Exit:
-                    output.Add(new ExitNode());
-                    break;
                 case Opcode.PopDelete:
                     SimulatePopDelete(builder, output);
                     break;

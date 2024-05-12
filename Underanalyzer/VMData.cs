@@ -698,7 +698,7 @@ public interface IGMInstruction
     public byte DuplicationSize2 { get; }
 
     /// <summary>
-    /// Returns the number of arguments encoded in this instruction, for call instructions.
+    /// Returns the number of arguments encoded in this instruction, for Call and CallVariable instructions.
     /// </summary>
     public int ArgumentCount { get; }
 
