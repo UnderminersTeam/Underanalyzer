@@ -81,6 +81,17 @@ public class BlockNode : IFragmentNode
                         continue;
                     }
 
+                    // Also for readability, make sure the initializer and incrementor variables are similar
+                    if (initializer.Variable is not VariableNode initVariable || 
+                        incrementor.Variable is not VariableNode incVariable)
+                    {
+                        continue;
+                    }
+                    if (!initVariable.SimilarToInForIncrementor(incVariable))
+                    {
+                        continue;
+                    }
+
                     // Convert into for loop!
                     BlockNode body = whileLoop.Body;
                     body.Children.RemoveAt(body.Children.Count - 1);

@@ -115,6 +115,56 @@ public class VariableNode : IExpressionNode
         return true;
     }
 
+    /// <summary>
+    /// Returns true if the other variable is referencing a very similar variable, in the context of a for loop.
+    /// Always returns false if the variables have array indices.
+    /// </summary>
+    public bool SimilarToInForIncrementor(VariableNode other)
+    {
+        // Compare basic attributes
+        if (Variable != other.Variable || ReferenceType != other.ReferenceType || Left.GetType() != other.Left.GetType())
+        {
+            return false;
+        }
+
+        // Compare left side
+        if (Left is VariableNode leftVariable)
+        {
+            if (!leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+            {
+                return false;
+            }
+        }
+        else if (Left is InstanceTypeNode leftInstType)
+        {
+            if (leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+            {
+                return false;
+            }
+        }
+        else if (Left is Int16Node leftI16)
+        {
+            if (leftI16.Value != (other.Left as Int16Node).Value)
+            {
+                return false;
+            }
+        }
+        else if (Left != other.Left)
+        {
+            // Default; just compare references
+            return false;
+        }
+
+        // Don't allow array indices as for incrementor
+        // TODO: perhaps relax this at some point, and do a deep expression comparison?
+        if (ArrayIndices is not null || other.ArrayIndices is not null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Left = Left.Clean(cleaner);
