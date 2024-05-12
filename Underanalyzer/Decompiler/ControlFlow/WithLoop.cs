@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
@@ -90,6 +92,14 @@ internal class WithLoop : Loop
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         IExpressionNode target = builder.ExpressionStack.Pop();
+        if (target is Int16Node i16 && i16.Value == (int)IGMInstruction.InstanceType.StackTop)
+        {
+            // Pull instance from stacktop, if possible
+            if (builder.ExpressionStack.Count != 0 && !builder.ExpressionStack.Peek().Duplicated)
+            {
+                target = builder.ExpressionStack.Pop();
+            }
+        }
         BlockNode body = builder.BuildBlock(Head);
         output.Add(new WithLoopNode(target, body));
     }
