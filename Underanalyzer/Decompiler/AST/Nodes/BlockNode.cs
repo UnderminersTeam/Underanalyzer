@@ -70,7 +70,9 @@ public class BlockNode : IFragmentNode
                 {
                     // For readability, just stick to integer and variable assignments/compound operations
                     if (initializer.Value is not Int16Node or Int32Node or Int64Node or VariableNode ||
-                        incrementor.Value is not Int16Node or Int32Node or Int64Node or VariableNode)
+                        (incrementor.Value is not Int16Node or Int32Node or Int64Node or VariableNode &&
+                         incrementor.AssignKind != AssignNode.AssignType.Prefix &&
+                         incrementor.AssignKind != AssignNode.AssignType.Postfix))
                     {
                         continue;
                     }
@@ -84,6 +86,8 @@ public class BlockNode : IFragmentNode
                     body.Children.RemoveAt(body.Children.Count - 1);
                     BlockNode incrementorBlock = new(body.FragmentContext);
                     incrementorBlock.Children.Add(incrementor);
+                    Children.RemoveAt(i - 1);
+                    i--;
                     Children[i] = new ForLoopNode(initializer, whileLoop.Condition, incrementorBlock, body);
                     Children[i] = Children[i].Clean(cleaner);
                 }
@@ -92,7 +96,8 @@ public class BlockNode : IFragmentNode
             {
                 // Check if this for loop needs an initializer, and if so (and there's a readable one), add it
                 if (forLoop.Initializer is null && i > 0 && Children[i - 1] is AssignNode assign &&
-                    assign.Value is Int16Node or Int32Node or Int64Node or VariableNode)
+                    assign.Value is Int16Node or Int32Node or Int64Node or VariableNode &&
+                    forLoop.Condition is not null)
                 {
                     forLoop.Initializer = assign;
                     Children.RemoveAt(i - 1);
