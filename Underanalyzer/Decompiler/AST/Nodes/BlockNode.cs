@@ -128,11 +128,7 @@ public class BlockNode : IFragmentNode
         else if (printer.StructArguments is not null)
         {
             // We're a struct initialization block
-            printer.EndLine();
-            printer.StartLine();
-            printer.Write('{');
-            printer.EndLine();
-            printer.Indent();
+            printer.OpenBlock();
 
             for (int i = 0; i < Children.Count; i++)
             {
@@ -148,9 +144,7 @@ public class BlockNode : IFragmentNode
                 printer.EndLine();
             }
 
-            printer.Dedent();
-            printer.StartLine();
-            printer.Write('}');
+            printer.CloseBlock();
         }
         else
         {

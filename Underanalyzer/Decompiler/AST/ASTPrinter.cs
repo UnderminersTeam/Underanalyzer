@@ -233,6 +233,5 @@ public class ASTPrinter
         Dedent();
         StartLine();
         Write('}');
-        EndLine();
     }
 }
