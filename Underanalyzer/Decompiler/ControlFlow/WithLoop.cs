@@ -67,6 +67,16 @@ internal class WithLoop : Loop
         // Insert structure into graph
         IControlFlowNode.InsertStructure(Head, nodeToEndAt, this);
 
+        // Remove all predecessors of Tail that are before this loop
+        for (int i = Tail.Predecessors.Count - 1; i >= 0; i--)
+        {
+            IControlFlowNode curr = Tail.Predecessors[i];
+            if (curr.StartAddress < StartAddress)
+            {
+                IControlFlowNode.DisconnectPredecessor(Tail, i);
+            }
+        }
+
         // Update parent status of Head, as well as this loop, for later operation
         Parent = Head.Parent;
         Head.Parent = this;

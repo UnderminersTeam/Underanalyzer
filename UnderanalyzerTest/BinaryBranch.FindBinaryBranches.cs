@@ -2,6 +2,7 @@
 using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace UnderanalyzerTest;
 
@@ -835,6 +836,58 @@ public class BinaryBranch_FindBinaryBranches
         Assert.Empty(b0.Else.Predecessors);
 
         Assert.Empty(blocks[2].Instructions);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
+
+    [Fact]
+    public void TestIfWith()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            pushi.e 1
+            bf [4]
+
+            :[1]
+            pushi.e 2
+            pushenv [3]
+
+            :[2]
+            pushi.e 3
+
+            :[3]
+            popenv [2]
+
+            :[4]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+
+        Assert.Single(loops);
+        WithLoop loop0 = (WithLoop)loops[0];
+
+        Assert.Single(branches);
+        BinaryBranch b0 = branches[0];
+
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[4]], b0.Successors);
+        Assert.Equal(blocks[0], b0.Condition);
+        Assert.Equal(blocks[1], b0.True);
+        Assert.Equal([loop0], blocks[1].Successors);
+        Assert.Empty(loop0.Successors);
+        Assert.Null(b0.Else);
+        Assert.Equal(blocks[4], b0.False);
+        Assert.Empty(b0.True.Predecessors);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
