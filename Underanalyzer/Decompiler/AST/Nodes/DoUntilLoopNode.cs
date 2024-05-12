@@ -36,6 +36,8 @@ public class DoUntilLoopNode : IStatementNode
     {
         printer.Write("do");
         Body.Print(printer);
+        // TODO: change depending on code style
+        printer.EndLine();
         printer.StartLine();
         printer.Write("until (");
         Condition.Print(printer);

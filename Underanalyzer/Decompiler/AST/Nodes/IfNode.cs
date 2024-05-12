@@ -48,6 +48,8 @@ public class IfNode : IStatementNode
         TrueBlock.Print(printer);
         if (ElseBlock is not null)
         {
+            // TODO: change depending on code style
+            printer.EndLine();
             printer.StartLine();
             printer.Write("else");
             if (ElseBlock is { Children: [IfNode elseIf] })
