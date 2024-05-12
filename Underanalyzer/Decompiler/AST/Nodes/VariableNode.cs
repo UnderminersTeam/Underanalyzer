@@ -57,17 +57,26 @@ public class VariableNode : IExpressionNode
         }
 
         // Compare left side
-        if (Left is VariableNode leftVariable && !leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+        if (Left is VariableNode leftVariable)
         {
-            return false;
+            if (!leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+            {
+                return false;
+            }
         }
-        else if (Left is InstanceTypeNode leftInstType && leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+        else if (Left is InstanceTypeNode leftInstType)
         {
-            return false;
+            if (leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+            {
+                return false;
+            }
         }
-        else if (Left is Int16Node leftI16 && leftI16.Value != (other.Left as Int16Node).Value)
+        else if (Left is Int16Node leftI16)
         {
-            return false;
+            if (leftI16.Value != (other.Left as Int16Node).Value)
+            {
+                return false;
+            }
         }
         else if (Left != other.Left)
         {
