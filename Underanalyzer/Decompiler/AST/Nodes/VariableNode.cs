@@ -78,6 +78,7 @@ public class VariableNode : IExpressionNode
                 }
             }
         }
+
         return this;
     }
 

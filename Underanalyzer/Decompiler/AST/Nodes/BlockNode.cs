@@ -113,6 +113,33 @@ public class BlockNode : IFragmentNode
 
             printer.CloseBlock();
         }
+        else if (printer.StructArguments is not null)
+        {
+            // We're a struct initialization block
+            printer.EndLine();
+            printer.StartLine();
+            printer.Write('{');
+            printer.EndLine();
+            printer.Indent();
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                printer.StartLine();
+
+                Children[i].Print(printer);
+                if (i != Children.Count - 1)
+                {
+                    // Write comma after struct members
+                    printer.Write(',');
+                }
+
+                printer.EndLine();
+            }
+
+            printer.Dedent();
+            printer.StartLine();
+            printer.Write('}');
+        }
         else
         {
             // Just a normal block
@@ -126,12 +153,7 @@ public class BlockNode : IFragmentNode
                 printer.StartLine();
 
                 child.Print(printer);
-                if (printer.StructArguments is not null)
-                {
-                    // Write comma after struct member, always
-                    printer.Write(',');
-                }
-                else if (child.SemicolonAfter)
+                if (child.SemicolonAfter)
                 {
                     printer.Semicolon();
                 }

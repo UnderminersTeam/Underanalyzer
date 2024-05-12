@@ -27,7 +27,6 @@ public class StructNode : IFragmentNode, IExpressionNode
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Body.Clean(cleaner);
-        Body.UseBraces = true;
         return this;
     }
 
