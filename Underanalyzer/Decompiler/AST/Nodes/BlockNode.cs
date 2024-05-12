@@ -126,7 +126,12 @@ public class BlockNode : IFragmentNode
                 printer.StartLine();
 
                 child.Print(printer);
-                if (child.SemicolonAfter)
+                if (printer.StructArguments is not null)
+                {
+                    // Write comma after struct member, always
+                    printer.Write(',');
+                }
+                else if (child.SemicolonAfter)
                 {
                     printer.Semicolon();
                 }

@@ -50,9 +50,9 @@ public class ASTCleaner
     /// <summary>
     /// Pops a fragment off of the fragment context stack.
     /// </summary>
-    internal void PopFragmentContext()
+    internal ASTFragmentContext PopFragmentContext()
     {
-        FragmentContextStack.Pop();
+        ASTFragmentContext popped = FragmentContextStack.Pop();
         if (FragmentContextStack.Count > 0)
         {
             TopFragmentContext = FragmentContextStack.Peek();
@@ -61,5 +61,6 @@ public class ASTCleaner
         {
             TopFragmentContext = null;
         }
+        return popped;
     }
 }

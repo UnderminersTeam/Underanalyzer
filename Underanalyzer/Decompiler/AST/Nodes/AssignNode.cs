@@ -40,11 +40,21 @@ public class AssignNode : IStatementNode
     public void Print(ASTPrinter printer)
     {
         // TODO: handle compound assignment operations
-        // TODO: handle struct variable initialization
         // TODO: handle local variable declarations
 
-        Variable.Print(printer);
-        printer.Write(" = ");
-        Value.Print(printer);
+        if (printer.StructArguments is not null)
+        {
+            // We're inside a struct initialization block
+            Variable.Print(printer);
+            printer.Write(": ");
+            Value.Print(printer);
+        }
+        else
+        {
+            // Normal assignment
+            Variable.Print(printer);
+            printer.Write(" = ");
+            Value.Print(printer);
+        }
     }
 }

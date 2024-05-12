@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Underanalyzer.Decompiler.ControlFlow;
 using static Underanalyzer.IGMInstruction;
 
@@ -135,14 +136,15 @@ public interface IFragmentNode : IStatementNode
                             }
 
                             // Load struct arguments from stack (in reverse)
-                            builder.PushFragmentContext();
-                            builder.StructArguments = new(argumentCount - 1);
+                            List<IExpressionNode> structArguments = new(argumentCount - 1);
                             for (int i = 0; i < argumentCount - 1; i++)
                             {
-                                builder.StructArguments.Add(builder.ExpressionStack.Pop());
+                                structArguments.Add(builder.ExpressionStack.Pop());
                             }
 
                             // Build body
+                            builder.PushFragmentContext();
+                            builder.StructArguments = structArguments;
                             BlockNode block = builder.BuildBlock(fragment.Children[0]);
                             builder.PopFragmentContext();
 

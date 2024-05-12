@@ -24,19 +24,20 @@ public class StructNode : IFragmentNode, IExpressionNode
         FragmentContext = fragmentContext;
     }
 
-    public void Print(ASTPrinter printer)
-    {
-        throw new NotImplementedException();
-    }
-
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Body.Clean(cleaner);
+        Body.UseBraces = true;
         return this;
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         throw new NotImplementedException();
+    }
+
+    public void Print(ASTPrinter printer)
+    {
+        Body.Print(printer);
     }
 }

@@ -55,8 +55,28 @@ public class VariableNode : IExpressionNode
                 ArrayIndices[i] = ArrayIndices[i].Clean(cleaner);
             }
         }
-        // TODO: check if we're a struct argument here?
+
         // TODO: determine if Left needs to be grouped
+
+        // Check if we're a struct argument
+        if (cleaner.StructArguments is not null)
+        {
+            // Verify this is an argument array access
+            int instType = (Left as Int16Node)?.Value ?? (int)((Left as InstanceTypeNode).InstanceType);
+            if (instType == (int)InstanceType.Argument && 
+                Variable is { Name.Content: "argument" } &&
+                ArrayIndices is [Int16Node arrayIndex])
+            {
+                if (arrayIndex.Value >= 0 && arrayIndex.Value < cleaner.StructArguments.Count)
+                {
+                    // We found an argument from the outer context! Clean it (in the outer context) and return it.
+                    ASTFragmentContext context = cleaner.PopFragmentContext();
+                    IExpressionNode arg = cleaner.StructArguments[arrayIndex.Value].Clean(cleaner);
+                    cleaner.PushFragmentContext(context);
+                    return arg;
+                }
+            }
+        }
         return this;
     }
 
