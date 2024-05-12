@@ -49,7 +49,7 @@ public class BlockNode : IFragmentNode
                 if (i > 0 && returnNode.Value is VariableNode returnVariable &&
                     returnVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
                 {
-                    if (Children[i] is AssignNode assign && assign.Variable is VariableNode assignVariable &&
+                    if (Children[i - 1] is AssignNode assign && assign.Variable is VariableNode assignVariable &&
                         assignVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
                     {
                         // We found one - rewrite it as a normal return
