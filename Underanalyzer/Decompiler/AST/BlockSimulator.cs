@@ -75,7 +75,7 @@ internal class BlockSimulator
                     SimulatePush(builder, instr);
                     break;
                 case Opcode.PushImmediate:
-                    builder.ExpressionStack.Push(new Int16Node(instr.ValueShort));
+                    builder.ExpressionStack.Push(new Int16Node(instr.ValueShort, false));
                     break;
                 case Opcode.Pop:
                     SimulatePopVariable(builder, output, instr);
@@ -210,8 +210,7 @@ internal class BlockSimulator
                 builder.ExpressionStack.Push(new Int64Node(instr.ValueLong));
                 break;
             case DataType.Int16:
-                // TODO: handle checks for prefix/postfix here. may need the whole block
-                builder.ExpressionStack.Push(new Int16Node(instr.ValueShort));
+                builder.ExpressionStack.Push(new Int16Node(instr.ValueShort, true));
                 break;
             case DataType.Variable:
                 SimulatePushVariable(builder, instr);
@@ -276,12 +275,24 @@ internal class BlockSimulator
             // "Pop Swap" instruction variant - just moves stuff around on the stack
             IExpressionNode e1 = builder.ExpressionStack.Pop();
             IExpressionNode e2 = builder.ExpressionStack.Pop();
-            for (int j = 0; j < (short)instr.PopSwapSize - 4; j++)
+            if (instr.PopSwapSize == 5)
             {
-                builder.ExpressionStack.Pop();
+                // Non-array variant (e3 should be stacktop parameter)
+                IExpressionNode e3 = builder.ExpressionStack.Pop();
+                builder.ExpressionStack.Push(e1);
+                builder.ExpressionStack.Push(e3);
+                builder.ExpressionStack.Push(e2);
             }
-            builder.ExpressionStack.Push(e2);
-            builder.ExpressionStack.Push(e1);
+            else
+            {
+                // Array variant (e3 and e4 should be array parameters)
+                IExpressionNode e3 = builder.ExpressionStack.Pop();
+                IExpressionNode e4 = builder.ExpressionStack.Pop();
+                builder.ExpressionStack.Push(e1);
+                builder.ExpressionStack.Push(e4);
+                builder.ExpressionStack.Push(e3);
+                builder.ExpressionStack.Push(e2);
+            }
             return;
         }
 
@@ -337,7 +348,55 @@ internal class BlockSimulator
             valueToAssign = new BooleanNode(valueI16.Value == 1);
         }
 
-        // TODO: logic for compound/prefix/postfix
+        // If we have a binary being assigned, check for prefix/postfix/compound operations
+        if (valueToAssign is BinaryNode binary)
+        {
+            // Check prefix/postfix if the right value of binary is 1
+            if (binary is { Right: Int16Node rightInt16 } && rightInt16.Value == 1)
+            {
+                if (binary.Duplicated)
+                {
+                    // Prefix detected
+                    // TODO: do we need to verify "binary.Left" is the same as "variable"?
+
+                    // Pop off duplicate value (should be copy of "binary"), as we don't need it
+                    builder.ExpressionStack.Pop();
+
+                    builder.ExpressionStack.Push(new AssignNode(variable, AssignNode.AssignType.Prefix, binary.Instruction));
+                    return;
+                }
+                if (binary.Left.Duplicated && builder.ExpressionStack.Count > 0 && builder.ExpressionStack.Peek() == binary.Left)
+                {
+                    // Postfix detected - pop off duplicate value, as we don't 
+                    // TODO: do we need to verify "binary.Left" is the same as "variable"?
+
+                    // Pop off duplicate value (should be copy of "binary.Left"), as we don't need it
+                    builder.ExpressionStack.Pop();
+
+                    builder.ExpressionStack.Push(new AssignNode(variable, AssignNode.AssignType.Postfix, binary.Instruction));
+                    return;
+                }
+            }
+
+            // Check for compound assignment
+            if (variable.Left.Duplicated && binary is { Left: VariableNode })
+            {
+                // Compound detected
+                // TODO: do we need to verify "binary.Left" is the same as "variable"?
+
+                if (binary.Instruction.Kind is Opcode.Add or Opcode.Subtract &&
+                    binary.Right is Int16Node compoundI16 && compoundI16.Value == 1 && compoundI16.RegularPush)
+                {
+                    // Special instruction pattern suggests that this is a postfix statement
+                    output.Add(new AssignNode(variable, AssignNode.AssignType.Postfix, binary.Instruction));
+                    return;
+                }
+
+                // Just a normal compound assignment
+                output.Add(new AssignNode(variable, binary.Right, binary.Instruction));
+                return;
+            }
+        }
 
         // Add statement to output list
         output.Add(new AssignNode(variable, valueToAssign));

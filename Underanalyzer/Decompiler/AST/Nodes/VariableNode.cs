@@ -45,6 +45,67 @@ public class VariableNode : IExpressionNode
         RegularPush = regularPush;
     }
 
+    /// <summary>
+    /// Returns true if the other variable is referencing an identical variable, within the same expression/statement.
+    /// </summary>
+    public bool IdenticalToInExpression(VariableNode other)
+    {
+        // Compare basic attributes
+        if (Variable != other.Variable || ReferenceType != other.ReferenceType || Left.GetType() != other.Left.GetType())
+        {
+            return false;
+        }
+
+        // Compare left side
+        if (Left is VariableNode leftVariable && !leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+        {
+            return false;
+        }
+        else if (Left is InstanceTypeNode leftInstType && leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+        {
+            return false;
+        }
+        else if (Left is Int16Node leftI16 && leftI16.Value != (other.Left as Int16Node).Value)
+        {
+            return false;
+        }
+        else if (Left != other.Left)
+        {
+            // Default; just compare references
+            return false;
+        }
+
+        // Compare array indices
+        if (ArrayIndices is not null)
+        {
+            if (other.ArrayIndices is null)
+            {
+                return false;
+            }
+            if (ArrayIndices.Count != other.ArrayIndices.Count)
+            {
+                return false;
+            }
+            for (int i = 0; i < ArrayIndices.Count; i++)
+            {
+                // Compare index references directly, as these should be duplicated if in the same expression
+                if (ArrayIndices[i] != other.ArrayIndices[i])
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            if (other.ArrayIndices is not null)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Left = Left.Clean(cleaner);

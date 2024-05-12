@@ -203,4 +203,612 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestPrePostfix()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.b
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.b
+            pop.v.v self.a
+            push.v self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.b
+            pop.v.v self.a
+            push.v self.b
+            conv.v.i
+            push.v [stacktop]self.c
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.d
+            dup.v 0
+            pop.e.v 5
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.d
+            pop.v.v self.a
+            push.v self.b
+            conv.v.i
+            push.v [stacktop]self.c
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.d
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 5
+            pop.i.v [stacktop]self.d
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.b
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            push.v [stacktop]self.b
+            conv.v.i
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            push.v [stacktop]self.b
+            conv.v.i
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            pushi.e 0
+            push.v [array]self.b
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.c
+            dup.v 0
+            pop.e.v 5
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.c
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            pushi.e 0
+            push.v [array]self.b
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 5
+            pop.i.v [stacktop]self.c
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            pushi.e 0
+            push.v [array]self.b
+            conv.v.i
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            conv.v.i
+            pushi.e 0
+            push.v [array]self.b
+            conv.v.i
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.l 0
+            push.v [array]self.c
+            dup.v 0
+            pop.e.v 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.l 0
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.e.v 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            """,
+            """
+            a = b++;
+            a = ++b;
+            a = b.c.d++;
+            a = ++b.c.d;
+            a = b[0]++;
+            a = ++b[0];
+            a = a.b.c[0]++;
+            a = ++a.b.c[0];
+            a = a.b[0].c++;
+            a = ++a.b[0].c;
+            a = a.b[0].c[0]++;
+            a = ++a.b[0].c[0];
+            a = b[c++]++;
+            a = b[++c]++;
+            a = ++b[++c];
+            a = ++b[c++];
+            a = b[c[0]++]++;
+            a = b[++c[0]]++;
+            a = ++b[++c[0]];
+            a = ++b[c[0]++];
+            """
+        );
+    }
+
+    [Fact]
+    public void TestPrePostfix_GMLv2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.b
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.b
+            pop.v.v self.a
+            push.v self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.b
+            pop.v.v self.a
+            push.v self.b
+            pushi.e -9
+            push.v [stacktop]self.c
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.d
+            dup.v 0
+            dup.i 4 9
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.d
+            pop.v.v self.a
+            push.v self.b
+            pushi.e -9
+            push.v [stacktop]self.c
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.d
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 9
+            pop.i.v [stacktop]self.d
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.b
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.c
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.c
+            dup.v 0
+            dup.i 4 9
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.c
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 9
+            pop.i.v [stacktop]self.c
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.c
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.c
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            pop.v.v self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            push.v self.c
+            dup.v 0
+            push.e 1
+            add.i.v
+            pop.v.v self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.c
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.c
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.c
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.c
+            conv.v.i
+            dup.i 1
+            push.v [array]self.b
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.b
+            pop.v.v self.a
+            """,
+            """
+            a = b++;
+            a = ++b;
+            a = b.c.d++;
+            a = ++b.c.d;
+            a = b[0]++;
+            a = ++b[0];
+            a = a.b.c[0]++;
+            a = ++a.b.c[0];
+            a = a.b[0].c++;
+            a = ++a.b[0].c;
+            a = a.b[0].c[0]++;
+            a = ++a.b[0].c[0];
+            a = b[c++]++;
+            a = b[++c]++;
+            a = ++b[++c];
+            a = ++b[c++];
+            a = b[c[0]++]++;
+            a = b[++c[0]]++;
+            a = ++b[++c[0]];
+            a = ++b[c[0]++];
+            """
+        );
+    }
 }

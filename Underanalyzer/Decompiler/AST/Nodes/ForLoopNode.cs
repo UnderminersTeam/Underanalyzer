@@ -8,7 +8,7 @@ public class ForLoopNode : IStatementNode
     /// <summary>
     /// The initialization statement before the loop, or null if none.
     /// </summary>
-    public IStatementNode Initializer { get; private set; }
+    public IStatementNode Initializer { get; internal set; }
 
     /// <summary>
     /// The condition of the loop.
