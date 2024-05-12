@@ -49,11 +49,24 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
-        throw new NotImplementedException();
+        Body.Clean(cleaner);
+        return this;
     }
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        if (IsAnonymous)
+        {
+            printer.Write("function(");
+        }
+        else
+        {
+            printer.Write("function ");
+            printer.Write(Name);
+            printer.Write('(');
+        }
+        // TODO: handle argument names
+        printer.Write(')');
+        Body.Print(printer);
     }
 }
