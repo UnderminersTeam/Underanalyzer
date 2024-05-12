@@ -32,9 +32,8 @@ public class BlockNode : IFragmentNode
         FragmentContext = fragmentContext;
     }
 
-    public IFragmentNode Clean(ASTCleaner cleaner)
+    private void CleanChildren(ASTCleaner cleaner)
     {
-        cleaner.PushFragmentContext(FragmentContext);
         for (int i = 0; i < Children.Count; i++)
         {
             Children[i] = Children[i].Clean(cleaner);
@@ -61,6 +60,12 @@ public class BlockNode : IFragmentNode
                 }
             }
         }
+    }
+
+    public IFragmentNode Clean(ASTCleaner cleaner)
+    {
+        cleaner.PushFragmentContext(FragmentContext);
+        CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
     }
@@ -68,16 +73,7 @@ public class BlockNode : IFragmentNode
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         cleaner.PushFragmentContext(FragmentContext);
-        for (int i = 0; i < Children.Count; i++)
-        {
-            Children[i] = Children[i].Clean(cleaner);
-            if (Children[i] is BlockNode block && block.Children.Count == 0)
-            {
-                // Remove this empty node
-                Children.RemoveAt(i);
-                i--;
-            }
-        }
+        CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
     }
