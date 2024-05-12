@@ -70,8 +70,9 @@ public class VariableNode : IExpressionNode
                 if (arrayIndex.Value >= 0 && arrayIndex.Value < cleaner.StructArguments.Count)
                 {
                     // We found an argument from the outer context! Clean it (in the outer context) and return it.
+                    IExpressionNode arg = cleaner.StructArguments[arrayIndex.Value];
                     ASTFragmentContext context = cleaner.PopFragmentContext();
-                    IExpressionNode arg = cleaner.StructArguments[arrayIndex.Value].Clean(cleaner);
+                    arg = arg.Clean(cleaner);
                     cleaner.PushFragmentContext(context);
                     return arg;
                 }
