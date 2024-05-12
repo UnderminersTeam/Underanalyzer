@@ -73,8 +73,18 @@ internal class WhileLoop : Loop
         Block tailBlock = Tail as Block;
         tailBlock.Instructions.RemoveAt(tailBlock.Instructions.Count - 1);
 
-        // Find branch location after head
-        Block branchBlock = After.Predecessors[0] as Block;
+        // Find first branch location after head
+        Block branchBlock = null;
+        for (int i = 0; i < After.Predecessors.Count; i++)
+        {
+            if (After.Predecessors[i].StartAddress < Head.StartAddress ||
+                After.Predecessors[i] is not Block b)
+            {
+                continue;
+            }
+            branchBlock = b;
+            break;
+        }
         if (branchBlock.Instructions[^1].Kind != IGMInstruction.Opcode.BranchFalse)
         {
             throw new DecompilerException("Expected BranchFalse in branch block - misidentified");

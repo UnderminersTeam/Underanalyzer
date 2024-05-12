@@ -1442,4 +1442,51 @@ public class BinaryBranch_FindBinaryBranches_Loops
         TestUtil.VerifyFlowDirections(branches);
         TestUtil.EnsureNoRemainingJumps(ctx);
     }
+
+    [Fact]
+    public void TestIfWhile()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [3]
+
+            :[1]
+            push.v self.b
+            conv.v.b
+            bf [3]
+
+            :[2]
+            b [1]
+
+            :[3]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+
+        Assert.Single(loops);
+        WhileLoop loop0 = (WhileLoop)loops[0];
+
+        Assert.Single(branches);
+        BinaryBranch b0 = branches[0];
+
+        Assert.Equal(loop0, b0.True);
+        Assert.Null(b0.Else);
+        Assert.Equal(blocks[3], b0.False);
+        Assert.Empty(loop0.Predecessors);
+        Assert.Empty(loop0.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
 }
