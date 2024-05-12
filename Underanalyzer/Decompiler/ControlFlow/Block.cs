@@ -107,14 +107,25 @@ internal class Block : IControlFlowNode
     }
 
     /// <summary>
-    /// Finds all blocks from a given code entry, generating a basic control flow graph.
+    /// Finds all blocks from a given decompile context, generating a basic control flow graph.
     /// </summary>
     public static List<Block> FindBlocks(DecompileContext ctx)
     {
-        IGMCode code = ctx.Code;
+        List<Block> blocks = FindBlocks(ctx.Code, out Dictionary<int, Block> blocksByAddress);
+        ctx.Blocks = blocks;
+        ctx.BlocksByAddress = blocksByAddress;
+        return blocks;
+    }
+
+
+    /// <summary>
+    /// Finds all blocks from a given code entry, generating a basic control flow graph.
+    /// </summary>
+    public static List<Block> FindBlocks(IGMCode code, out Dictionary<int, Block> blocksByAddress)
+    {
         HashSet<int> addresses = FindBlockAddresses(code);
 
-        Dictionary<int, Block> blocksByAddress = new();
+        blocksByAddress = new();
         List<Block> blocks = new();
         Block current = null;
         for (int i = 0; i < code.InstructionCount; i++)
@@ -265,7 +276,6 @@ internal class Block : IControlFlowNode
             }
         }
 
-        ctx.Blocks = blocks;
         return blocks;
     }
 

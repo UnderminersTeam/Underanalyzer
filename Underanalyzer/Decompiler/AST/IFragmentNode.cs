@@ -30,7 +30,8 @@ public interface IFragmentNode : IStatementNode
         }
 
         // Ensure we have a block after this fragment, so we can determine what it is
-        if (fragment.Successors.Count != 1 || fragment.Successors[0] is not Block followingBlock)
+        if (fragment.Successors.Count != 1 || 
+            !builder.Context.BlocksByAddress.TryGetValue(fragment.Successors[0].StartAddress, out Block followingBlock))
         {
             throw new DecompilerException("Expected block after fragment");
         }

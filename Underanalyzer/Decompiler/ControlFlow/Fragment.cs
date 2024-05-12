@@ -34,14 +34,22 @@ internal class Fragment : IControlFlowNode
     }
 
     /// <summary>
-    /// Finds code fragments from a code entry and its list of blocks.
+    /// Finds code fragments from a decompile context.
     /// Note that this will modify the control flow and instructions of the existing blocks.
     /// </summary>
     public static List<Fragment> FindFragments(DecompileContext ctx)
     {
-        IGMCode code = ctx.Code;
-        List<Block> blocks = ctx.Blocks;
+        List<Fragment> fragments = FindFragments(ctx.Code, ctx.Blocks);
+        ctx.FragmentNodes = fragments;
+        return fragments;
+    }
 
+    /// <summary>
+    /// Finds code fragments from a code entry and its list of blocks.
+    /// Note that this will modify the control flow and instructions of the existing blocks.
+    /// </summary>
+    public static List<Fragment> FindFragments(IGMCode code, List<Block> blocks)
+    {
         if (code.Parent is not null)
             throw new ArgumentException("Expected code entry to be root level.", nameof(code));
 
@@ -141,7 +149,6 @@ internal class Fragment : IControlFlowNode
             throw new DecompilerException("Failed to close all fragments.");
         }
 
-        ctx.FragmentNodes = fragments;
         return fragments;
     }
 

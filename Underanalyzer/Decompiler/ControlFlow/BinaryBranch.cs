@@ -53,15 +53,9 @@ internal class BinaryBranch : IControlFlowNode
     /// <summary>
     /// Creates a mapping of all blocks to the innermost loop they are contained within.
     /// </summary>
-    private static Dictionary<Block, Loop> FindSurroundingLoops(List<Block> blocks, List<Loop> loops)
+    private static Dictionary<Block, Loop> FindSurroundingLoops(
+        List<Block> blocks, Dictionary<int, Block> blockByAddress, List<Loop> loops)
     {
-        // Make lookup of address -> block
-        Dictionary<int, Block> blockByAddress = new();
-        foreach (Block b in blocks)
-        {
-            blockByAddress[b.StartAddress] = b;
-        }
-
         // Assign blocks to loops.
         // We assume that loops are sorted so that nested loops come after outer loops.
         Dictionary<Block, Loop> surroundingLoops = new();
@@ -466,7 +460,7 @@ internal class BinaryBranch : IControlFlowNode
 
         List<BinaryBranch> res = new();
 
-        Dictionary<Block, Loop> surroundingLoops = FindSurroundingLoops(blocks, loops);
+        Dictionary<Block, Loop> surroundingLoops = FindSurroundingLoops(blocks, ctx.BlocksByAddress, loops);
         Dictionary<Block, int> blockAfterLimits = ComputeBlockAfterLimits(blocks, surroundingLoops);
         HashSet<IControlFlowNode> visited = new();
 

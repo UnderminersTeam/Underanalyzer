@@ -19,6 +19,7 @@ public class DecompileContext
 
     // Data structures used (and re-used) for decompilation, as well as tests
     internal List<Block> Blocks { get; set; }
+    internal Dictionary<int, Block> BlocksByAddress { get; set; }
     internal List<Fragment> FragmentNodes { get; set; }
     internal List<Loop> LoopNodes { get; set; }
     internal List<ShortCircuit> ShortCircuitNodes { get; set; }
