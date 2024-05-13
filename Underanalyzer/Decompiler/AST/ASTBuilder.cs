@@ -33,6 +33,11 @@ public class ASTBuilder
     internal HashSet<string> LocalVariableNames { get => TopFragmentContext.LocalVariableNames; }
 
     /// <summary>
+    /// Set of all local variables present in the current fragment.
+    /// </summary>
+    internal List<string> LocalVariableNamesList { get => TopFragmentContext.LocalVariableNamesList; }
+
+    /// <summary>
     /// The stack used to manage fragment contexts.
     /// </summary>
     private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();

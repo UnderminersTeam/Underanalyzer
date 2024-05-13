@@ -225,10 +225,14 @@ internal class BlockSimulator
     {
         VariableNode variable = new(instr.Variable, instr.ReferenceVarType, instr.Kind == Opcode.Push);
 
-        // If this is a local variable, add it to the set in this fragment context
+        // If this is a local variable, add it to the fragment context
         if (variable.Variable.InstanceType == InstanceType.Local)
         {
-            builder.TopFragmentContext.LocalVariableNames.Add(variable.Variable.Name.Content);
+            string localName = variable.Variable.Name.Content;
+            if (builder.LocalVariableNames.Add(localName))
+            {
+                builder.LocalVariableNamesList.Add(localName);
+            }
         }
 
         // Update left side of the variable
@@ -299,10 +303,14 @@ internal class BlockSimulator
         VariableNode variable = new(instr.Variable, instr.ReferenceVarType);
         IExpressionNode valueToAssign = null;
 
-        // If this is a local variable, add it to the set in this fragment context
+        // If this is a local variable, add it to the fragment context
         if (variable.Variable.InstanceType == InstanceType.Local)
         {
-            builder.TopFragmentContext.LocalVariableNames.Add(variable.Variable.Name.Content);
+            string localName = variable.Variable.Name.Content;
+            if (builder.LocalVariableNames.Add(localName))
+            {
+                builder.LocalVariableNamesList.Add(localName);
+            }
         }
 
         // Pop value immediately if first type is Int32

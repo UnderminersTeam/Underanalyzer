@@ -22,4 +22,9 @@ public class ASTFragmentContext
     /// Contains all local variables referenced from within this fragment.
     /// </summary>
     public HashSet<string> LocalVariableNames { get; } = new();
+
+    /// <summary>
+    /// Contains all local variables referenced from within this fragment, in order of occurrence.
+    /// </summary>
+    public List<string> LocalVariableNamesList { get; } = new();
 }

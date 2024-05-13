@@ -20,6 +20,11 @@ public class BlockNode : IFragmentNode
     public bool PartOfSwitch { get; set; } = false;
 
     /// <summary>
+    /// Whether this block should declare all local variables in the current fragment at the top.
+    /// </summary>
+    public bool PrintLocalsAtTop { get; set; } = false;
+
+    /// <summary>
     /// All children contained within this block.
     /// </summary>
     public List<IStatementNode> Children { get; internal set; } = new();
@@ -222,6 +227,23 @@ public class BlockNode : IFragmentNode
             if (UseBraces)
             {
                 printer.OpenBlock();
+            }
+
+            List<string> localNames = FragmentContext.LocalVariableNamesList;
+            if (PrintLocalsAtTop && localNames.Count > 0)
+            {
+                printer.StartLine();
+                printer.Write("var ");
+                for (int i = 0; i < localNames.Count; i++)
+                {
+                    printer.Write(localNames[i]);
+                    if (i != localNames.Count - 1)
+                    {
+                        printer.Write(", ");
+                    }
+                }
+                printer.Semicolon();
+                printer.EndLine();
             }
 
             foreach (IStatementNode child in Children)

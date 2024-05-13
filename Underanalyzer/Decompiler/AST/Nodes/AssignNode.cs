@@ -92,8 +92,8 @@ public class AssignNode : IStatementNode, IExpressionNode
                 }
 
                 // Ensure we actually are a compound operation (Push vs. specialized Push instruction)
-                if (cleaner.Context.OlderThanBytecode15 || 
-                    variable.RegularPush || variable.Variable.InstanceType == InstanceType.Self)
+                if (cleaner.Context.OlderThanBytecode15 ||
+                    binVariable.RegularPush || binVariable.Variable.InstanceType == InstanceType.Self)
                 {
                     AssignKind = AssignType.Compound;
                     BinaryInstruction = binary.Instruction;

@@ -27,6 +27,7 @@ public interface IFragmentNode : IStatementNode
         {
             BlockNode block = builder.BuildBlock(fragment.Children[0]);
             block.UseBraces = false;
+            block.PrintLocalsAtTop = true;
             return block;
         }
 

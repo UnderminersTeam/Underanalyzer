@@ -44,12 +44,16 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Body.Clean(cleaner);
+        Body.UseBraces = true;
+        Body.PrintLocalsAtTop = true;
         return this;
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         Body.Clean(cleaner);
+        Body.UseBraces = true;
+        Body.PrintLocalsAtTop = true;
         return this;
     }
 
