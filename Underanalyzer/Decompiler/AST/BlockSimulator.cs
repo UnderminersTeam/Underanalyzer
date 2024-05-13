@@ -63,7 +63,7 @@ internal class BlockSimulator
                     SimulatePopDelete(builder, output);
                     break;
                 case Opcode.Call:
-                    SimulateCall(builder, instr);
+                    SimulateCall(builder, output, instr);
                     break;
                 case Opcode.CallVariable:
                     SimulateCallVariable(builder, instr);
@@ -438,7 +438,7 @@ internal class BlockSimulator
     /// <summary>
     /// Simulates a single Call instruction.
     /// </summary>
-    private static void SimulateCall(ASTBuilder builder, IGMInstruction instr)
+    private static void SimulateCall(ASTBuilder builder, List<IStatementNode> output, IGMInstruction instr)
     {
         // Check if we're a special function we need to handle
         string funcName = instr.Function?.Name?.Content;
@@ -451,6 +451,10 @@ internal class BlockSimulator
                     return;
                 case VMConstants.NewArrayFunction:
                     SimulateArrayInit(builder, instr);
+                    return;
+                case VMConstants.ThrowFunction:
+                    // TODO: do we need to check if this is inside of an expression?
+                    output.Add(new ThrowNode(builder.ExpressionStack.Pop()));
                     return;
                 // TODO: other special functions need to go here
             }

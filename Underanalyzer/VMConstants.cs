@@ -30,4 +30,7 @@ internal static class VMConstants
 
     // Used to store return values before cleaning up stack
     public const string TempReturnVariable = "$$$$temp$$$$";
+
+    // Used to throw an object/exception
+    public const string ThrowFunction = "@@throw@@";
 }
