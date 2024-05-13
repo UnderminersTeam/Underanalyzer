@@ -37,6 +37,16 @@ public class BlockNode : IFragmentNode
         FragmentContext = fragmentContext;
     }
 
+    private void CleanLocals()
+    {
+        if (FragmentContext.LocalVariableNames.Contains(VMConstants.TempReturnVariable))
+        {
+            FragmentContext.LocalVariableNames.Remove(VMConstants.TempReturnVariable);
+            FragmentContext.LocalVariableNamesList.Remove(VMConstants.TempReturnVariable);
+        }
+        // TODO: try/catch loop locals, if possible?
+    }
+
     private void CleanChildren(ASTCleaner cleaner)
     {
         for (int i = 0; i < Children.Count; i++)
@@ -127,6 +137,7 @@ public class BlockNode : IFragmentNode
     public IFragmentNode Clean(ASTCleaner cleaner)
     {
         cleaner.PushFragmentContext(FragmentContext);
+        CleanLocals();
         CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
@@ -135,6 +146,7 @@ public class BlockNode : IFragmentNode
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         cleaner.PushFragmentContext(FragmentContext);
+        CleanLocals();
         CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
