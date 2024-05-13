@@ -71,6 +71,10 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
         }
         // TODO: handle argument names
         printer.Write(')');
+        if (IsConstructor)
+        {
+            printer.Write(" constructor");
+        }
         Body.Print(printer);
     }
 }
