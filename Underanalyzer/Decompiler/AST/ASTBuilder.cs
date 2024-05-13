@@ -68,6 +68,7 @@ public class ASTBuilder
         List<IStatementNode> output = new(1);
         PushFragmentContext(Context.FragmentNodes[0]);
         Context.FragmentNodes[0].BuildAST(this, output);
+        PopFragmentContext();
         return output[0];
     }
 
@@ -255,6 +256,13 @@ public class ASTBuilder
         }
 
         // Update new top
-        TopFragmentContext = FragmentContextStack.Peek();
+        if (FragmentContextStack.Count > 0)
+        {
+            TopFragmentContext = FragmentContextStack.Peek();
+        }
+        else
+        {
+            TopFragmentContext = null;
+        }
     }
 }
