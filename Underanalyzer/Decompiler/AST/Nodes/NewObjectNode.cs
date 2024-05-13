@@ -51,6 +51,27 @@ public class NewObjectNode : IExpressionNode, IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        if (Group)
+        {
+            printer.Write('(');
+        }
+
+        printer.Write("new ");
+        Function.Print(printer);
+        printer.Write('(');
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i].Print(printer);
+            if (i != Arguments.Count - 1)
+            {
+                printer.Write(", ");
+            }
+        }
+        printer.Write(')');
+
+        if (Group)
+        {
+            printer.Write(')');
+        }
     }
 }

@@ -61,6 +61,24 @@ public class VariableCallNode : IExpressionNode, IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        if (Instance is not InstanceTypeNode instType || instType.InstanceType != IGMInstruction.InstanceType.Self)
+        {
+            if (!Instance.Duplicated)
+            {
+                Instance.Print(printer);
+                printer.Write('.');
+            }
+        }
+        Function.Print(printer);
+        printer.Write('(');
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i].Print(printer);
+            if (i != Arguments.Count - 1)
+            {
+                printer.Write(", ");
+            }
+        }
+        printer.Write(')');
     }
 }
