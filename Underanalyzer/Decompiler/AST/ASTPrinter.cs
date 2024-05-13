@@ -98,8 +98,7 @@ public class ASTPrinter
         // Update cache of indent strings if needed
         for (int i = indentStrings.Count; i <= indentLevel; i++)
         {
-            // TODO: support different indentation styles here, probably using Context.Settings
-            indentStrings.Add(indentStrings[i - 1] + "    ");
+            indentStrings.Add(indentStrings[i - 1] + Context.Settings.IndentString);
         }
 
         // Set current indent string

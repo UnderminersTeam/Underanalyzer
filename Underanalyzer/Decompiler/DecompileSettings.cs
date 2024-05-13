@@ -1,6 +1,20 @@
 ﻿namespace Underanalyzer.Decompiler;
 
-public class DecompileSettings
+/// <summary>
+/// Describes the necessary settings properties for the decompiler.
+/// </summary>
+public interface IDecompileSettings
 {
-    // TODO: configuration of code style, features to enable/disable, etc.
+    /// <summary>
+    /// String used to indent, e.g. tabs or some amount of spaces generally.
+    /// </summary>
+    public string IndentString { get; }
+}
+
+/// <summary>
+/// Provided settings class that can be used by default.
+/// </summary>
+public class DecompileSettings : IDecompileSettings
+{
+    public string IndentString { get; set; } = "    ";
 }

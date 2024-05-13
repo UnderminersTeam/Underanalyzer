@@ -11,7 +11,7 @@ public class DecompileContext
 {
     public IGameContext GameContext { get; }
     public IGMCode Code { get; private set; }
-    public DecompileSettings Settings { get; private set; }
+    public IDecompileSettings Settings { get; private set; }
 
     // Helpers to refer to data on game context
     internal bool OlderThanBytecode15 { get => GameContext.Bytecode14OrLower; }
@@ -33,11 +33,11 @@ public class DecompileContext
     internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
     internal List<Switch> SwitchNodes { get; set; }
 
-    public DecompileContext(IGameContext gameContext, IGMCode code, DecompileSettings settings = null)
+    public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
     {
         GameContext = gameContext;
         Code = code;
-        Settings = settings ?? new();
+        Settings = settings ?? new DecompileSettings();
     }
 
     // Constructor used for control flow tests
