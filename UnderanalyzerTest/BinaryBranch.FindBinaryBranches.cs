@@ -903,4 +903,61 @@ public class BinaryBranch_FindBinaryBranches
         TestUtil.VerifyFlowDirections(branches);
         TestUtil.EnsureNoRemainingJumps(ctx);
     }
+
+    [Fact]
+    public void TestIfNestedIfThenExit()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.b
+            conv.v.b
+            bf [end]
+
+            :[1]
+            push.v self.c
+            conv.v.b
+            bf [2]
+
+            :[2]
+            exit.i
+
+            :[end]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+        Switch.FindSwitchStatements(ctx);
+        List<BinaryBranch> branches = BinaryBranch.FindBinaryBranches(ctx);
+
+        Assert.Equal(2, branches.Count);
+        BinaryBranch b0 = branches[0];
+        BinaryBranch b1 = branches[1];
+
+        Assert.Equal([], b0.Predecessors);
+        Assert.Equal([blocks[3]], b0.Successors);
+        Assert.Equal(blocks[0], b0.Condition);
+        Assert.Equal(b1, b0.True);
+        Assert.Equal([blocks[2]], b1.Successors);
+        Assert.Single(blocks[2].Successors);
+        Assert.IsType<ExitNode>(blocks[2].Successors[0]);
+        Assert.Empty(blocks[2].Successors[0].Successors);
+        Assert.Null(b0.Else);
+        Assert.Equal(blocks[3], b0.False);
+        Assert.Empty(b0.True.Predecessors);
+
+        Assert.IsType<EmptyNode>(b1.True);
+        Assert.Null(b1.Else);
+        Assert.Empty(b1.Predecessors);
+        Assert.Empty(b1.True.Predecessors);
+        Assert.Empty(b1.True.Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+        TestUtil.VerifyFlowDirections(branches);
+        TestUtil.EnsureNoRemainingJumps(ctx);
+    }
 }

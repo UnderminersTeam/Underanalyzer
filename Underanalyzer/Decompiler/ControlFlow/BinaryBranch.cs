@@ -201,7 +201,7 @@ internal class BinaryBranch : IControlFlowNode
                     if (block.Successors[0] == loop)
                     {
                         // Detected trivial continue
-                        node = new ContinueNode(block.EndAddress);
+                        node = new ContinueNode(block.EndAddress - 4);
 
                         // If enclosing loop is a while loop, it must definitively be a while loop,
                         // as we branch to the very top condition (and not to a for loop incrementor).
@@ -213,7 +213,7 @@ internal class BinaryBranch : IControlFlowNode
                     else if (block.Successors[0].StartAddress >= loop.EndAddress)
                     {
                         // Detected trivial break
-                        node = new BreakNode(block.EndAddress);
+                        node = new BreakNode(block.EndAddress - 4);
                     }
                 }
 
@@ -225,12 +225,12 @@ internal class BinaryBranch : IControlFlowNode
                         if (ctx.SwitchEndBlocks.Contains(succBlock))
                         {
                             // This is a break from inside of a switch
-                            node = new BreakNode(block.EndAddress);
+                            node = new BreakNode(block.EndAddress - 4);
                         }
                         else if (ctx.SwitchContinueBlocks.Contains(succBlock))
                         {
                             // This is a continue from inside of a switch
-                            node = new ContinueNode(block.EndAddress);
+                            node = new ContinueNode(block.EndAddress - 4);
                         }
                     }
                 }
@@ -242,7 +242,7 @@ internal class BinaryBranch : IControlFlowNode
                     if (block.Successors[0].StartAddress > afterLimit)
                     {
                         // Detected continue
-                        node = new ContinueNode(block.EndAddress);
+                        node = new ContinueNode(block.EndAddress - 4);
 
                         // If enclosing loop is a while loop, it must actually be a for loop - otherwise we would
                         // be branching to the top of the loop, which would have been detected by now.
@@ -265,12 +265,12 @@ internal class BinaryBranch : IControlFlowNode
             else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Exit }])
             {
                 // We have an exit statement; update control flow graph
-                InsertExternalJumpNode(new ExitNode(block.EndAddress), block, ctx.Blocks, false);
+                InsertExternalJumpNode(new ExitNode(block.EndAddress - 4), block, ctx.Blocks, false);
             }
             else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Return }])
             {
                 // We have a return statement; update control flow graph
-                InsertExternalJumpNode(new ReturnNode(block.EndAddress), block, ctx.Blocks, false);
+                InsertExternalJumpNode(new ReturnNode(block.EndAddress - 4), block, ctx.Blocks, false);
             }
         }
     }
