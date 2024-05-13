@@ -181,6 +181,12 @@ public class BlockNode : IFragmentNode
 
                 IStatementNode current = Children[i];
 
+                current.Print(printer);
+                if (current.SemicolonAfter)
+                {
+                    printer.Semicolon();
+                }
+
                 // Check if we need to handle indents for switch
                 if ((i + 1) < Children.Count)
                 {
@@ -194,12 +200,6 @@ public class BlockNode : IFragmentNode
                         printer.Dedent();
                         switchCaseIndent = false;
                     }
-                }
-
-                current.Print(printer);
-                if (current.SemicolonAfter)
-                {
-                    printer.Semicolon();
                 }
 
                 printer.EndLine();
