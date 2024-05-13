@@ -372,7 +372,8 @@ internal class Switch : IControlFlowNode
                     }
                 }
 
-                if (currentNode.Predecessors.Count != 1)
+                if (currentNode.Predecessors.Count != 1 || 
+                    currentNode.StartAddress != currentNode.Predecessors[0].EndAddress)
                 {
                     // We have either nowhere left to go, or a nonlinear branch here - do not continue
                     break;
