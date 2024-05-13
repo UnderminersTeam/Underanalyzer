@@ -580,6 +580,9 @@ internal class Switch : IControlFlowNode
         body.UseBraces = true;
         body.PartOfSwitch = true;
 
+        // Evaluate end case destinations
+        body.Children.AddRange(builder.BuildBlock(EndCaseDestinations).Children);
+
         // Add statement
         output.Add(new SwitchNode(expression, body));
 
