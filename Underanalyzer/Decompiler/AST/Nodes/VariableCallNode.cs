@@ -61,9 +61,13 @@ public class VariableCallNode : IExpressionNode, IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        if (Instance is not InstanceTypeNode instType || instType.InstanceType != IGMInstruction.InstanceType.Self)
+        if (Function is VariableNode variable && variable is { Left: InstanceTypeNode instType } && 
+            instType.InstanceType == IGMInstruction.InstanceType.Builtin)
         {
-            if (!Instance.Duplicated)
+            // We have a "builtin" type on our variable, so use what's on the stack instead.
+            // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
+            if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self ||
+                printer.LocalVariableNames.Contains(variable.Variable.Name.Content))
             {
                 Instance.Print(printer);
                 printer.Write('.');
