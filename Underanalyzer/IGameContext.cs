@@ -1,4 +1,6 @@
-﻿namespace Underanalyzer;
+﻿using Underanalyzer.Decompiler;
+
+namespace Underanalyzer;
 
 /// <summary>
 /// All types of assets used in 
@@ -39,6 +41,12 @@ public interface IGameContext
     /// True if the game uses bytecode 14 or lower; false otherwise.
     /// </summary>
     public bool Bytecode14OrLower { get; }
+
+    /// <summary>
+    /// Interface for getting global functions.
+    /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
+    /// </summary>
+    public IGlobalFunctions GlobalFunctions { get; }
 
     /// <summary>
     /// Returns the string name of an asset, or null if no such asset exists.

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Underanalyzer.Mock;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -232,5 +234,27 @@ public class ASTPrinter
         Dedent();
         StartLine();
         Write('}');
+    }
+
+    /// <summary>
+    /// Looks up a function name, given a function reference.
+    /// </summary>
+    public string LookupFunction(IGMFunction function)
+    {
+        if (Context.GameContext.GlobalFunctions.FunctionToName.TryGetValue(function, out string name))
+        {
+            // We found a global function name!
+            return name;
+        }
+
+        string funcName = function.Name.Content;
+        if (TopFragmentContext.SubFunctionNames.TryGetValue(funcName, out string realName))
+        {
+            // We found a sub-function name within this fragment!
+            return realName;
+        }
+
+        // Just a normal function name, otherwise
+        return funcName;
     }
 }

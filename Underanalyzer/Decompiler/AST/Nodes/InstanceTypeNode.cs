@@ -28,6 +28,14 @@ public class InstanceTypeNode : IExpressionNode
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(InstanceType switch
+        {
+            IGMInstruction.InstanceType.Self => "self",
+            IGMInstruction.InstanceType.Other => "other",
+            IGMInstruction.InstanceType.All => "all",
+            IGMInstruction.InstanceType.Noone => "noone",
+            IGMInstruction.InstanceType.Global => "global",
+            _ => throw new DecompilerException($"Printing unknown instance type {InstanceType}")
+        });
     }
 }

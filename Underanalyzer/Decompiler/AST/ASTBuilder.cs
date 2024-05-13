@@ -66,7 +66,7 @@ public class ASTBuilder
     public IStatementNode Build()
     {
         List<IStatementNode> output = new(1);
-        PushFragmentContext();
+        PushFragmentContext(Context.FragmentNodes[0]);
         Context.FragmentNodes[0].BuildAST(this, output);
         return output[0];
     }
@@ -225,9 +225,10 @@ public class ASTBuilder
     /// Pushes a new fragment onto the fragment context stack.
     /// Each fragment has its own expression stack, struct argument list, etc.
     /// </summary>
-    internal void PushFragmentContext()
+    internal void PushFragmentContext(Fragment fragment)
     {
-        ASTFragmentContext context = new();
+        ASTFragmentContext context = new(fragment);
+        TopFragmentContext?.Children.Add(context);
         FragmentContextStack.Push(context);
         TopFragmentContext = context;
     }
@@ -243,6 +244,17 @@ public class ASTBuilder
             // TODO: maybe don't make this an exception, and instead use temp vars
             throw new DecompilerException("Data left over on stack");
         }
+
+        // Add sub-function names to lookup, if any exist
+        foreach (ASTFragmentContext child in context.Children)
+        {
+            if (child.FunctionName is not null)
+            {
+                context.SubFunctionNames[child.CodeEntryName] = child.FunctionName;
+            }
+        }
+
+        // Update new top
         TopFragmentContext = FragmentContextStack.Peek();
     }
 }

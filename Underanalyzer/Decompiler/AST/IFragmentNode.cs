@@ -73,20 +73,28 @@ public interface IFragmentNode : IStatementNode
                         throw new DecompilerException("Fragment instruction match failure (normal function)");
                     }
 
-                    // Build body of the function
-                    builder.PushFragmentContext();
-                    BlockNode block = builder.BuildBlock(fragment.Children[0]);
-                    builder.PopFragmentContext();
-
                     // Check if we have a name
+                    string funcName = null;
                     if (followingBlock.Instructions is
                         [
                             _, _, _, _, _, 
                             { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
                             { Kind: Opcode.PushImmediate },
-                            { Kind: Opcode.Pop, Variable.Name.Content: string funcName },
+                            { Kind: Opcode.Pop, Variable.Name.Content: string varName },
                             ..
                         ])
+                    {
+                        funcName = varName;
+                    }
+
+                    // Build body of the function
+                    builder.PushFragmentContext(fragment);
+                    builder.TopFragmentContext.FunctionName = funcName;
+                    BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                    builder.PopFragmentContext();
+
+                    // Return result if not anonymous (we have a name)
+                    if (funcName is not null)
                     {
                         // We have a name! Build and return result
                         builder.StartBlockInstructionIndex = 8;
@@ -144,7 +152,7 @@ public interface IFragmentNode : IStatementNode
                             }
 
                             // Build body
-                            builder.PushFragmentContext();
+                            builder.PushFragmentContext(fragment);
                             builder.StructArguments = structArguments;
                             BlockNode block = builder.BuildBlock(fragment.Children[0]);
                             builder.PopFragmentContext();
@@ -157,7 +165,8 @@ public interface IFragmentNode : IStatementNode
                             // We're a constructor
 
                             // Build body
-                            builder.PushFragmentContext();
+                            builder.PushFragmentContext(fragment);
+                            builder.TopFragmentContext.FunctionName = funcName;
                             BlockNode block = builder.BuildBlock(fragment.Children[0]);
                             builder.PopFragmentContext();
 
@@ -170,7 +179,7 @@ public interface IFragmentNode : IStatementNode
                         // We're an anonymous constructor
 
                         // Build body
-                        builder.PushFragmentContext();
+                        builder.PushFragmentContext(fragment);
                         BlockNode block = builder.BuildBlock(fragment.Children[0]);
                         builder.PopFragmentContext();
 

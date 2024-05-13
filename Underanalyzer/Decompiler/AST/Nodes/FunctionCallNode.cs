@@ -72,9 +72,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        // TODO: look up global function names from game context, and use that instead
-        // TODO: look up functions defined in this code entry, and use those instead
-        printer.Write(Function.Name.Content);
+        printer.Write(printer.LookupFunction(Function));
         printer.Write('(');
         for (int i = 0; i < Arguments.Count; i++)
         {

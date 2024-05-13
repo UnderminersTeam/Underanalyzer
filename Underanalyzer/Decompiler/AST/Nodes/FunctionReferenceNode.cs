@@ -28,6 +28,6 @@ public class FunctionReferenceNode : IExpressionNode
 
     public void Print(ASTPrinter printer)
     {
-        throw new NotImplementedException();
+        printer.Write(printer.LookupFunction(Function));
     }
 }
