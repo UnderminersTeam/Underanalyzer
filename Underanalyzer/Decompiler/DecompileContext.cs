@@ -55,10 +55,10 @@ public class DecompileContext
             Block.FindBlocks(this);
             Fragment.FindFragments(this);
             StaticInit.FindStaticInits(this);
+            Nullish.FindNullish(this);
             Loop.FindLoops(this);
             ShortCircuit.FindShortCircuits(this);
             TryCatch.FindTryCatch(this);
-            Nullish.FindNullish(this);
             Switch.FindSwitchStatements(this);
             BinaryBranch.FindBinaryBranches(this);
             Switch.InsertSwitchStatements(this);

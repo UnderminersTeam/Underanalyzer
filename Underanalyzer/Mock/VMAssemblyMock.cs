@@ -350,7 +350,7 @@ public static class VMAssembly
                                 instr.Function = new GMFunction(parts[1]);
                                 break;
                             }
-                            instr.ValueInt = referenceID;
+                            instr.ReferenceId = referenceID;
                         }
                     }
                     break;

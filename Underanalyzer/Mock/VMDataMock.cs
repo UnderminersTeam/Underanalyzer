@@ -58,6 +58,7 @@ public class GMInstruction : IGMInstruction
     public byte DuplicationSize2 { get; set; }
     public int ArgumentCount { get => ValueInt; set => ValueInt = value; }
     public int PopSwapSize { get => ValueInt; set => ValueInt = value; }
+    public int ReferenceId { get => ValueInt; set => ValueInt = value; }
 
     public override string ToString()
     {

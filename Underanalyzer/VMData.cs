@@ -708,6 +708,12 @@ public interface IGMInstruction
     public int PopSwapSize { get; }
 
     /// <summary>
+    /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
+    /// this is the 32-bit integer reference ID supplied with the instruction, if <see cref="Function"/> is null.
+    /// </summary>
+    public int ReferenceId { get; }
+
+    /// <summary>
     /// Returns size of an instruction, in bytes.
     /// </summary>
     internal static int GetSize(IGMInstruction instr)

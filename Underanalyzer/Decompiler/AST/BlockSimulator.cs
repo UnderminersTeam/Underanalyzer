@@ -612,9 +612,30 @@ internal class BlockSimulator
                 builder.ExpressionStack.Pop();
                 break;
             case ExtendedOpcode.PushReference:
-                // TODO
+                SimulatePushReference(builder, instr);
                 break;
             // TODO: other opcodes
+        }
+    }
+
+    private static void SimulatePushReference(ASTBuilder builder, IGMInstruction instr)
+    {
+        if (instr.Function is not null)
+        {
+            // Simply push a function reference.
+            // Note that this is *specifically* a Variable data type on the stack, not Int32.
+            builder.ExpressionStack.Push(new FunctionReferenceNode(instr.Function)
+            {
+                StackType = DataType.Variable
+            });
+        }
+        else
+        {
+            // Parse reference ID into asset ID and type
+            int referenceId = instr.ReferenceId;
+            int assetId = (referenceId & 0xffffff);               // lower 24 bits
+            AssetType assetType = (AssetType)(referenceId >> 24); // upper 8 bits
+            builder.ExpressionStack.Push(new AssetReferenceNode(assetId, assetType));
         }
     }
 }
