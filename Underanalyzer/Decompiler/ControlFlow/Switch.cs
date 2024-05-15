@@ -14,6 +14,7 @@ internal class Switch : IControlFlowNode
     public class SwitchDetectionData
     {
         public Block EndBlock { get; set; } = null;
+        public IControlFlowNode EndNode { get; set; } = null;
         public Block ContinueBlock { get; set; } = null;
         public Block ContinueSkipBlock { get; set; } = null;
         public Block EndOfCaseBlock { get; set; } = null;
@@ -150,23 +151,30 @@ internal class Switch : IControlFlowNode
                 continue;
             }
 
+            // Get overall node that this block belongs to, if any
+            IControlFlowNode blockNode = block;
+            while (blockNode.Parent is not null)
+            {
+                blockNode = blockNode.Parent;
+            }
+
             // Ensure our earliest predecessor is a block ending with Branch (excluding blocks ending in BranchTrue, as those are cases)
-            if (block.Predecessors.Count == 0)
+            if (blockNode.Predecessors.Count == 0)
             {
                 continue;
             }
             IControlFlowNode earliestPredecessor = null;
-            for (int j = 0; j < block.Predecessors.Count; j++)
+            for (int j = 0; j < blockNode.Predecessors.Count; j++)
             {
-                if (block.Predecessors[j] is Block predCaseBlock &&
+                if (blockNode.Predecessors[j] is Block predCaseBlock &&
                     predCaseBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchTrue }])
                 {
                     continue;
                 }
                 if (earliestPredecessor is null ||
-                    block.Predecessors[j].StartAddress < earliestPredecessor.StartAddress)
+                    blockNode.Predecessors[j].StartAddress < earliestPredecessor.StartAddress)
                 {
-                    earliestPredecessor = block.Predecessors[j];
+                    earliestPredecessor = blockNode.Predecessors[j];
                 }
             }
             if (earliestPredecessor is not Block predBlock ||
@@ -198,13 +206,14 @@ internal class Switch : IControlFlowNode
             }
 
             // We've found the end of a switch statement
-            ctx.SwitchEndBlocks.Add(block);
+            ctx.SwitchEndNodes.Add(blockNode);
             switchTops.Push(earliestPredecessor.StartAddress);
 
             // Create detection data
             SwitchDetectionData data = new()
             {
-                EndBlock = block
+                EndBlock = block,
+                EndNode = blockNode
             };
             ctx.SwitchData.Add(data);
 
@@ -254,7 +263,7 @@ internal class Switch : IControlFlowNode
         {
             // Find first predecessor that ends in Branch (should be the first one that *doesn't* end in BranchTrue)
             Block firstBranchPredecessor = null;
-            foreach (IControlFlowNode pred in data.EndBlock.Predecessors)
+            foreach (IControlFlowNode pred in data.EndNode.Predecessors)
             {
                 if (pred is Block predBlock && predBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
                 {
@@ -278,14 +287,14 @@ internal class Switch : IControlFlowNode
             //  - Otherwise, there's no default branch
             data.EndOfCaseBlock = firstBranchPredecessor;
             bool prevBlockIsDefaultBranch;
-            if (firstBranchPredecessor.BlockIndex >= 1 && !ctx.SwitchEndBlocks.Contains(firstBranchPredecessor))
+            if (firstBranchPredecessor.BlockIndex >= 1 && !ctx.SwitchEndNodes.Contains(firstBranchPredecessor))
             {
                 Block prevBlock = blocks[firstBranchPredecessor.BlockIndex - 1];
                 if (prevBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
                 {
                     prevBlockIsDefaultBranch = false;
                 }
-                else if (prevBlock.Successors[0].StartAddress > data.EndBlock.StartAddress ||
+                else if (prevBlock.Successors[0].StartAddress > data.EndNode.StartAddress ||
                          prevBlock.Successors[0].StartAddress <= prevBlock.StartAddress)
                 {
                     prevBlockIsDefaultBranch = false;
@@ -326,7 +335,7 @@ internal class Switch : IControlFlowNode
     /// </summary>
     public static void FindSwitchStatements(DecompileContext ctx)
     {
-        ctx.SwitchEndBlocks = new();
+        ctx.SwitchEndNodes = new();
         ctx.SwitchData = new();
         ctx.SwitchContinueBlocks = new();
         ctx.SwitchIgnoreJumpBlocks = new();
@@ -365,14 +374,14 @@ internal class Switch : IControlFlowNode
                         caseBranches.Add(currentBlock);
                     }
 
-                    if (ctx.SwitchEndBlocks.Contains(currentBlock))
+                    if (ctx.SwitchEndNodes.Contains(currentBlock))
                     {
                         // We're at the end of another switch statement - do not continue
                         break;
                     }
                 }
 
-                if (currentNode.Predecessors.Count != 1 || 
+                if (currentNode.Predecessors.Count != 1 ||
                     currentNode.StartAddress != currentNode.Predecessors[0].EndAddress)
                 {
                     // We have either nowhere left to go, or a nonlinear branch here - do not continue
@@ -427,7 +436,7 @@ internal class Switch : IControlFlowNode
             {
                 // Insert case destination node before destination
                 CaseDestinationNode caseDestNode = new(caseDestination.StartAddress);
-                if (caseDestination.StartAddress >= (data.ContinueSkipBlock?.StartAddress ?? data.EndBlock.StartAddress))
+                if (caseDestination.StartAddress >= (data.ContinueSkipBlock?.StartAddress ?? data.EndNode.StartAddress))
                 {
                     // Our destination is at the very end of the switch statement
                     if (endCaseDestinations is null)
@@ -465,7 +474,7 @@ internal class Switch : IControlFlowNode
                 {
                     IsDefault = true
                 };
-                if (defaultDestinationNode.StartAddress >= (data.ContinueSkipBlock?.StartAddress ?? data.EndBlock.StartAddress))
+                if (defaultDestinationNode.StartAddress >= (data.ContinueSkipBlock?.StartAddress ?? data.EndNode.StartAddress))
                 {
                     // Our destination is at the very end of the switch statement
                     if (endCaseDestinations is null)
@@ -532,9 +541,8 @@ internal class Switch : IControlFlowNode
             }
 
             // Disconnect all branches going into the end node, and remove PopDelete
-            Block endBlock = data.EndBlock;
-            endBlock.Instructions.RemoveAt(0);
-            IControlFlowNode endNode = endBlock;
+            data.EndBlock.Instructions.RemoveAt(0);
+            IControlFlowNode endNode = data.EndNode;
             while (endNode.Parent is not null)
             {
                 endNode = endNode.Parent;

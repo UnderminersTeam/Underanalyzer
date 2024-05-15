@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
+﻿using System.Collections.Generic;
 using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
@@ -220,18 +218,17 @@ internal class BinaryBranch : IControlFlowNode
                 if (node is null)
                 {
                     // Check if we're breaking/continuing from inside of a switch statement.
-                    if (block.Successors[0] is Block succBlock)
+                    IControlFlowNode succNode = block.Successors[0];
+                    Block succBlock = succNode as Block;
+                    if (ctx.SwitchEndNodes.Contains(succNode))
                     {
-                        if (ctx.SwitchEndBlocks.Contains(succBlock))
-                        {
-                            // This is a break from inside of a switch
-                            node = new BreakNode(block.EndAddress - 4);
-                        }
-                        else if (ctx.SwitchContinueBlocks.Contains(succBlock))
-                        {
-                            // This is a continue from inside of a switch
-                            node = new ContinueNode(block.EndAddress - 4);
-                        }
+                        // This is a break from inside of a switch
+                        node = new BreakNode(block.EndAddress - 4);
+                    }
+                    else if (succBlock is not null && ctx.SwitchContinueBlocks.Contains(succBlock))
+                    {
+                        // This is a continue from inside of a switch
+                        node = new ContinueNode(block.EndAddress - 4);
                     }
                 }
 

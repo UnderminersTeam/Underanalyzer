@@ -41,7 +41,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
         Assert.Single(blocks[2].Successors);
         Assert.IsType<BreakNode>(blocks[2].Successors[0]);
         Assert.Equal([blocks[3]], blocks[2].Successors[0].Successors); // specifically, break goes to the following block, always
-        Assert.Contains(blocks[3], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[3], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[3], ctx.SwitchContinueBlocks);
 
         TestUtil.VerifyFlowDirections(blocks);
@@ -100,7 +100,7 @@ public class BinaryBranch_FindBinaryBranches_Switch
             Assert.IsType<BreakNode>(blocks[i].Successors[0]);
             Assert.Equal([blocks[i + 1]], blocks[i].Successors[0].Successors);
         }
-        Assert.Contains(blocks[5], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[5], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[5], ctx.SwitchContinueBlocks);
 
         TestUtil.VerifyFlowDirections(blocks);
@@ -161,8 +161,8 @@ public class BinaryBranch_FindBinaryBranches_Switch
 
         Assert.Null(loop.ForLoopIncrementor);
 
-        Assert.Contains(blocks[6], ctx.SwitchEndBlocks);
-        Assert.DoesNotContain(blocks[5], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[6], ctx.SwitchEndNodes);
+        Assert.DoesNotContain(blocks[5], ctx.SwitchEndNodes);
         Assert.Contains(blocks[5], ctx.SwitchContinueBlocks);
         Assert.DoesNotContain(blocks[6], ctx.SwitchContinueBlocks);
         Assert.Contains(blocks[4], ctx.SwitchIgnoreJumpBlocks);
@@ -241,8 +241,8 @@ public class BinaryBranch_FindBinaryBranches_Switch
 
         Assert.Null(loop.ForLoopIncrementor);
 
-        Assert.Contains(blocks[8], ctx.SwitchEndBlocks);
-        Assert.DoesNotContain(blocks[7], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[8], ctx.SwitchEndNodes);
+        Assert.DoesNotContain(blocks[7], ctx.SwitchEndNodes);
         Assert.Contains(blocks[7], ctx.SwitchContinueBlocks);
         Assert.DoesNotContain(blocks[8], ctx.SwitchContinueBlocks);
         Assert.Contains(blocks[3], ctx.SwitchIgnoreJumpBlocks);
@@ -328,8 +328,8 @@ public class BinaryBranch_FindBinaryBranches_Switch
         Assert.Null(b.Else);
         Assert.Empty(b.True.Predecessors);
 
-        Assert.Contains(blocks[7], ctx.SwitchEndBlocks);
-        Assert.DoesNotContain(blocks[6], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[7], ctx.SwitchEndNodes);
+        Assert.DoesNotContain(blocks[6], ctx.SwitchEndNodes);
         Assert.Contains(blocks[6], ctx.SwitchContinueBlocks);
         Assert.DoesNotContain(blocks[7], ctx.SwitchContinueBlocks);
         Assert.Contains(blocks[2], ctx.SwitchIgnoreJumpBlocks);
@@ -438,8 +438,8 @@ public class BinaryBranch_FindBinaryBranches_Switch
         Assert.Null(b1.Else);
         Assert.Empty(b1.True.Predecessors);
 
-        Assert.Contains(blocks[11], ctx.SwitchEndBlocks);
-        Assert.DoesNotContain(blocks[10], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[11], ctx.SwitchEndNodes);
+        Assert.DoesNotContain(blocks[10], ctx.SwitchEndNodes);
         Assert.Contains(blocks[10], ctx.SwitchContinueBlocks);
         Assert.DoesNotContain(blocks[11], ctx.SwitchContinueBlocks);
         Assert.Contains(blocks[3], ctx.SwitchIgnoreJumpBlocks);
@@ -496,9 +496,9 @@ public class BinaryBranch_FindBinaryBranches_Switch
         Assert.Empty(loops);
         Assert.Empty(branches);
 
-        Assert.Contains(blocks[3], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[3], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[3], ctx.SwitchContinueBlocks);
-        Assert.DoesNotContain(blocks[2], ctx.SwitchEndBlocks);
+        Assert.DoesNotContain(blocks[2], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[2], ctx.SwitchContinueBlocks);
 
         TestUtil.VerifyFlowDirections(blocks);
@@ -560,9 +560,9 @@ public class BinaryBranch_FindBinaryBranches_Switch
         Assert.Empty(loops);
         Assert.Empty(branches);
 
-        Assert.Contains(blocks[5], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[5], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[5], ctx.SwitchContinueBlocks);
-        Assert.Contains(blocks[6], ctx.SwitchEndBlocks);
+        Assert.Contains(blocks[6], ctx.SwitchEndNodes);
         Assert.DoesNotContain(blocks[6], ctx.SwitchContinueBlocks);
 
         TestUtil.VerifyFlowDirections(blocks);

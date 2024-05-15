@@ -27,7 +27,7 @@ public class DecompileContext
     internal List<TryCatch> TryCatchNodes { get; set; }
     internal List<Nullish> NullishNodes { get; set; }
     internal List<BinaryBranch> BinaryBranchNodes { get; set; }
-    internal HashSet<Block> SwitchEndBlocks { get; set; }
+    internal HashSet<IControlFlowNode> SwitchEndNodes { get; set; }
     internal List<Switch.SwitchDetectionData> SwitchData { get; set; }
     internal HashSet<Block> SwitchContinueBlocks { get; set; }
     internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }

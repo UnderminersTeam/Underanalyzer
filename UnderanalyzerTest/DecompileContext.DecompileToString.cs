@@ -1079,4 +1079,54 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestSwitchIfShortCircuit()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            dup.v 0
+            pushi.e 1
+            cmp.i.v EQ
+            bt [2]
+
+            :[1]
+            b [3]
+
+            :[2]
+            b [3]
+
+            :[3]
+            popz.v
+            push.v self.b
+            conv.v.b
+            bf [5]
+
+            :[4]
+            push.v self.c
+            conv.v.b
+            b [6]
+
+            :[5]
+            push.e 0
+
+            :[6]
+            bf [7]
+
+            :[7]
+            """,
+            """
+            switch (a)
+            {
+                case 1:
+                    break;
+            }
+            if (b && c)
+            {
+            }
+            """
+        );
+    }
 }
