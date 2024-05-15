@@ -173,7 +173,8 @@ public class ASTBuilder
 
     /// <summary>
     /// Builds arbitrary expression AST starting from a control flow node, following all of its successors linearly.
-    /// No statements can be created in this context, and at most a defined number of expressions can be created.
+    /// No statements can be created in this context, and at most a defined number of expressions can be created,
+    /// or -1 if any number of expressions can be created.
     /// </summary>
     internal void BuildArbitrary(IControlFlowNode startNode, List<IStatementNode> output = null, int numAllowedExpressions = 0)
     {
@@ -214,7 +215,7 @@ public class ASTBuilder
         }
 
         // Ensure we didn't add too many expressions to the stack
-        if (stackCountAfter > (stackCountBefore + numAllowedExpressions))
+        if (numAllowedExpressions != -1 && stackCountAfter > (stackCountBefore + numAllowedExpressions))
         {
             throw new DecompilerException(
                 $"Unexpected change of stack count from {stackCountBefore} to " +

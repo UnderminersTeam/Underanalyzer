@@ -125,7 +125,7 @@ internal class ShortCircuit : IControlFlowNode
         List<IExpressionNode> conditions = new(Children.Count);
 
         // Build first condition (it may already be on expression stack, though)
-        builder.BuildArbitrary(Children[0], output, 1);
+        builder.BuildArbitrary(Children[0], output, -1);
         conditions.Add(builder.ExpressionStack.Pop());
 
         // Build the rest of the conditions
