@@ -40,15 +40,15 @@ public class ConditionalNode : IExpressionNode
         False = False.Clean(cleaner);
 
         // Ensure proper precedence
-        if (Condition is BinaryNode or ShortCircuitNode or ConditionalNode)
+        if (Condition is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
         {
             Condition.Group = true;
         }
-        if (True is BinaryNode or ShortCircuitNode or ConditionalNode)
+        if (True is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
         {
             True.Group = true;
         }
-        if (False is BinaryNode or ShortCircuitNode or ConditionalNode)
+        if (False is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
         {
             False.Group = true;
         }

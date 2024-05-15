@@ -72,9 +72,9 @@ public class BinaryNode : IExpressionNode
                 binary.Group = true;
             }
         }
-        else if (node is ShortCircuitNode sc)
+        else if (node is ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
         {
-            sc.Group = true;
+            node.Group = true;
         }
     }
 
