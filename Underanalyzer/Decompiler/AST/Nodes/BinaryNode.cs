@@ -32,7 +32,30 @@ public class BinaryNode : IExpressionNode
         Left = left;
         Right = right;  
         Instruction = instruction;
-        StackType = instruction.Type2;
+
+        // Type1 and Type2 on the instruction represent the data types of Left and Right on the stack.
+        // Choose whichever type has a higher bias, or if equal, the smaller numerical data type value.
+        int bias1 = StackTypeBias(instruction.Type1);
+        int bias2 = StackTypeBias(instruction.Type2);
+        if (bias1 == bias2)
+        {
+            StackType = (DataType)Math.Min((byte)instruction.Type1, (byte)instruction.Type2);
+        }
+        else
+        {
+            StackType = (bias1 > bias2) ? instruction.Type1 : instruction.Type2;
+        }
+    }
+
+    private int StackTypeBias(DataType type)
+    {
+        return type switch
+        {
+            DataType.Int32 or DataType.Boolean or DataType.String => 0,
+            DataType.Double or DataType.Int64 => 1,
+            DataType.Variable => 2,
+            _ => throw new DecompilerException("Unknown stack type in binary operation")
+        };
     }
 
     private void CheckGroup(IExpressionNode node)
