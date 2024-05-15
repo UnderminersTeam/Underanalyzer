@@ -57,7 +57,17 @@ internal class RepeatLoop : Loop
         IControlFlowNode.DisconnectSuccessor(Tail, 1);
         IControlFlowNode.DisconnectSuccessor(Tail, 0);
         Block tailBlock = Tail as Block;
-        tailBlock.Instructions.RemoveRange(tailBlock.Instructions.Count - 5, 5);
+        if (tailBlock.Instructions is
+            [.., { Kind: IGMInstruction.Opcode.Convert }, { Kind: IGMInstruction.Opcode.BranchTrue }])
+        {
+            // We have a Convert instruction before branching at the end (older GML output)
+            tailBlock.Instructions.RemoveRange(tailBlock.Instructions.Count - 5, 5);
+        }
+        else
+        {
+            // We don't have any Convert instruction before branching at the end (more recent GML output)
+            tailBlock.Instructions.RemoveRange(tailBlock.Instructions.Count - 4, 4);
+        }
 
         // Remove unneeded logic from After (should also always be a Block)
         Block afterBlock = After as Block;
