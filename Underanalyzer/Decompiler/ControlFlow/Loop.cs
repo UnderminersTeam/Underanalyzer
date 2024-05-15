@@ -105,7 +105,7 @@ internal abstract class Loop : IControlFlowNode
                             }
                         }
                         loops.Add(new WithLoop(block.EndAddress, block.Successors[1].StartAddress,
-                            block.Successors[0], block.Successors[1], afterBlock, breakBlock));
+                            block, block.Successors[0], block.Successors[1], afterBlock, breakBlock));
                     }
                     break;
             }

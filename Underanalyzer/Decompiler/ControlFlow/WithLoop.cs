@@ -5,7 +5,15 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 
 internal class WithLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [null, null, null, null];
+    public override List<IControlFlowNode> Children { get; } = [null, null, null, null, null];
+
+    /// <summary>
+    /// The node before this loop; usually a block with <see cref="IGMInstruction.Opcode.PushWithContext"/> after it.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this is connected to the loop.
+    /// </remarks>
+    public IControlFlowNode Before { get => Children[0]; private set => Children[0] = value; }
 
     /// <summary>
     /// The start of the loop body of the with loop.
@@ -13,7 +21,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its predecessors.
     /// </remarks>
-    public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Head { get => Children[1]; private set => Children[1] = value; }
 
     /// <summary>
     /// The end of the with loop.
@@ -21,7 +29,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its successors.
     /// </remarks>
-    public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode Tail { get => Children[2]; private set => Children[2] = value; }
 
     /// <summary>
     /// The node reached after the with loop is completed.
@@ -29,7 +37,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
     /// </remarks>
-    public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode After { get => Children[3]; private set => Children[3] = value; }
 
     /// <summary>
     /// If not null, this is a special block jumped to from within the with statement for "break" statements.
@@ -37,12 +45,14 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this node is disconnected from the graph.
     /// </remarks>
-    public IControlFlowNode BreakBlock { get => Children[3]; private set => Children[3] = value; }
+    public IControlFlowNode BreakBlock { get => Children[4]; private set => Children[4] = value; }
 
-    public WithLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail,
+    public WithLoop(int startAddress, int endAddress, 
+                    IControlFlowNode before, IControlFlowNode head, IControlFlowNode tail,
                     IControlFlowNode after, IControlFlowNode breakBlock)
         : base(startAddress, endAddress)
     {
+        Before = before;
         Head = head;
         Tail = tail;
         After = after;
@@ -83,8 +93,10 @@ internal class WithLoop : Loop
             Block oldAfterBlock = oldAfter as Block;
             oldAfterBlock.Instructions.RemoveAt(oldAfterBlock.Instructions.Count - 1);
 
-            // Disonnect successor of After, now, as it is no longer desired
+            // Reroute successor of After to instead go to nodeToEndAt
             IControlFlowNode.DisconnectSuccessor(After, 0);
+            After.Successors.Add(nodeToEndAt);
+            nodeToEndAt.Predecessors.Insert(0, After);
         }
 
         // Insert structure into graph
@@ -98,6 +110,23 @@ internal class WithLoop : Loop
             {
                 IControlFlowNode.DisconnectPredecessor(Tail, i);
             }
+        }
+
+        // If Before still has more than one branch, just redirect it into this loop
+        if (Before.Successors.Count != 1)
+        {
+            if (Before.Successors.Count != 2)
+            {
+                throw new DecompilerException("Expected 2 branches on Before");
+            }
+            if (Before.Successors[0] != this || Before.Successors[1] != this)
+            {
+                throw new DecompilerException("Expected 2 branches to this loop on Before");
+            }
+            IControlFlowNode.DisconnectSuccessor(Before, 1);
+            IControlFlowNode.DisconnectSuccessor(Before, 0);
+            Before.Successors.Add(this);
+            Predecessors.Add(Before);
         }
 
         // Update parent status of Head, as well as this loop, for later operation

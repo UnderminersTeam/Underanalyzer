@@ -1158,4 +1158,79 @@ public class Loop_FindLoops
         TestUtil.VerifyFlowDirections(fragments);
         TestUtil.VerifyFlowDirections(loops);
     }
+
+    [Fact]
+    public void TestMultiWithBreak()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [10]
+            
+            :[1]
+            push.v self.b
+            pushi.e -9
+            pushenv [6]
+            
+            :[2]
+            push.v self.c
+            pushi.e -9
+            pushenv [4]
+            
+            :[3]
+            pushi.e 1
+            pop.v.i self.d
+            
+            :[4]
+            popenv [3]
+            
+            :[5]
+            pushi.e 1
+            pop.v.i self.e
+            b [8]
+            
+            :[6]
+            popenv [2]
+            
+            :[7]
+            b [9]
+            
+            :[8]
+            popenv <drop>
+            
+            :[9]
+            b [12]
+            
+            :[10]
+            push.v self.f
+            pushi.e -9
+            pushenv [11]
+            
+            :[11]
+            popenv [11]
+            
+            :[12]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Loop> loops = Loop.FindLoops(ctx);
+
+        Assert.Equal(3, loops.Count);
+        Assert.IsType<WithLoop>(loops[0]);
+        Assert.IsType<WithLoop>(loops[1]);
+        Assert.IsType<WithLoop>(loops[2]);
+        WithLoop loop0 = (WithLoop)loops[0];
+        WithLoop loop1 = (WithLoop)loops[1];
+        WithLoop loop2 = (WithLoop)loops[2];
+
+        Assert.Equal([loop2], blocks[10].Successors);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(loops);
+    }
 }

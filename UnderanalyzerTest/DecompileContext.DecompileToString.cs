@@ -849,4 +849,234 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestMultiWithBreak()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [10]
+
+            :[1]
+            push.v self.b
+            pushi.e -9
+            pushenv [6]
+
+            :[2]
+            push.v self.c
+            pushi.e -9
+            pushenv [4]
+
+            :[3]
+            pushi.e 1
+            pop.v.i self.d
+
+            :[4]
+            popenv [3]
+
+            :[5]
+            pushi.e 1
+            pop.v.i self.e
+            b [8]
+
+            :[6]
+            popenv [2]
+
+            :[7]
+            b [9]
+
+            :[8]
+            popenv <drop>
+
+            :[9]
+            b [12]
+
+            :[10]
+            push.v self.f
+            pushi.e -9
+            pushenv [11]
+
+            :[11]
+            popenv [11]
+
+            :[12]
+            """,
+            """
+            if (a)
+            {
+                with (b)
+                {
+                    with (c)
+                    {
+                        d = 1;
+                    }
+                    e = 1;
+                    break;
+                }
+            }
+            else
+            {
+                with (f)
+                {
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestMultiWithBreak2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [10]
+
+            :[1]
+            push.v self.b
+            pushi.e -9
+            pushenv [6]
+
+            :[2]
+            push.v self.c
+            pushi.e -9
+            pushenv [4]
+
+            :[3]
+            pushi.e 1
+            pop.v.i self.d
+
+            :[4]
+            popenv [3]
+
+            :[5]
+            pushi.e 1
+            pop.v.i self.e
+            b [8]
+
+            :[6]
+            popenv [2]
+            
+            :[7]
+            b [9]
+
+            :[8]
+            popenv <drop>
+
+            :[9]
+            b [18]
+
+            :[10]
+            push.v self.b
+            pushi.e -9
+            pushenv [15]
+
+            :[11]
+            push.v self.c
+            pushi.e -9
+            pushenv [13]
+
+            :[12]
+            pushi.e 1
+            pop.v.i self.d
+
+            :[13]
+            popenv [12]
+            
+            :[14]
+            pushi.e 1
+            pop.v.i self.e
+            b [17]
+
+            :[15]
+            popenv [11]
+            
+            :[16]
+            b [18]
+
+            :[17]
+            popenv <drop>
+
+            :[18]
+            """,
+            """
+            if (a)
+            {
+                with (b)
+                {
+                    with (c)
+                    {
+                        d = 1;
+                    }
+                    e = 1;
+                    break;
+                }
+            }
+            else
+            {
+                with (b)
+                {
+                    with (c)
+                    {
+                        d = 1;
+                    }
+                    e = 1;
+                    break;
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestIfElseWithBreak()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            conv.v.b
+            bf [2]
+
+            :[1]
+            b [7]
+
+            :[2]
+            push.v self.b
+            pushi.e -9
+            pushenv [4]
+
+            :[3]
+            b [6]
+
+            :[4]
+            popenv [3]
+
+            :[5]
+            b [7]
+
+            :[6]
+            popenv <drop>
+
+            :[7]
+            """,
+            """
+            if (a)
+            {
+            }
+            else
+            {
+                with (b)
+                {
+                    break;
+                }
+            }
+            """
+        );
+    }
 }
