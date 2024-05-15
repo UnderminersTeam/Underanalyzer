@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
@@ -10,12 +7,36 @@ internal class WithLoop : Loop
 {
     public override List<IControlFlowNode> Children { get; } = [null, null, null, null];
 
+    /// <summary>
+    /// The start of the loop body of the with loop.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this is disconnected from its predecessors.
+    /// </remarks>
     public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
 
+    /// <summary>
+    /// The end of the with loop.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this is disconnected from its successors.
+    /// </remarks>
     public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
 
+    /// <summary>
+    /// The node reached after the with loop is completed.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
+    /// </remarks>
     public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
 
+    /// <summary>
+    /// If not null, this is a special block jumped to from within the with statement for "break" statements.
+    /// </summary>
+    /// <remarks>
+    /// Upon being processed, this node is disconnected from the graph.
+    /// </remarks>
     public IControlFlowNode BreakBlock { get => Children[3]; private set => Children[3] = value; }
 
     public WithLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail,
