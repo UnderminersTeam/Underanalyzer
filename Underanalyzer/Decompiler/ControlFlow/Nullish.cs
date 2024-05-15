@@ -114,6 +114,27 @@ internal class Nullish : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        if (NullishKind == NullishType.Expression)
+        {
+            IExpressionNode left = builder.ExpressionStack.Pop();
+            IExpressionNode right = builder.BuildExpression(IfNullish);
+            builder.ExpressionStack.Push(new NullishCoalesceNode(left, right));
+        }
+        else
+        {
+            // Pop off existing variable from stack
+            builder.ExpressionStack.Pop();
+
+            // Read assignment statement from branch
+            BlockNode rightBlock = builder.BuildBlock(IfNullish);
+            if (rightBlock.Children is not [AssignNode rightAssign])
+            {
+                throw new DecompilerException("Expected assignment in nullish-coalescing assignment");
+            }
+
+            // Modify and output assignment
+            rightAssign.AssignKind = AssignNode.AssignType.NullishCoalesce;
+            output.Add(rightAssign);
+        }
     }
 }

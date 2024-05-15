@@ -91,7 +91,8 @@ public class BlockNode : IFragmentNode
                     {
                         continue;
                     }
-                    if (incrementor.AssignKind == AssignNode.AssignType.Normal)
+                    if (incrementor.AssignKind is not (AssignNode.AssignType.Compound or 
+                        AssignNode.AssignType.Prefix or AssignNode.AssignType.Postfix))
                     {
                         continue;
                     }

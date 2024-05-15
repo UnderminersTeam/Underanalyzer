@@ -21,7 +21,7 @@ public class AssignNode : IStatementNode, IExpressionNode
     /// <summary>
     /// The type of assignment being done.
     /// </summary>
-    public AssignType AssignKind { get; private set; }
+    public AssignType AssignKind { get; internal set; }
 
     /// <summary>
     /// For prefix/postfix/compound, this is the instruction used to do the operation.
@@ -41,7 +41,8 @@ public class AssignNode : IStatementNode, IExpressionNode
         Normal,
         Compound,
         Prefix,
-        Postfix
+        Postfix,
+        NullishCoalesce
     }
 
     public AssignNode(IExpressionNode variable, IExpressionNode value)
@@ -157,6 +158,11 @@ public class AssignNode : IStatementNode, IExpressionNode
                     Opcode.Xor => " ^= ",
                     _ => throw new DecompilerException("Unknown binary instruction opcode in compound assignment")
                 });
+                Value.Print(printer);
+                break;
+            case AssignType.NullishCoalesce:
+                Variable.Print(printer);
+                printer.Write(" ??= ");
                 Value.Print(printer);
                 break;
         }
