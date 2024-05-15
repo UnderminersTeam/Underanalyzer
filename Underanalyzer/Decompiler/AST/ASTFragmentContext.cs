@@ -35,6 +35,11 @@ public class ASTFragmentContext
     internal Stack<IExpressionNode> ExpressionStack { get; } = new();
 
     /// <summary>
+    /// If true, the current AST is within a static variable initialization block (when printing).
+    /// </summary>
+    internal bool InStaticInitialization { get; set; } = false;
+
+    /// <summary>
     /// If not null, represents the list of arguments getting passed into this fragment (which is a struct).
     /// </summary>
     public List<IExpressionNode> StructArguments { get; internal set; } = null;

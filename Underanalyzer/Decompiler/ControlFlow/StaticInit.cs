@@ -87,6 +87,6 @@ internal class StaticInit : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        output.Add(new StaticInitNode(builder.BuildBlock(Head)));
     }
 }
