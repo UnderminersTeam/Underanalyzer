@@ -40,6 +40,7 @@ public class Nullish_FindNullish
         Assert.Empty(blocks[1].Successors);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
+        Assert.Equal(nulls[0], blocks[1].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -86,6 +87,7 @@ public class Nullish_FindNullish
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }, { Kind: IGMInstruction.Opcode.Pop }]);
         Assert.True(blocks[2].Instructions is []);
         Assert.Equal([blocks[3]], blocks[2].Successors);
+        Assert.Equal(nulls[0], blocks[1].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -133,6 +135,7 @@ public class Nullish_FindNullish
         Assert.Empty(blocks[1].Successors);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
+        Assert.Equal(nulls[0], blocks[1].Parent);
 
         Assert.Equal(Nullish.NullishType.Expression, nulls[1].NullishKind);
         Assert.Equal([blocks[2]], nulls[1].Predecessors);
@@ -145,6 +148,7 @@ public class Nullish_FindNullish
         Assert.Equal([nulls[1]], blocks[2].Successors);
         Assert.True(blocks[2].Instructions is []);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
+        Assert.Equal(nulls[1], blocks[3].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -198,6 +202,7 @@ public class Nullish_FindNullish
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[4].Instructions is []);
+        Assert.Equal(nulls[0], blocks[1].Parent);
 
         Assert.Equal(Nullish.NullishType.Expression, nulls[1].NullishKind);
         Assert.Equal([blocks[1]], nulls[1].Predecessors);
@@ -209,6 +214,64 @@ public class Nullish_FindNullish
         Assert.Empty(blocks[2].Successors);
         Assert.True(blocks[2].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Pop }]);
+        Assert.Equal(nulls[1], blocks[2].Parent);
+
+        TestUtil.VerifyFlowDirections(blocks);
+        TestUtil.VerifyFlowDirections(fragments);
+        TestUtil.VerifyFlowDirections(nulls);
+    }
+
+    [Fact]
+    public void TestInnerBranchAssignment()
+    {
+        GMCode code = TestUtil.GetCode(
+            """
+            :[0]
+            push.v self.a
+            isnullish.e
+            bf [5]
+
+            :[1]
+            popz.v
+            push.v self.b
+            conv.v.b
+            bf [3]
+
+            :[2]
+            push.v self.c
+            b [4]
+
+            :[3]
+            push.v self.d
+
+            :[4]
+            pop.v.v self.a
+            b [6]
+
+            :[5]
+            popz.v
+
+            :[6]
+            """
+        );
+        DecompileContext ctx = new(code);
+        List<Block> blocks = Block.FindBlocks(ctx);
+        List<Fragment> fragments = Fragment.FindFragments(ctx);
+        List<Nullish> nulls = Nullish.FindNullish(ctx);
+
+        Assert.Single(nulls);
+        Assert.Equal(Nullish.NullishType.Assignment, nulls[0].NullishKind);
+        Assert.Equal([blocks[0]], nulls[0].Predecessors);
+        Assert.Equal([blocks[5]], nulls[0].Successors);
+        Assert.Equal([nulls[0]], blocks[0].Successors);
+        Assert.Equal([nulls[0]], blocks[5].Predecessors);
+        Assert.Equal(blocks[1], nulls[0].IfNullish);
+        Assert.Empty(blocks[1].Predecessors);
+        Assert.Empty(blocks[4].Successors);
+        Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
+        Assert.True(blocks[5].Instructions is []);
+        Assert.Equal(2, blocks[1].Successors.Count);
+        Assert.Equal(nulls[0], blocks[1].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);

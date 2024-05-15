@@ -811,4 +811,42 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestNullishTernary()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            isnullish.e
+            bf [5]
+            
+            :[1]
+            popz.v
+            push.v self.b
+            conv.v.b
+            bf [3]
+            
+            :[2]
+            push.v self.c
+            b [4]
+            
+            :[3]
+            push.v self.d
+            
+            :[4]
+            pop.v.v self.a
+            b [6]
+            
+            :[5]
+            popz.v
+            
+            :[6]
+            """,
+            """
+            a ??= b ? c : d;
+            """
+        );
+    }
 }

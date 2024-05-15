@@ -549,7 +549,7 @@ internal class BinaryBranch : IControlFlowNode
         // Evaluate condition block
         BlockNode conditionBlock = builder.BuildBlock(Condition);
         conditionBlock.UseBraces = false;
-        output.Add(conditionBlock);
+        output.AddRange(conditionBlock.Children);
 
         IExpressionNode condition = builder.ExpressionStack.Pop();
 

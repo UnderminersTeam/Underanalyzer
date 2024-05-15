@@ -69,7 +69,9 @@ internal class Nullish : IControlFlowNode
                 // Determine nullish type by using the block "after"
                 NullishType nullishKind = NullishType.Expression;
                 if (afterBlock.Instructions is [{ Kind: IGMInstruction.Opcode.PopDelete }, ..])
+                {
                     nullishKind = NullishType.Assignment;
+                }
 
                 Nullish n = new(block.EndAddress, afterBlock.StartAddress, nullishKind, ifNullishBlock);
                 res.Add(n);
@@ -105,6 +107,13 @@ internal class Nullish : IControlFlowNode
                 n.Predecessors.Add(block);
                 n.Successors.Add(afterBlock);
                 afterBlock.Predecessors.Add(n);
+
+                // Update parent status of "if nullish" block
+                if (ifNullishBlock.Parent is not null)
+                {
+                    throw new DecompilerException("Expected IfNullish block to be null");
+                }
+                ifNullishBlock.Parent = n;
             }
         }
 
