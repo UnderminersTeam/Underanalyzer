@@ -182,7 +182,7 @@ public class VariableNode : IExpressionNode
         if (cleaner.StructArguments is not null)
         {
             // Verify this is an argument array access
-            int instType = (Left as Int16Node)?.Value ?? (int)((Left as InstanceTypeNode).InstanceType);
+            int instType = (Left as Int16Node)?.Value ?? (int?)((Left as InstanceTypeNode)?.InstanceType) ?? 0;
             if (instType == (int)InstanceType.Argument && 
                 Variable is { Name.Content: "argument" } &&
                 ArrayIndices is [Int16Node arrayIndex])
