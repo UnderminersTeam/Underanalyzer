@@ -130,6 +130,12 @@ public class AssignNode : IStatementNode, IExpressionNode
                 }
                 else
                 {
+                    if (printer.TopFragmentContext.InStaticInitialization)
+                    {
+                        // In static initialization, we prepend the "static" keyword to the assignment
+                        printer.Write("static ");
+                    }
+
                     // Normal assignment
                     Variable.Print(printer);
                     printer.Write(" = ");
