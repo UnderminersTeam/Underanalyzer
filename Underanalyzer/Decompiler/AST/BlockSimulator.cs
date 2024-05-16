@@ -609,15 +609,100 @@ internal class BlockSimulator
         switch (instr.ExtKind)
         {
             case ExtendedOpcode.SetArrayOwner:
+                // We ignore the array owner ID - not important for high-level code decompilation
                 builder.ExpressionStack.Pop();
                 break;
             case ExtendedOpcode.PushReference:
                 SimulatePushReference(builder, instr);
                 break;
-            // TODO: other opcodes
+            case ExtendedOpcode.PushArrayContainer:
+            case ExtendedOpcode.PushArrayFinal:
+                // For decompilation sake, we treat these two instructions identically (they just push an array index, or a reference to one)
+                SimulateMultiArrayPush(builder);
+                break;
+            case ExtendedOpcode.PopArrayFinal:
+                SimulateMultiArrayPop(builder, output);
+                break;
         }
     }
 
+    /// <summary>
+    /// Simulates a single PushArrayContainer or PushArrayFinal extended opcode instruction.
+    /// </summary>
+    private static void SimulateMultiArrayPush(ASTBuilder builder)
+    {
+        IExpressionNode index = builder.ExpressionStack.Pop();
+        VariableNode variable = builder.ExpressionStack.Pop() as VariableNode;
+        if (variable is null)
+        {
+            throw new DecompilerException("Expected variable in multi-array push");
+        }
+
+        // Make a copy of the variable we already have, with the new index at the end of array indices
+        VariableNode extendedVariable = new(variable.Variable, variable.ReferenceType, variable.RegularPush);
+        extendedVariable.Left = variable.Left;
+        extendedVariable.ArrayIndices = new(variable.ArrayIndices) { index };
+        builder.ExpressionStack.Push(extendedVariable);
+    }
+
+    /// <summary>
+    /// Simulates a single PopArrayFinal extended opcode instruction.
+    /// </summary>
+    private static void SimulateMultiArrayPop(ASTBuilder builder, List<IStatementNode> output)
+    {
+        IExpressionNode index = builder.ExpressionStack.Pop();
+        VariableNode variable = builder.ExpressionStack.Pop() as VariableNode;
+        if (variable is null)
+        {
+            throw new DecompilerException("Expected variable in multi-array pop");
+        }
+
+        // Make a copy of the variable we already have, with the new index at the end of array indices
+        VariableNode extendedVariable = new(variable.Variable, variable.ReferenceType, variable.RegularPush);
+        extendedVariable.Left = variable.Left;
+        extendedVariable.ArrayIndices = new(variable.ArrayIndices) { index };
+
+        // Make assignment node with this variable, and the value remaining at the top of the stack
+        IExpressionNode value = builder.ExpressionStack.Pop();
+
+        // If we have a binary being assigned, check for prefix/postfix operations
+        if (value is BinaryNode binary)
+        {
+            // Check prefix/postfix if the right value of binary is 1
+            if (binary is { Right: Int16Node rightInt16 } && rightInt16.Value == 1)
+            {
+                if (binary.Duplicated)
+                {
+                    // Prefix detected
+                    // TODO: do we need to verify "binary.Left" is the same as "extendedVariable"?
+
+                    // Pop off duplicate value (should be copy of "binary"), as we don't need it
+                    builder.ExpressionStack.Pop();
+
+                    builder.ExpressionStack.Push(new AssignNode(extendedVariable, AssignNode.AssignType.Prefix, binary.Instruction));
+                    return;
+                }
+                if (binary.Left.Duplicated && builder.ExpressionStack.Count > 0 && builder.ExpressionStack.Peek() == binary.Left)
+                {
+                    // Postfix detected - pop off duplicate value, as we don't 
+                    // TODO: do we need to verify "binary.Left" is the same as "extendedVariable"?
+
+                    // Pop off duplicate value (should be copy of "binary.Left"), as we don't need it
+                    builder.ExpressionStack.Pop();
+
+                    builder.ExpressionStack.Push(new AssignNode(extendedVariable, AssignNode.AssignType.Postfix, binary.Instruction));
+                    return;
+                }
+            }
+        }
+
+        // Just a normal assignment statement - let AST cleanup code determine pre/postfix and compounds
+        output.Add(new AssignNode(extendedVariable, value));
+    }
+
+    /// <summary>
+    /// Simulates a single PushReference extended opcode instruction.
+    /// </summary>
     private static void SimulatePushReference(ASTBuilder builder, IGMInstruction instr)
     {
         if (instr.Function is not null)

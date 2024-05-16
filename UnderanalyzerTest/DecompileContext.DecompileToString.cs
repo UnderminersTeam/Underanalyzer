@@ -1129,4 +1129,139 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestMultiArrays()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            exit.i
+
+            :[1]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipush]self.array
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            pushaf.e
+            pop.v.v self.basic_push_multi
+            exit.i
+
+            :[2]
+            pushi.e 3
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.basic_pop_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            popaf.e
+            exit.i
+
+            :[3]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.prefix_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            pushaf.e
+            push.e 1
+            add.i.v
+            dup.i 4 5
+            popaf.e
+            exit.i
+
+            :[4]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.postfix_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            pushaf.e
+            push.e 1
+            add.i.v
+            dup.i 4 5
+
+            popaf.e
+            exit.i
+
+            :[5]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.compound_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            savearef.e
+            pushaf.e
+            pushi.e 3
+            add.i.v
+            restorearef.e
+            dup.i 4 5
+            popaf.e
+            exit.i
+
+            :[6]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.prefix_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            pushaf.e
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 9
+            dup.i 4 5
+            popaf.e
+            pop.v.v self.a
+            exit.i
+
+            :[7]
+            pushi.e -1
+            pushi.e 0
+            push.v [multipushpop]self.postfix_multi
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            pushaf.e
+            dup.v 0
+            dup.i 4 9
+            push.e 1
+            add.i.v
+            dup.i 4 5
+            popaf.e
+            pop.v.v self.a
+            exit.i
+            """,
+            """
+            exit;
+            basic_push_multi = array[0][1][2];
+            exit;
+            basic_pop_multi[0][1][2] = 3;
+            exit;
+            prefix_multi[0][1][2]++;
+            exit;
+            postfix_multi[0][1][2]++;
+            exit;
+            compound_multi[0][1][2] += 3;
+            exit;
+            a = ++prefix_multi[0][1][2];
+            exit;
+            a = postfix_multi[0][1][2]++;
+            exit;
+            """
+        );
+    }
 }

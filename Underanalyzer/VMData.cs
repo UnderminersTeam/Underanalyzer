@@ -362,21 +362,21 @@ public interface IGMInstruction
         CheckArrayIndex = -1,
 
         /// <summary>
-        /// Pops two values from the stack, those being an array reference and an index.
+        /// Pops two values from the stack, those being an index and an array reference.
         /// Then, pushes the value stored at the passed-in array at the desired index.
         /// That is, this is used only with multi-dimensional arrays, for the final/last index operation.
         /// Mnemonic: "pushaf"
         /// </summary>
         [OpcodeInfo("pushaf")]
-        PushArrayRef = -2,
+        PushArrayFinal = -2,
 
         /// <summary>
-        /// Pops three values from the stack, those being an array reference, an index, and a value.
+        /// Pops three values from the stack, those being an index, an array reference, and a value.
         /// Then, assigns the value to the array at the specified index.
         /// Mnemonic: "popaf"
         /// </summary>
         [OpcodeInfo("popaf")]
-        PopMultiArray = -3,
+        PopArrayFinal = -3,
 
         /// <summary>
         /// Pops two values from the stack, those being an array reference and an index.
@@ -385,7 +385,7 @@ public interface IGMInstruction
         /// Mnemonic: "pushac"
         /// </summary>
         [OpcodeInfo("pushac")]
-        PushSubArray = -4,
+        PushArrayContainer = -4,
 
         /// <summary>
         /// Sets a global variable in the VM (popped from stack), designated for tracking the now-deprecated array copy-on-write functionality in GML.
