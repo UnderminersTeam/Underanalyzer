@@ -28,6 +28,11 @@ internal class Fragment : IControlFlowNode
     /// </summary>
     public IGMCode CodeEntry { get; }
 
+    /// <summary>
+    /// The base blocks that this fragment is composed of.
+    /// </summary>
+    public List<Block> Blocks { get; } = new();
+
     public Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks)
     {
         StartAddress = startAddr;
@@ -78,17 +83,17 @@ internal class Fragment : IControlFlowNode
             {
                 if (stack.Count > 0)
                 {
-                    // We're an inner fragment - mark first block as no longer unreachable
-                    if (!current.Children[0].Unreachable)
+                    // We're an inner fragment - mark first block as no longer unreachable, if it is
+                    // (normally always unreachable, unless there's a loop header at the first block)
+                    if (current.Children[0].Unreachable)
                     {
-                        throw new DecompilerException("Expected first block of fragment to be unreachable.");
+                        current.Children[0].Unreachable = false;
+                        IControlFlowNode.DisconnectPredecessor(current.Children[0], 0);
                     }
-                    current.Children[0].Unreachable = false;
-                    IControlFlowNode.DisconnectPredecessor(current.Children[0], 0);
 
                     // We're an inner fragment - remove "exit" instruction
-                    var lastBlockInstructions = (current.Children[^1] as Block).Instructions;
-                    if (lastBlockInstructions[^1].Kind != IGMInstruction.Opcode.Exit)
+                    var lastBlockInstructions = current.Blocks[^1].Instructions;
+                    if (lastBlockInstructions is not [.., { Kind: IGMInstruction.Opcode.Exit } ])
                     {
                         throw new DecompilerException("Expected exit at end of fragment.");
                     }
@@ -101,6 +106,7 @@ internal class Fragment : IControlFlowNode
                 {
                     // We're done processing now. Add last block and exit loop.
                     current.Children.Add(block);
+                    current.Blocks.Add(block);
 
                     if (block.StartAddress != code.Length)
                     {
@@ -145,6 +151,7 @@ internal class Fragment : IControlFlowNode
 
             // Add this block to our current fragment
             current.Children.Add(block);
+            current.Blocks.Add(block);
         }
 
         if (stack.Count > 0)

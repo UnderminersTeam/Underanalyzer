@@ -129,159 +129,163 @@ internal class Switch : IControlFlowNode
         EndCaseDestinations = endCaseDestinations;
     }
 
+    private class BlockIndexComparer : IComparer<Block>
+    {
+        public static BlockIndexComparer Instance { get; } = new();
+
+        public int Compare(Block x, Block y)
+        {
+            return x.BlockIndex - y.BlockIndex;
+        }
+    }
+
     private static void DetectionPass(DecompileContext ctx)
     {
         List<Block> blocks = ctx.Blocks;
         List<Fragment> fragments = ctx.FragmentNodes;
 
-        // Compute blocks where fragments start and end (post)
-        HashSet<Block> fragmentStartBlocks = new();
-        HashSet<Block> fragmentPostBlocks = new();
         foreach (Fragment fragment in fragments)
         {
-            fragmentStartBlocks.Add(ctx.BlocksByAddress[fragment.StartAddress]);
-            fragmentPostBlocks.Add(ctx.BlocksByAddress[fragment.EndAddress]);
-        }
-
-        // Maintain a stack of the top address of switch statements, per each fragment level
-        Stack<Stack<int>> switchTopsStack = new();
-        switchTopsStack.Push(new());
-
-        // Go backwards; first good candidate block must be the end of a switch statement
-        for (int i = blocks.Count - 1; i >= 0; i--)
-        {
-            Block block = blocks[i];
-            Stack<int> switchTops = switchTopsStack.Peek();
-
-            // Leave switch statements that we're already past
-            if (switchTops.Count > 0 && block.StartAddress <= switchTops.Peek())
+            for (int i = 0; i < fragment.Blocks.Count - 1; i++)
             {
-                switchTops.Pop();
-            }
-
-            // Update stack of switch tops for next iteration
-            if (fragmentPostBlocks.Contains(block))
-            {
-                switchTopsStack.Push(new());
-            }
-            else if (fragmentStartBlocks.Contains(block))
-            {
-                switchTopsStack.Pop();
-            }
-
-            // Ensure PopDelete is at start of block
-            if (block.Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..])
-            {
-                continue;
-            }
-
-            // Get overall node that this block belongs to, if any
-            IControlFlowNode blockNode = block;
-            while (blockNode.Parent is not null)
-            {
-                blockNode = blockNode.Parent;
-            }
-
-            // Ensure our earliest predecessor is a block ending with Branch (excluding blocks ending in BranchTrue, as those are cases)
-            if (blockNode.Predecessors.Count == 0)
-            {
-                continue;
-            }
-            IControlFlowNode earliestPredecessor = null;
-            for (int j = 0; j < blockNode.Predecessors.Count; j++)
-            {
-                if (blockNode.Predecessors[j] is Block predCaseBlock &&
-                    predCaseBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchTrue }])
+                Block block = fragment.Blocks[i];
+                Block endCaseBlock = null;
+                IControlFlowNode endNode = null;
+                if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchTrue }])
                 {
-                    continue;
-                }
-                if (earliestPredecessor is null ||
-                    blockNode.Predecessors[j].StartAddress < earliestPredecessor.StartAddress)
-                {
-                    earliestPredecessor = blockNode.Predecessors[j];
-                }
-            }
-            if (earliestPredecessor is not Block predBlock ||
-                predBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-
-            // If this block ends with return/exit, we need to check that this isn't an early
-            // return/exit from within a switch statement.
-            if (block.Instructions[^1].Kind is IGMInstruction.Opcode.Exit or IGMInstruction.Opcode.Return)
-            {
-                // Count how many PopDelete instructions we have in this block.
-                int numPopDeletes = 1;
-                for (int j = 1; j < block.Instructions.Count - 1; j++)
-                {
-                    IGMInstruction curr = block.Instructions[j];
-                    if (curr.Kind == IGMInstruction.Opcode.PopDelete)
+                    // We have the very top of a switch statement.
+                    // Now, repeatedly follow successors until we find a Branch instruction,
+                    // which is either a default case branch or the "end of cases" branch.
+                    IControlFlowNode node = block.Successors[0];
+                    while (node is not Block b || b.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
                     {
-                        numPopDeletes++;
+                        // Check if this node is a block ending with BranchFalse.
+                        if (node is Block { Instructions: [.., { Kind: IGMInstruction.Opcode.BranchFalse }] })
+                        {
+                            // Go to *jump* successor, so as to avoid taking any "else" branches in conditionals
+                            node = node.Successors[1];
+                        }
+                        else
+                        {
+                            // Follow immediate (non-branch) successor for all other types of nodes
+                            node = node.Successors[0];
+                        }
+
+                        // Ensure we don't infinitely loop...
+                        if (node.StartAddress <= block.StartAddress)
+                        {
+                            throw new DecompilerException("Unexpected loop when detecting switch statements");
+                        }
                     }
-                    else if (curr.Kind != IGMInstruction.Opcode.PopWithContext)
+
+                    // We're now at a Block ending in a Branch instruction. This is either the end of case branch, or the default case branch.
+                    // If there exists a default case branch in this switch statement, it would be this one.
+                    // To check, we look at the next block (at least one more *should* exist) to see if it's an unreachable Branch block.
+                    // We use this to determine endNode.
+                    Block firstBranchBlock = node as Block;
+                    Block nextBlock = blocks[firstBranchBlock.BlockIndex + 1];
+                    if (nextBlock is { Unreachable: true, Instructions: [{ Kind: IGMInstruction.Opcode.Branch }] })
                     {
-                        // We're finished with the chain of PopDelete/PopWithContext - allow extra instructions beyond them
-                        break;
+                        // nextBlock is the end of case block
+                        endCaseBlock = nextBlock;
+                    }
+                    else
+                    {
+                        // firstBranchBlock is the end of case block
+                        endCaseBlock = firstBranchBlock;
+                    }
+                    endNode = endCaseBlock.Successors[0];
+                }
+                else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
+                {
+                    // If we have an unreachable Branch block immediately after this block, then this block is a default case.
+                    Block nextBlock = blocks[block.BlockIndex + 1];
+                    if (nextBlock is { Unreachable: true, Instructions: [{ Kind: IGMInstruction.Opcode.Branch }] })
+                    {
+                        // nextBlock is the end of case block
+                        endCaseBlock = nextBlock;
+                        endNode = nextBlock.Successors[0];
+                    }
+                    else
+                    {
+                        // Check for an empty switch (note: quirk of existing modding tools; not actually valid GML)
+                        if (block.Successors.Count == 1 && block.Successors[0] == nextBlock &&
+                            nextBlock.Predecessors.Count == 1 && nextBlock.Predecessors[0] == block)
+                        {
+                            // nextBlock is the end node, but go up to any parent control flow
+                            endCaseBlock = block;
+                            endNode = nextBlock;
+                            while (endNode.Parent is not null)
+                            {
+                                endNode = endNode.Parent;
+                            }
+                        }
                     }
                 }
 
-                // If this number isn't equal to the number of switches we're inside of + 1,
-                // then this is an early return/exit.
-                if (numPopDeletes != switchTops.Count + 1)
+                if (endNode is not null)
                 {
-                    continue;
+                    // Check that we're not detecting the same switch twice (e.g. due to a break/continue statement)
+                    if (ctx.SwitchEndNodes.Contains(endNode))
+                    {
+                        continue;
+                    }
+                    Block endBlock = ctx.BlocksByAddress[endNode.StartAddress];
+                    if (ctx.SwitchContinueBlocks.Contains(endBlock))
+                    {
+                        continue;
+                    }
+
+                    // We found the end of a switch statement - add it to our list
+                    ctx.SwitchEndNodes.Add(endNode);
+
+                    // Create detection data
+                    SwitchDetectionData data = new()
+                    {
+                        EndBlock = endBlock,
+                        EndNode = endNode
+                    };
+                    ctx.SwitchData.Add(data);
+
+                    // Update index for next iteration (to be after the end case node's block index).
+                    int endCaseBlockIndex =
+                        fragment.Blocks.BinarySearch(i, fragment.Blocks.Count - i, endCaseBlock, BlockIndexComparer.Instance);
+                    i = endCaseBlockIndex;
+
+                    // Check if we have a continue block immediately preceding this end block
+                    if (endBlock.BlockIndex == 0)
+                    {
+                        continue;
+                    }
+                    Block previousBlock = blocks[endBlock.BlockIndex - 1];
+                    if (previousBlock.Instructions is not
+                        [{ Kind: IGMInstruction.Opcode.PopDelete }, { Kind: IGMInstruction.Opcode.Branch }])
+                    {
+                        continue;
+                    }
+
+                    // This block should be a continue block, but additionally check we have a branch around it
+                    if (previousBlock.BlockIndex == 0)
+                    {
+                        continue;
+                    }
+                    Block previousPreviousBlock = blocks[previousBlock.BlockIndex - 1];
+                    if (previousPreviousBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
+                    {
+                        continue;
+                    }
+                    if (previousPreviousBlock.Successors.Count != 1 || previousPreviousBlock.Successors[0] != endBlock)
+                    {
+                        continue;
+                    }
+
+                    // This is definitely a switch continue block
+                    ctx.SwitchContinueBlocks.Add(previousBlock);
+                    ctx.SwitchIgnoreJumpBlocks.Add(previousPreviousBlock);
+                    data.ContinueBlock = previousBlock;
+                    data.ContinueSkipBlock = previousPreviousBlock;
                 }
             }
-
-            // We've found the end of a switch statement
-            ctx.SwitchEndNodes.Add(blockNode);
-            switchTops.Push(earliestPredecessor.StartAddress);
-
-            // Create detection data
-            SwitchDetectionData data = new()
-            {
-                EndBlock = block,
-                EndNode = blockNode
-            };
-            ctx.SwitchData.Add(data);
-
-            // Check if we have a continue block immediately preceding this end block
-            if (block.BlockIndex == 0)
-            {
-                continue;
-            }
-            Block previousBlock = blocks[block.BlockIndex - 1];
-            if (previousBlock.Instructions is not
-                [{ Kind: IGMInstruction.Opcode.PopDelete }, { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-
-            // This block should be a continue block, but additionally check we have a branch around it
-            if (previousBlock.BlockIndex == 0)
-            {
-                continue;
-            }
-            Block previousPreviousBlock = blocks[previousBlock.BlockIndex - 1];
-            if (previousPreviousBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
-            {
-                continue;
-            }
-            if (previousPreviousBlock.Successors.Count != 1 || previousPreviousBlock.Successors[0] != block)
-            {
-                continue;
-            }
-
-            // This is definitely a switch continue block
-            ctx.SwitchContinueBlocks.Add(previousBlock);
-            ctx.SwitchIgnoreJumpBlocks.Add(previousPreviousBlock);
-            data.ContinueBlock = previousBlock;
-            data.ContinueSkipBlock = previousPreviousBlock;
-
-            // Prevent this block from processing during the next iteration
-            i--;
         }
     }
 
@@ -387,7 +391,7 @@ internal class Switch : IControlFlowNode
     {
         List<Switch> res = new();
 
-        for (int j = ctx.SwitchData.Count - 1; j >= 0; j--)
+        for (int j = 0; j < ctx.SwitchData.Count; j++)
         {
             SwitchDetectionData data = ctx.SwitchData[j];
 

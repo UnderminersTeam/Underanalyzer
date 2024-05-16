@@ -1303,6 +1303,72 @@ public class DecompileContext_DecompileToString
     }
 
     [Fact]
+    public void TestNestedSwitchThenExit()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            dup.v 0
+            pushi.e 0
+            cmp.i.v EQ
+            bt [2]
+
+            :[1]
+            b [8]
+
+            :[2]
+            push.v self.b
+            conv.v.b
+            bf [7]
+
+            :[3]
+            push.v self.c
+            dup.v 0
+            pushi.e 0
+            cmp.i.v EQ
+            bt [5]
+
+            :[4]
+            b [6]
+
+            :[5]
+            b [6]
+
+            :[6]
+            popz.v
+            pushi.e 0
+            pop.v.i self.d
+            popz.v
+            exit.i
+
+            :[7]
+            b [8]
+
+            :[8]
+            popz.v
+            """,
+            """
+            switch (a)
+            {
+                case 0:
+                    if (b)
+                    {
+                        switch (c)
+                        {
+                            case 0:
+                                break;
+                        }
+                        d = 0;
+                        exit;
+                    }
+                    break;
+            }
+            """
+        );
+    }
+
+    [Fact]
     public void TestNestedSwitchExitInFragment()
     {
         TestUtil.VerifyDecompileResult(

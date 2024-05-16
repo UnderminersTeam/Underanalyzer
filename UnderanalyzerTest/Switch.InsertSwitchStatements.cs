@@ -2420,12 +2420,12 @@ public class Switch_InsertSwitchStatements
         List<Switch> switches = Switch.InsertSwitchStatements(ctx);
 
         Assert.Equal(2, switches.Count);
-        Switch s0 = switches[0]; // inner
-        Switch s1 = switches[1]; // outer
+        Switch s0 = switches[0]; // outer
+        Switch s1 = switches[1]; // inner
 
-        Assert.Equal(blocks[0], s1.Cases);
-        Assert.IsType<Switch.CaseDestinationNode>(s1.Body);
-        Assert.Null(s1.EndCaseDestinations);
+        Assert.Equal(blocks[0], s0.Cases);
+        Assert.IsType<Switch.CaseDestinationNode>(s0.Body);
+        Assert.Null(s0.EndCaseDestinations);
         Assert.Empty(blocks[0].Predecessors);
         Assert.Single(blocks[0].Successors);
         Assert.IsType<Switch.CaseJumpNode>(blocks[0].Successors[0]);
@@ -2435,22 +2435,22 @@ public class Switch_InsertSwitchStatements
         Assert.Empty(blocks[1].Instructions);
         Assert.Empty(blocks[1].Predecessors);
         Assert.Empty(blocks[1].Successors);
-        Assert.Equal([blocks[5]], s1.Successors);
+        Assert.Equal([blocks[5]], s0.Successors);
         Assert.Empty(blocks[5].Instructions);
-        Assert.Equal([s1], blocks[5].Predecessors);
+        Assert.Equal([s0], blocks[5].Predecessors);
 
-        var destNode = (Switch.CaseDestinationNode)s1.Body;
+        var destNode = (Switch.CaseDestinationNode)s0.Body;
         Assert.Empty(destNode.Predecessors);
-        Assert.Equal([s0], destNode.Successors);
-        Assert.Equal([blocks[4]], s0.Successors);
+        Assert.Equal([s1], destNode.Successors);
+        Assert.Equal([blocks[4]], s1.Successors);
         Assert.Single(blocks[4].Successors);
         Assert.IsType<BreakNode>(blocks[4].Successors[0]);
         Assert.Empty(blocks[4].Successors[0].Successors);
         Assert.False(destNode.IsDefault);
 
-        Assert.Equal(blocks[2], s0.Cases);
-        Assert.Null(s0.Body);
-        Assert.IsType<Switch.CaseDestinationNode>(s0.EndCaseDestinations);
+        Assert.Equal(blocks[2], s1.Cases);
+        Assert.Null(s1.Body);
+        Assert.IsType<Switch.CaseDestinationNode>(s1.EndCaseDestinations);
         Assert.Empty(blocks[2].Predecessors);
         Assert.Empty(blocks[2].Successors);
 
@@ -2458,7 +2458,7 @@ public class Switch_InsertSwitchStatements
         Assert.Empty(blocks[3].Predecessors);
         Assert.Empty(blocks[3].Successors);
 
-        destNode = (Switch.CaseDestinationNode)s0.EndCaseDestinations;
+        destNode = (Switch.CaseDestinationNode)s1.EndCaseDestinations;
         Assert.Empty(destNode.Predecessors);
         Assert.Empty(destNode.Successors);
         Assert.True(destNode.IsDefault);
