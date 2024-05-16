@@ -132,17 +132,41 @@ internal class Switch : IControlFlowNode
     private static void DetectionPass(DecompileContext ctx)
     {
         List<Block> blocks = ctx.Blocks;
-        Stack<int> switchTops = new();
+        List<Fragment> fragments = ctx.FragmentNodes;
+
+        // Compute blocks where fragments start and end (post)
+        HashSet<Block> fragmentStartBlocks = new();
+        HashSet<Block> fragmentPostBlocks = new();
+        foreach (Fragment fragment in fragments)
+        {
+            fragmentStartBlocks.Add(ctx.BlocksByAddress[fragment.StartAddress]);
+            fragmentPostBlocks.Add(ctx.BlocksByAddress[fragment.EndAddress]);
+        }
+
+        // Maintain a stack of the top address of switch statements, per each fragment level
+        Stack<Stack<int>> switchTopsStack = new();
+        switchTopsStack.Push(new());
 
         // Go backwards; first good candidate block must be the end of a switch statement
         for (int i = blocks.Count - 1; i >= 0; i--)
         {
             Block block = blocks[i];
+            Stack<int> switchTops = switchTopsStack.Peek();
 
             // Leave switch statements that we're already past
             if (switchTops.Count > 0 && block.StartAddress <= switchTops.Peek())
             {
                 switchTops.Pop();
+            }
+
+            // Update stack of switch tops for next iteration
+            if (fragmentPostBlocks.Contains(block))
+            {
+                switchTopsStack.Push(new());
+            }
+            else if (fragmentStartBlocks.Contains(block))
+            {
+                switchTopsStack.Pop();
             }
 
             // Ensure PopDelete is at start of block
@@ -189,11 +213,17 @@ internal class Switch : IControlFlowNode
             {
                 // Count how many PopDelete instructions we have in this block.
                 int numPopDeletes = 1;
-                for (int j = 1; j < block.Instructions.Count; j++)
+                for (int j = 1; j < block.Instructions.Count - 1; j++)
                 {
-                    if (block.Instructions[j].Kind == IGMInstruction.Opcode.PopDelete)
+                    IGMInstruction curr = block.Instructions[j];
+                    if (curr.Kind == IGMInstruction.Opcode.PopDelete)
                     {
                         numPopDeletes++;
+                    }
+                    else if (curr.Kind != IGMInstruction.Opcode.PopWithContext)
+                    {
+                        // We're finished with the chain of PopDelete/PopWithContext - allow extra instructions beyond them
+                        break;
                     }
                 }
 

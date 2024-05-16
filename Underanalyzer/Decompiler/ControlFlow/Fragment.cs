@@ -23,6 +23,9 @@ internal class Fragment : IControlFlowNode
 
     public bool Unreachable { get; set; } = false;
 
+    /// <summary>
+    /// Code entry that this fragment belongs to.
+    /// </summary>
     public IGMCode CodeEntry { get; }
 
     public Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks)

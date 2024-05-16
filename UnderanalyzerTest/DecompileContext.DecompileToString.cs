@@ -1264,4 +1264,111 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestSwitchReturn()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            dup.v 0
+            pushi.e 0
+            cmp.i.v EQ
+            bt [2]
+
+            :[1]
+            b [3]
+
+            :[2]
+            b [3]
+
+            :[3]
+            popz.v
+            call.i game_end 0
+            popz.v
+            push.v self.b
+            ret.v
+            """,
+            """
+            switch (a)
+            {
+                case 0:
+                    break;
+            }
+            game_end();
+            return b;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestNestedSwitchExitInFragment()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            dup.v 0
+            pushi.e 0
+            cmp.i.v EQ
+            bt [2]
+
+            :[1]
+            b [9]
+
+            :[2]
+            b [8]
+
+            > inner_fragment (locals=0, args=0)
+            :[3]
+            push.v self.b
+            dup.v 0
+            pushi.e 0
+            cmp.i.v EQ
+            bt [5]
+
+            :[4]
+            b [6]
+
+            :[5]
+            b [6]
+
+            :[6]
+            popz.v
+            exit.i
+
+            :[7]
+            exit.i
+
+            :[8]
+            push.i inner_fragment
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            pop.v.v self.func
+            b [9]
+
+            :[9]
+            popz.v
+            """,
+            """
+            switch (a)
+            {
+                case 0:
+                    func = function()
+                    {
+                        switch (b)
+                        {
+                            case 0:
+                                break;
+                        }
+                        exit;
+                    };
+                    break;
+            }
+            """
+        );
+    }
 }
