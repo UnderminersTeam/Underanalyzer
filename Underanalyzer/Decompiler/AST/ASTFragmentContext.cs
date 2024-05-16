@@ -45,6 +45,12 @@ public class ASTFragmentContext
     public List<IExpressionNode> StructArguments { get; internal set; } = null;
 
     /// <summary>
+    /// Function call to the parent constructor function, if this is a constructor function that inherits
+    /// another constructor function, or null otherwise.
+    /// </summary>
+    internal IExpressionNode BaseParentCall { get; set; } = null;
+
+    /// <summary>
     /// Contains all local variables referenced from within this fragment.
     /// </summary>
     public HashSet<string> LocalVariableNames { get; } = new();

@@ -46,6 +46,10 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
         Body.Clean(cleaner);
         Body.UseBraces = true;
         Body.PrintLocalsAtTop = true;
+        if (FragmentContext.BaseParentCall is not null)
+        {
+            FragmentContext.BaseParentCall = FragmentContext.BaseParentCall.Clean(cleaner);
+        }
         return this;
     }
 
@@ -54,6 +58,10 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
         Body.Clean(cleaner);
         Body.UseBraces = true;
         Body.PrintLocalsAtTop = true;
+        if (FragmentContext.BaseParentCall is not null)
+        {
+            FragmentContext.BaseParentCall = FragmentContext.BaseParentCall.Clean(cleaner);
+        }
         return this;
     }
 
@@ -71,6 +79,11 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
         }
         // TODO: handle argument names
         printer.Write(')');
+        if (FragmentContext.BaseParentCall is not null)
+        {
+            printer.Write(" : ");
+            FragmentContext.BaseParentCall.Print(printer);
+        }
         if (IsConstructor)
         {
             printer.Write(" constructor");

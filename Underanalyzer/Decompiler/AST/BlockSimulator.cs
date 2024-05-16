@@ -456,6 +456,11 @@ internal class BlockSimulator
                     // TODO: do we need to check if this is inside of an expression?
                     output.Add(new ThrowNode(builder.ExpressionStack.Pop()));
                     return;
+                case VMConstants.CopyStaticFunction:
+                    // Top of stack is function reference to base class (which we ignore), followed by parent call
+                    builder.ExpressionStack.Pop();
+                    builder.TopFragmentContext.BaseParentCall = builder.ExpressionStack.Pop();
+                    return;
                 // TODO: other special functions need to go here
             }
         }

@@ -11,10 +11,13 @@ internal static class VMConstants
     public const string FinishCatchFunction = "@@finish_catch@@";
     public const string FinishFinallyFunction = "@@finish_finally@@";
 
-    // Function name for creating methods/structs
+    // Function names for creating methods/structs
     public const string MethodFunction = "method";
     public const string NullObjectFunction = "@@NullObject@@";
     public const string NewObjectFunction = "@@NewGMLObject@@";
+
+    // Function name used to copy static information from an inherited constructor functioon in GML
+    public const string CopyStaticFunction = "@@CopyStatic@@";
 
     // Instance type helpers used in GMLv2
     public const string SelfFunction = "@@This@@";
@@ -31,6 +34,6 @@ internal static class VMConstants
     // Used to store return values before cleaning up stack
     public const string TempReturnVariable = "$$$$temp$$$$";
 
-    // Used to throw an object/exception
+    // Function name used to throw an object/exception
     public const string ThrowFunction = "@@throw@@";
 }
