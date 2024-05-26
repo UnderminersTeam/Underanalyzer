@@ -130,7 +130,7 @@ public interface IFragmentNode : IStatementNode
                         ])
                     {
                         // Check if struct or constructor
-                        if (pushVal == -16)
+                        if (pushVal == -16 || pushVal == -5)
                         {
                             // We're a struct
                             if (followingBlock.Instructions.Count < 8 ||
