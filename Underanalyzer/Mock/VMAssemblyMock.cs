@@ -287,9 +287,19 @@ public static class VMAssembly
                             case IGMInstruction.DataType.Int32:
                                 if (!int.TryParse(data, out int dataInt32))
                                 {
-                                    // We're pushing a function index instead
-                                    instr.Function = new GMFunction(data);
-                                    break;
+                                    if (data.StartsWith("[function]"))
+                                    {
+                                        // We're pushing a function index instead
+                                        instr.Function = new GMFunction(data["[function]".Length..]);
+                                        break;
+                                    }
+                                    if (data.StartsWith("[variable]"))
+                                    {
+                                        // We're pushing a variable hash instead
+                                        instr.Variable = new GMVariable() { Name = new GMString(data["[variable]".Length..]) };
+                                        break;
+                                    }
+                                    throw new Exception("Unknown push.i value");
                                 }
                                 instr.ValueInt = dataInt32;
                                 break;

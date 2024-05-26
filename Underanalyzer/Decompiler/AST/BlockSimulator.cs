@@ -195,6 +195,11 @@ internal class BlockSimulator
                     // Function references in GMLv2 are pushed this way in certain versions
                     builder.ExpressionStack.Push(new FunctionReferenceNode(instr.Function));
                 }
+                else if (instr.Variable is not null)
+                {
+                    // Variable hashes in recent version of GMLv2 are pushed this way
+                    builder.ExpressionStack.Push(new VariableHashNode(instr.Variable));
+                }
                 else
                 {
                     builder.ExpressionStack.Push(new Int32Node(instr.ValueInt));

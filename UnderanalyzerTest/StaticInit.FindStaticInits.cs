@@ -77,7 +77,7 @@ public class StaticInit_FindStaticInits
             exit.i
 
             :[4]
-            push.i test_struct
+            push.i [function]test_struct
             conv.i.v
             call.i @@NullObject@@ 0
             call.i method 2

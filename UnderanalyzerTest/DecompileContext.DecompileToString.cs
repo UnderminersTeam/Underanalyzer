@@ -1405,7 +1405,7 @@ public class DecompileContext_DecompileToString
             exit.i
 
             :[8]
-            push.i inner_fragment
+            push.i [function]inner_fragment
             conv.i.v
             pushi.e -1
             conv.i.v
