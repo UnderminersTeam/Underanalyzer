@@ -709,9 +709,15 @@ public interface IGMInstruction
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this is the 32-bit integer reference ID supplied with the instruction, if <see cref="Function"/> is null.
+    /// this is the ID of the asset supplied with the instruction, if <see cref="Function"/> is null.
     /// </summary>
-    public int ReferenceId { get; }
+    public int AssetReferenceId { get; }
+
+    /// <summary>
+    /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
+    /// this is the type of the asset supplied with the instruction, if <see cref="Function"/> is null.
+    /// </summary>
+    public AssetType AssetReferenceType { get; }
 
     /// <summary>
     /// Returns size of an instruction, in bytes.

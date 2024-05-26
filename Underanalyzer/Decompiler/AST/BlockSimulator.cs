@@ -721,11 +721,8 @@ internal class BlockSimulator
         }
         else
         {
-            // Parse reference ID into asset ID and type
-            int referenceId = instr.ReferenceId;
-            int assetId = (referenceId & 0xffffff);               // lower 24 bits
-            AssetType assetType = (AssetType)(referenceId >> 24); // upper 8 bits
-            builder.ExpressionStack.Push(new AssetReferenceNode(assetId, assetType));
+            // Simply push reference
+            builder.ExpressionStack.Push(new AssetReferenceNode(instr.AssetReferenceId, instr.AssetReferenceType));
         }
     }
 }

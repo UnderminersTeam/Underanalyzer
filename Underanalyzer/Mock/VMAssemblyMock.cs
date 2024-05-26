@@ -364,7 +364,8 @@ public static class VMAssembly
                                 instr.Function = new GMFunction(parts[1]);
                                 break;
                             }
-                            instr.ReferenceId = referenceID;
+                            instr.AssetReferenceId = referenceID;
+                            instr.AssetReferenceType = AssetType.Sprite; // TODO: support specifying asset type
                         }
                     }
                     break;

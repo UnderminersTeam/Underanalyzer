@@ -3,23 +3,23 @@
 namespace Underanalyzer;
 
 /// <summary>
-/// All types of assets used in 
+/// All types of assets used in GML code. Exact value must be adapted depending on GameMaker version.
 /// </summary>
 public enum AssetType
 {
-    Object = 0,
-    Sprite = 1,
-    Sound = 2,
-    Room = 3,
-    Background = 4,
-    Path = 5,
-    Script = 6,
-    Font = 7,
-    Timeline = 8,
-    Shader = 10,
-    Sequence = 11,
-    AnimCurve = 12,
-    ParticleSystem = 13
+    Object,
+    Sprite,
+    Sound,
+    Room,
+    Background,
+    Path,
+    Script,
+    Font,
+    Timeline,
+    Shader,
+    Sequence,
+    AnimCurve,
+    ParticleSystem
 }
 
 /// <summary>
