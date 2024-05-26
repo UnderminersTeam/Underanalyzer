@@ -121,19 +121,34 @@ internal class WhileLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
+        // Build loop condition
         IExpressionNode condition = builder.BuildExpression(Head, output);
+
+        // Push this loop context
+        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        builder.TopFragmentContext.SurroundingLoop = this;
+
+        // Build body and create a for/while loop statement (defaults to while if unknown)
+        BlockNode body = builder.BuildBlockWhile(Body, this);
         if (ForLoopIncrementor is not null)
         {
             // For loop
-            BlockNode body = builder.BuildBlock(Body, ForLoopIncrementor);
             BlockNode incrementor = builder.BuildBlock(ForLoopIncrementor);
             output.Add(new ForLoopNode(null, condition, incrementor, body));
         }
         else
         {
             // While loop
-            BlockNode body = builder.BuildBlock(Body);
             output.Add(new WhileLoopNode(condition, body, MustBeWhileLoop));
+        }
+
+        // Pop this loop context
+        builder.TopFragmentContext.SurroundingLoop = prevLoop;
+
+        // Sanity check
+        if (MustBeWhileLoop && ForLoopIncrementor is not null)
+        {
+            throw new DecompilerException("Detected while loop as both for and while");
         }
     }
 }

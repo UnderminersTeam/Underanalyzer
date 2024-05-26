@@ -32,6 +32,8 @@ public class DecompileContext
     internal HashSet<Block> SwitchContinueBlocks { get; set; }
     internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
     internal List<Switch> SwitchNodes { get; set; }
+    internal Dictionary<Block, Loop> BlockSurroundingLoops { get; set; }
+    internal Dictionary<Block, int> BlockAfterLimits { get; set; }
 
     public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
     {

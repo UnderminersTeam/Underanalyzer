@@ -65,6 +65,11 @@ public class ASTFragmentContext
     /// </summary>
     public Dictionary<string, string> SubFunctionNames { get; } = new();
 
+    /// <summary>
+    /// The loop surrounding the currently-building position in the AST.
+    /// </summary>
+    internal Loop SurroundingLoop { get; set; } = null;
+
     internal ASTFragmentContext(Fragment fragment)
     {
         Fragment = fragment;

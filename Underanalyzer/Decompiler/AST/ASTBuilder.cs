@@ -73,36 +73,71 @@ public class ASTBuilder
     }
 
     /// <summary>
-    /// Builds a block starting from a control flow node, following all of its successors linearly,
-    /// before stopping at a given node (or null, by default).
+    /// Returns the control flow node following the given control flow node, in the current block.
     /// </summary>
-    internal BlockNode BuildBlock(IControlFlowNode startNode, IControlFlowNode stopAtNode = null)
+    private IControlFlowNode Follow(IControlFlowNode node)
+    {
+        // Ensure we follow a linear path
+        if (node.Successors.Count > 1)
+        {
+            throw new DecompilerException("Unexpected branch when building AST");
+        }
+
+        if (node.Successors.Count == 1)
+        {
+            // Ensure we're not jumping backwards (looping)
+            if (node.Successors[0] == node ||
+                node.Successors[0].StartAddress < node.StartAddress)
+            {
+                throw new DecompilerException("Unresolved loop when building AST");
+            }
+            
+            // Follow sole successor
+            return node.Successors[0];
+        }
+        
+        // We have no more successors to follow
+        return null;
+    }
+
+    /// <summary>
+    /// Builds a block starting from a control flow node, following all of its successors linearly.
+    /// </summary>
+    internal BlockNode BuildBlock(IControlFlowNode startNode)
     {
         BlockNode block = new(TopFragmentContext);
 
         // Advance through all successors, building out this block
         var currentNode = startNode;
-        while (currentNode is not null && currentNode != stopAtNode)
+        while (currentNode is not null)
         {
             currentNode.BuildAST(this, block.Children);
+            currentNode = Follow(currentNode);
+        }
 
-            if (currentNode.Successors.Count > 1)
-            {
-                throw new DecompilerException("Unexpected branch when building AST");
-            }
-            if (currentNode.Successors.Count == 1)
-            {
-                if (currentNode.Successors[0] == currentNode ||
-                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
-                {
-                    throw new DecompilerException("Unresolved loop when building AST");
-                }
-                currentNode = currentNode.Successors[0];
-            }
-            else
-            {
-                currentNode = null;
-            }
+        // If this block has more than 1 child, make sure it has curly braces around it
+        if (block.Children.Count > 1)
+        {
+            block.UseBraces = true;
+        }
+
+        return block;
+    }
+
+    /// <summary>
+    /// Builds a block starting from a control flow node, following all of its successors linearly,
+    /// before stopping at the for loop incrementor of a WhileLoop control flow node.
+    /// </summary>
+    internal BlockNode BuildBlockWhile(IControlFlowNode startNode, WhileLoop whileLoop)
+    {
+        BlockNode block = new(TopFragmentContext);
+
+        // Advance through all successors, building out this block
+        var currentNode = startNode;
+        while (currentNode is not null && currentNode != whileLoop.ForLoopIncrementor)
+        {
+            currentNode.BuildAST(this, block.Children);
+            currentNode = Follow(currentNode);
         }
 
         // If this block has more than 1 child, make sure it has curly braces around it
@@ -131,24 +166,7 @@ public class ASTBuilder
         while (currentNode is not null)
         {
             currentNode.BuildAST(this, output);
-
-            if (currentNode.Successors.Count > 1)
-            {
-                throw new DecompilerException("Unexpected branch when building AST");
-            }
-            if (currentNode.Successors.Count == 1)
-            {
-                if (currentNode.Successors[0] == currentNode || 
-                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
-                {
-                    throw new DecompilerException("Unresolved loop when building AST");
-                }
-                currentNode = currentNode.Successors[0];
-            }
-            else
-            {
-                currentNode = null;
-            }
+            currentNode = Follow(currentNode);
         }
 
         int stackCountAfter = ExpressionStack.Count;
@@ -186,24 +204,7 @@ public class ASTBuilder
         while (currentNode is not null)
         {
             currentNode.BuildAST(this, output);
-
-            if (currentNode.Successors.Count > 1)
-            {
-                throw new DecompilerException("Unexpected branch when building AST");
-            }
-            if (currentNode.Successors.Count == 1)
-            {
-                if (currentNode.Successors[0] == currentNode ||
-                    currentNode.Successors[0].StartAddress < currentNode.StartAddress)
-                {
-                    throw new DecompilerException("Unresolved loop when building AST");
-                }
-                currentNode = currentNode.Successors[0];
-            }
-            else
-            {
-                currentNode = null;
-            }
+            currentNode = Follow(currentNode);
         }
 
         int stackCountAfter = ExpressionStack.Count;

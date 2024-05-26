@@ -95,8 +95,18 @@ internal class RepeatLoop : Loop
 
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
+        // The expression used in the loop header should already be on the stack
         IExpressionNode timesToRepeat = builder.ExpressionStack.Pop();
+
+        // Push this loop context
+        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        builder.TopFragmentContext.SurroundingLoop = this;
+
+        // Build loop body, and create statement
         BlockNode body = builder.BuildBlock(Head);
         output.Add(new RepeatLoopNode(timesToRepeat, body));
+
+        // Pop this loop context
+        builder.TopFragmentContext.SurroundingLoop = prevLoop;
     }
 }

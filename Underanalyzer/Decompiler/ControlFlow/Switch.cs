@@ -19,6 +19,7 @@ internal class Switch : IControlFlowNode
         public Block ContinueSkipBlock { get; set; } = null;
         public Block EndOfCaseBlock { get; set; } = null;
         public Block DefaultBranchBlock { get; set; } = null;
+        public bool MayBeMisdetected { get; set; } = false;
     }
 
     public class CaseJumpNode(int address) : IControlFlowNode
@@ -120,13 +121,20 @@ internal class Switch : IControlFlowNode
     /// </summary>
     public IControlFlowNode EndCaseDestinations { get => Children[2]; private set => Children[2] = value; }
 
-    public Switch(int startAddress, int endAddress, IControlFlowNode cases, IControlFlowNode body, IControlFlowNode endCaseDestinations)
+    /// <summary>
+    /// The data used to detect this switch statement, used for later verification.
+    /// </summary>
+    internal SwitchDetectionData DetectionData { get; }
+
+    public Switch(int startAddress, int endAddress, 
+        IControlFlowNode cases, IControlFlowNode body, IControlFlowNode endCaseDestinations, SwitchDetectionData data)
     {
         StartAddress = startAddress;
         EndAddress = endAddress;
         Cases = cases;
         Body = body;
         EndCaseDestinations = endCaseDestinations;
+        DetectionData = data;
     }
 
     private class BlockIndexComparer : IComparer<Block>
@@ -143,6 +151,8 @@ internal class Switch : IControlFlowNode
     {
         List<Block> blocks = ctx.Blocks;
         List<Fragment> fragments = ctx.FragmentNodes;
+        ctx.BlockSurroundingLoops ??= Branches.FindSurroundingLoops(blocks, ctx.BlocksByAddress, ctx.LoopNodes);
+        ctx.BlockAfterLimits ??= Branches.ComputeBlockAfterLimits(blocks, ctx.BlockSurroundingLoops);
 
         foreach (Fragment fragment in fragments)
         {
@@ -151,6 +161,8 @@ internal class Switch : IControlFlowNode
                 Block block = fragment.Blocks[i];
                 Block endCaseBlock = null;
                 IControlFlowNode endNode = null;
+                Block endBlock = null;
+                bool mayBeMisdetected = false;
                 if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchTrue }])
                 {
                     // We have the very top of a switch statement.
@@ -195,6 +207,7 @@ internal class Switch : IControlFlowNode
                         endCaseBlock = firstBranchBlock;
                     }
                     endNode = endCaseBlock.Successors[0];
+                    endBlock = ctx.BlocksByAddress[endNode.StartAddress];
                 }
                 else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
                 {
@@ -205,6 +218,63 @@ internal class Switch : IControlFlowNode
                         // nextBlock is the end of case block
                         endCaseBlock = nextBlock;
                         endNode = nextBlock.Successors[0];
+                        endBlock = ctx.BlocksByAddress[endNode.StartAddress];
+
+                        // Ensure both branches are forward branches (past these two blocks)
+                        if (block.Successors[0].StartAddress < nextBlock.EndAddress ||
+                            nextBlock.Successors[0].StartAddress < nextBlock.EndAddress)
+                        {
+                            continue;
+                        }
+
+                        // Ensure end block starts with PopDelete instruction (as a quick elimination)
+                        if (endBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..])
+                        {
+                            continue;
+                        }
+
+                        // Perform extra checks only if we're inside of a loop, and endBlock ends with return/exit
+                        // (as this pattern can be produced with continue statments in a for loop, with an incrementor that exits)
+                        if (ctx.BlockSurroundingLoops.ContainsKey(block) &&
+                            endBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.Return or IGMInstruction.Opcode.Exit }])
+                        {
+                            // Split cases
+                            if (block.Successors[0].StartAddress == nextBlock.Successors[0].StartAddress)
+                            {
+                                // Both branches go to the same block, meaning this switch should be totally empty (with a default case)
+                                if (nextBlock.EndAddress != endNode.StartAddress)
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                // Ensure default case branches somewhere before the end block
+                                if (block.Successors[0].StartAddress >= endNode.StartAddress)
+                                {
+                                    continue;
+                                }
+                            }
+
+                            // Ensure end block is only branched to by internal nodes
+                            bool externalPredecessor = false;
+                            for (int j = 0; j < endNode.Predecessors.Count; j++)
+                            {
+                                IControlFlowNode currPred = endNode.Predecessors[j];
+                                if (currPred.StartAddress < block.StartAddress || currPred.StartAddress >= endNode.StartAddress)
+                                {
+                                    externalPredecessor = true;
+                                    break;
+                                }
+                            }
+                            if (externalPredecessor)
+                            {
+                                continue;
+                            }
+
+                            // Have to detect whether this actually a switch during AST building, unfortunately
+                            mayBeMisdetected = true;
+                        }
                     }
                     else
                     {
@@ -212,9 +282,24 @@ internal class Switch : IControlFlowNode
                         if (block.Successors.Count == 1 && block.Successors[0] == nextBlock &&
                             nextBlock.Predecessors.Count == 1 && nextBlock.Predecessors[0] == block)
                         {
+                            // Ensure next block starts with PopDelete instruction (as a quick elimination)
+                            if (nextBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.PopDelete }, ..])
+                            {
+                                continue;
+                            }
+
+                            // Perform extra checks only if we're inside of a loop, and nextBlock ends with return/exit
+                            // (as this pattern can be produced with continue statments in a for loop, with an incrementor that exits)
+                            if (ctx.BlockSurroundingLoops.ContainsKey(block) && 
+                                nextBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.Return or IGMInstruction.Opcode.Exit } ])
+                            {
+                                mayBeMisdetected = true;
+                            }
+
                             // nextBlock is the end node, but go up to any parent control flow
                             endCaseBlock = block;
                             endNode = nextBlock;
+                            endBlock = nextBlock;
                             while (endNode.Parent is not null)
                             {
                                 endNode = endNode.Parent;
@@ -230,7 +315,6 @@ internal class Switch : IControlFlowNode
                     {
                         continue;
                     }
-                    Block endBlock = ctx.BlocksByAddress[endNode.StartAddress];
                     if (ctx.SwitchContinueBlocks.Contains(endBlock))
                     {
                         continue;
@@ -243,7 +327,8 @@ internal class Switch : IControlFlowNode
                     SwitchDetectionData data = new()
                     {
                         EndBlock = endBlock,
-                        EndNode = endNode
+                        EndNode = endNode,
+                        MayBeMisdetected = mayBeMisdetected
                     };
                     ctx.SwitchData.Add(data);
 
@@ -588,7 +673,8 @@ internal class Switch : IControlFlowNode
 
             // Construct actual switch node
             Block startOfStatement = (caseBranches.Count > 0) ? caseBranches[^1] : (data.DefaultBranchBlock ?? data.EndOfCaseBlock);
-            Switch switchNode = new(startOfStatement.StartAddress, endNode.StartAddress, startOfStatement, startOfBody, endCaseDestinations);
+            Switch switchNode = 
+                new(startOfStatement.StartAddress, endNode.StartAddress, startOfStatement, startOfBody, endCaseDestinations, data);
             IControlFlowNode.InsertStructure(startOfStatement, endNode, switchNode);
             res.Add(switchNode);
 
@@ -600,6 +686,9 @@ internal class Switch : IControlFlowNode
                 startOfBody.Parent = switchNode;
             }
         }
+
+        // Resolve remaining continue statements
+        Branches.ResolveRemainingExternalJumps(ctx);
 
         ctx.SwitchNodes = res;
         return res;
@@ -613,6 +702,46 @@ internal class Switch : IControlFlowNode
 
         // Evaluate case expressions
         builder.BuildArbitrary(Cases, output, 1);
+
+        if (DetectionData.MayBeMisdetected && builder.ExpressionStack.Count == 0)
+        {
+            // If we have an empty stack at this point, we presume we're a misdetected switch statement.
+            // This should only ever happen with an empty switch (possibly with a default branch).
+            // We turn into one or two continue statements.
+            output.Add(new AST.ContinueNode());
+            if (DetectionData.DefaultBranchBlock is not null)
+            {
+                // We have a default case, which is actually just a second continue.
+                output.Add(new AST.ContinueNode());
+            }
+
+            // Check if our continue statements go forwards or backwards, based on the end node
+            IControlFlowNode endNode = DetectionData.EndNode;
+            while (endNode.Parent is not null)
+            {
+                endNode = endNode.Parent;
+            }
+            bool forward = (endNode.StartAddress > DetectionData.EndOfCaseBlock.EndAddress - 4);
+
+            // Now, we check our surrounding loop to see if it needs to be transformed between while/for.
+            Loop loop = builder.TopFragmentContext.SurroundingLoop;
+            if (loop is WhileLoop whileLoop)
+            {
+                if (forward)
+                {
+                    // Must be a for loop
+                    whileLoop.ForLoopIncrementor = endNode;
+                }
+                else
+                {
+                    // Must be a while loop
+                    whileLoop.MustBeWhileLoop = true;
+                }
+            }
+
+            // Don't continue processing this "switch statement" any further - it's not one.
+            return;
+        }
 
         // All that's left on stack is the expression we're switching on
         IExpressionNode expression = builder.ExpressionStack.Pop();

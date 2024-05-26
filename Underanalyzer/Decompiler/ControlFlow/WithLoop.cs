@@ -150,7 +150,16 @@ internal class WithLoop : Loop
                 target = builder.ExpressionStack.Pop();
             }
         }
+
+        // Push this loop context
+        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        builder.TopFragmentContext.SurroundingLoop = this;
+
+        // Build loop body, and create statement
         BlockNode body = builder.BuildBlock(Head);
         output.Add(new WithLoopNode(target, body));
+
+        // Pop this loop context
+        builder.TopFragmentContext.SurroundingLoop = prevLoop;
     }
 }

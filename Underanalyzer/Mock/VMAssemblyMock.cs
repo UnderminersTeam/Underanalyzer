@@ -60,6 +60,9 @@ public static class VMAssembly
         Dictionary<string, int> branchLabelAddresses = new();
         List<(string Label, GMInstruction Instr)> branchTargets = new();
 
+        HashSet<GMVariable> variables = new(new GMVariableComparer());
+        HashSet<GMFunction> functions = new(new GMFunctionComparer());
+
         int address = 0;
         foreach (string line in lines)
         {
@@ -204,7 +207,7 @@ public static class VMAssembly
                         }
 
                         // Parse variable destination
-                        if (!ParseVariableFromString(parts[1], out var variable, out var varType, out var instType))
+                        if (!ParseVariableFromString(parts[1], variables, out var variable, out var varType, out var instType))
                             throw new Exception($"Failed to parse variable {parts[1]}");
                         instr.Variable = variable;
                         instr.ReferenceVarType = varType;
@@ -301,7 +304,7 @@ public static class VMAssembly
                                 instr.ValueBool = dataBool;
                                 break;
                             case IGMInstruction.DataType.Variable:
-                                if (!ParseVariableFromString(data, out var variable, out var varType, out var instType))
+                                if (!ParseVariableFromString(data, variables, out var variable, out var varType, out var instType))
                                     throw new Exception($"Failed to parse variable {parts[1]}");
                                 instr.Variable = variable;
                                 instr.ReferenceVarType = varType;
@@ -324,7 +327,18 @@ public static class VMAssembly
                         if (parts.Length < 3)
                             throw new Exception("Call needs function and argument count");
 
-                        instr.Function = new GMFunction(parts[1]);
+                        var function = new GMFunction(parts[1]);
+                        if (functions.TryGetValue(function, out GMFunction existingFunction))
+                        {
+                            // We found a function that was already created
+                            instr.Function = existingFunction;
+                        }
+                        else
+                        {
+                            // This is a brand new function
+                            instr.Function = function;
+                            functions.Add(function);
+                        }
 
                         if (!int.TryParse(parts[2], out int argCount))
                             throw new Exception("Failed to parse argument count");
@@ -380,7 +394,7 @@ public static class VMAssembly
     }
 
     private static bool ParseVariableFromString(
-        string str, out GMVariable variable, 
+        string str, HashSet<GMVariable> variables, out GMVariable variable, 
         out IGMInstruction.VariableType varType, out IGMInstruction.InstanceType instType)
     {
         // Default data
@@ -448,6 +462,17 @@ public static class VMAssembly
         variable.Name = new GMString(str);
         variable.InstanceType = instType; // TODO: does this match actual game behavior?
         variable.VariableID = 0; // TODO: do we want to make actual IDs? probably not?
+
+        // Check existing variables - if this already exists, return existing variable
+        if (variables.TryGetValue(variable, out GMVariable existingVariable))
+        {
+            variable = existingVariable;
+        }
+        else
+        {
+            // This is a brand new variable
+            variables.Add(variable);
+        }
 
         return true;
     }

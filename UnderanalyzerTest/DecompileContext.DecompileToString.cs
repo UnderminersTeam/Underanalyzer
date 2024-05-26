@@ -1,7 +1,4 @@
-﻿using Underanalyzer.Decompiler;
-using Underanalyzer.Mock;
-
-namespace UnderanalyzerTest;
+﻿namespace UnderanalyzerTest;
 
 public class DecompileContext_DecompileToString
 {
@@ -131,7 +128,7 @@ public class DecompileContext_DecompileToString
                     b = (c + d) / 2;
                 }
                 until (b > 200);
-                a = a + 1;
+                a += 1;
             }
             until (a > 100);
             """

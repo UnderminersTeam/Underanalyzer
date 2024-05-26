@@ -32,7 +32,6 @@ public class WhileLoopNode : IStatementNode
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
-        // TODO: check if we should rewrite as a for loop here. will need to consider assignment statement before, though
         Condition = Condition.Clean(cleaner);
         Condition.Group = false;
         Body.Clean(cleaner);

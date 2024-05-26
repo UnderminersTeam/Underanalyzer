@@ -92,6 +92,19 @@ public class GMVariable : IGMVariable
     }
 }
 
+public class GMVariableComparer : IEqualityComparer<GMVariable>
+{
+    public bool Equals(GMVariable x, GMVariable y)
+    {
+        return x.Name.Content == y.Name.Content && x.InstanceType == y.InstanceType && x.VariableID == y.VariableID;
+    }
+
+    public int GetHashCode(GMVariable obj)
+    {
+        return (obj.Name.Content, obj.InstanceType, obj.VariableID).GetHashCode();
+    }
+}
+
 public class GMFunction : IGMFunction
 {
     public IGMString Name { get; set; }
@@ -101,5 +114,18 @@ public class GMFunction : IGMFunction
     public override string ToString()
     {
         return $"{nameof(GMFunction)}: {Name.Content}";
+    }
+}
+
+public class GMFunctionComparer : IEqualityComparer<GMFunction>
+{
+    public bool Equals(GMFunction x, GMFunction y)
+    {
+        return x.Name.Content == y.Name.Content;
+    }
+
+    public int GetHashCode(GMFunction obj)
+    {
+        return obj.Name.Content.GetHashCode();
     }
 }
