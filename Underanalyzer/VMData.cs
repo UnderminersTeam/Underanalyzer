@@ -715,9 +715,9 @@ public interface IGMInstruction
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this is the type of the asset supplied with the instruction, if <see cref="Function"/> is null.
+    /// this returns the type of the asset supplied with the instruction, if <see cref="Function"/> is null.
     /// </summary>
-    public AssetType AssetReferenceType { get; }
+    public AssetType GetAssetReferenceType(IGameContext context);
 
     /// <summary>
     /// Returns size of an instruction, in bytes.

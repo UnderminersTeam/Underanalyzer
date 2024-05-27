@@ -60,6 +60,7 @@ public class GMInstruction : IGMInstruction
     public int PopSwapSize { get => ValueInt; set => ValueInt = value; }
     public int AssetReferenceId { get => ValueInt; set => ValueInt = value; }
     public AssetType AssetReferenceType { get; set; }
+    public AssetType GetAssetReferenceType(IGameContext context) => AssetReferenceType;
 
     public override string ToString()
     {

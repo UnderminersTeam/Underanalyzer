@@ -732,7 +732,7 @@ internal class BlockSimulator
         else
         {
             // Simply push reference
-            builder.ExpressionStack.Push(new AssetReferenceNode(instr.AssetReferenceId, instr.AssetReferenceType));
+            builder.ExpressionStack.Push(new AssetReferenceNode(instr.AssetReferenceId, instr.GetAssetReferenceType(builder.Context.GameContext)));
         }
     }
 }
