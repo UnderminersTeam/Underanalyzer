@@ -178,8 +178,13 @@ internal class TryCatch : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        // Build try block
-        BlockNode tryBlock = builder.BuildBlock(Try);
+        // Build try block - but first follow all parents (e.g., in case a binary branch shows up at the start)
+        IControlFlowNode tryNode = Try;
+        while (tryNode.Parent is not null)
+        {
+            tryNode = tryNode.Parent;
+        }
+        BlockNode tryBlock = builder.BuildBlock(tryNode);
 
         // Handle catch block, if it exists
         BlockNode catchBlock = null;
