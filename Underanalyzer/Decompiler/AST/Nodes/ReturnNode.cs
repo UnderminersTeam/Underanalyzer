@@ -65,6 +65,7 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
                 {
                     block.Children[i - count - 1] = new ReturnNode(assign.Value);
                     block.Children.RemoveAt(i - count);
+                    block.FragmentContext.RemoveLocal(VMConstants.TryCopyVariable);
                     return i - count - 1;
                 }
 
