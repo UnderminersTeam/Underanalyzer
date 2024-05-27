@@ -252,4 +252,48 @@ public class DecompileContext_DecompileToString_Try
             """
         );
     }
+
+    [Fact]
+    public void TestTryExitFinally()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.i 72
+            conv.i.v
+            push.i -1
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            pushi.e 1
+            pop.v.i self.a
+            pushi.e 2
+            pop.v.i self.b
+            call.i @@try_unhook@@ 0
+            exit.i
+
+            :[1]
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushi.e 2
+            pop.v.i self.b
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [2]
+
+            :[2]
+            """,
+            """
+            try
+            {
+                a = 1;
+                exit;
+            }
+            finally
+            {
+                b = 2;
+            }
+            """
+        );
+    }
 }

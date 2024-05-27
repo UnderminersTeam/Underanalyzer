@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the "throw" keyword being used to throw an object/exception in the AST.
 /// </summary>
-public class ThrowNode : IExpressionNode, IStatementNode
+public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// The value being thrown.
@@ -30,6 +30,23 @@ public class ThrowNode : IExpressionNode, IStatementNode
     {
         Value = Value.Clean(cleaner);
         return this;
+    }
+
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
+    {
+        // Remove duplicated finally statements
+        if (cleaner.TopFragmentContext.FinallyStatementCount.Count > 0 &&
+            cleaner.Context.GameContext.UsingFinallyBeforeThrow)
+        {
+            int count = cleaner.TopFragmentContext.FinallyStatementCount.Peek();
+            if (i - count >= 0)
+            {
+                block.Children.RemoveRange(i - count, count);
+                return i - count;
+            }
+        }
+
+        return i;
     }
 
     public void Print(ASTPrinter printer)

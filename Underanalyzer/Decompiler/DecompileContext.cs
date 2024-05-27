@@ -64,6 +64,7 @@ public class DecompileContext
             Switch.FindSwitchStatements(this);
             BinaryBranch.FindBinaryBranches(this);
             Switch.InsertSwitchStatements(this);
+            TryCatch.CleanTryEndBranches(this);
         }
         catch (DecompilerException ex)
         {

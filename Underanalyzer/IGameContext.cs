@@ -43,6 +43,12 @@ public interface IGameContext
     public bool Bytecode14OrLower { get; }
 
     /// <summary>
+    /// True if this game uses the old behavior of "throw" statements with finally blocks; false otherwise.
+    /// As of writing, this is true before GameMaker version 2024.6, and false otherwise.
+    /// </summary>
+    public bool UsingFinallyBeforeThrow { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// </summary>

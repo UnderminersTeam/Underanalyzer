@@ -1,10 +1,9 @@
-﻿using System;
-namespace Underanalyzer.Decompiler.AST;
+﻿namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a "return" statement (with a value) in the AST.
 /// </summary>
-public class ReturnNode : IStatementNode
+public class ReturnNode : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// Expression being returned.
@@ -28,5 +27,51 @@ public class ReturnNode : IStatementNode
     {
         printer.Write("return ");
         Value.Print(printer);
+    }
+
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
+    {
+        // Check for return temp variable (done on first pass)
+        if (i > 0 && Value is VariableNode returnVariable &&
+            returnVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
+        {
+            if (block.Children[i - 1] is AssignNode assign && 
+                assign.Variable is VariableNode { Variable.Name.Content: VMConstants.TempReturnVariable })
+            {
+                // We found one - rewrite it as a normal return
+                block.Children[i - 1] = new ReturnNode(assign.Value);
+                block.Children.RemoveAt(i);
+                return i - 1;
+            }
+        }
+
+        // Remove duplicated finally statements (done on second pass)
+        if (cleaner.TopFragmentContext.FinallyStatementCount.Count > 0)
+        {
+            int count = 0;
+            foreach (int statementCount in cleaner.TopFragmentContext.FinallyStatementCount)
+            {
+                count += statementCount;
+            }
+            if (i - count >= 0)
+            {
+                block.Children.RemoveRange(i - count, count);
+
+                // Additionally remove temporary variable, if it exists
+                if (i - count - 1 >= 0 &&
+                    block.Children[i - count - 1] is AssignNode assign &&
+                    assign.Variable is VariableNode { Variable.Name.Content: VMConstants.TryCopyVariable, 
+                                                      Variable.InstanceType: IGMInstruction.InstanceType.Local })
+                {
+                    block.Children[i - count - 1] = new ReturnNode(assign.Value);
+                    block.Children.RemoveAt(i - count);
+                    return i - count - 1;
+                }
+
+                return i - count;
+            }
+        }
+
+        return i;
     }
 }

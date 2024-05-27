@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a for loop in the AST.
 /// </summary>
-public class ForLoopNode : IStatementNode
+public class ForLoopNode : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// The initialization statement before the loop, or null if none.
@@ -65,6 +65,23 @@ public class ForLoopNode : IStatementNode
         }
 
         return res;
+    }
+
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
+    {
+        // Check if this for loop needs an initializer, and if so (and there's a readable one), add it
+        if (Initializer is null && i > 0 && block.Children[i - 1] is AssignNode assign &&
+            assign.Value is (Int16Node or Int32Node or Int64Node or VariableNode) &&
+            Condition is not null)
+        {
+            Initializer = assign;
+            block.Children.RemoveAt(i - 1);
+            block.Children[i - 1] = Clean(cleaner);
+
+            return i - 1;
+        }
+
+        return i;
     }
 
     public void Print(ASTPrinter printer)

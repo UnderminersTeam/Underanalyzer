@@ -1,12 +1,11 @@
-﻿using System;
-using static Underanalyzer.IGMInstruction;
+﻿using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an assignment statement in the AST.
 /// </summary>
-public class AssignNode : IStatementNode, IExpressionNode
+public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
 {
     /// <summary>
     /// The variable being assigned to.
@@ -112,6 +111,86 @@ public class AssignNode : IStatementNode, IExpressionNode
     {
         Variable = Variable.Clean(cleaner);
         return this;
+    }
+
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
+    {
+        // Check if our variable is a local that needs to be purged
+        if (Variable is VariableNode assignVar && assignVar.Variable.InstanceType == InstanceType.Local &&
+            block.FragmentContext.LocalVariablesToPurge.Contains(assignVar.Variable.Name.Content))
+        {
+            // Purge this assignment
+            block.Children.RemoveAt(i);
+            return i - 1;
+        }
+
+        // Cancel if our settings specify not to clean up try statements
+        if (!cleaner.Context.Settings.CleanupTry)
+        {
+            return i;
+        }
+
+        if (i + 2 >= block.Children.Count)
+        {
+            // There can't be a try statement ahead - not enough room
+            return i;
+        }
+
+        // Check for correct assignments and try
+        if (block.Children[i + 1] is not AssignNode assign2 || block.Children[i + 2] is not TryCatchNode tryNode)
+        {
+            return i;
+        }
+        if (Variable is not VariableNode breakVariable ||
+            !breakVariable.Variable.Name.Content.StartsWith(VMConstants.TryBreakVariable) ||
+            Value is not Int16Node { Value: 0 })
+        {
+            return i;
+        }
+        if (assign2.Variable is not VariableNode continueVariable ||
+            !continueVariable.Variable.Name.Content.StartsWith(VMConstants.TryContinueVariable) ||
+            assign2.Value is not Int16Node { Value: 0 })
+        {
+            return i;
+        }
+
+        // Assign these variable names to the try statement
+        tryNode.BreakVariableName = breakVariable.Variable.Name.Content;
+        tryNode.ContinueVariableName = continueVariable.Variable.Name.Content;
+        block.FragmentContext.LocalVariablesToPurge.Add(tryNode.BreakVariableName);
+        block.FragmentContext.LocalVariablesToPurge.Add(tryNode.ContinueVariableName);
+
+        // Remove assignments
+        block.Children.RemoveRange(i, 2);
+
+        // Additionally remove if statements after the try, if applicable
+        if (i + 2 < block.Children.Count &&
+            block.Children[i + 1] is IfNode { TrueBlock: BlockNode { Children: [ContinueNode] }, ElseBlock: null } ifNode1 &&
+            block.Children[i + 2] is IfNode { TrueBlock: BlockNode { Children: [BreakNode] }, ElseBlock: null } ifNode2)
+        {
+            if (ifNode1.Condition is VariableNode ifVar1 && ifVar1.Variable == continueVariable.Variable &&
+                ifNode2.Condition is VariableNode ifVar2 && ifVar2.Variable == breakVariable.Variable)
+            {
+                block.Children.RemoveRange(i + 1, 2);
+            }
+        }
+        else
+        {
+            // If continue didn't resolve as a continue statement, then it resolves as an else if
+            if (i + 1 < block.Children.Count &&
+                block.Children[i + 1] is IfNode { TrueBlock: BlockNode { Children: [] }, ElseBlock: BlockNode { Children: [IfNode ifNode4] } } ifNode3 &&
+                ifNode4 is { TrueBlock: BlockNode { Children: [BreakNode] }, ElseBlock: null })
+            {
+                if (ifNode3.Condition is VariableNode ifVar1 && ifVar1.Variable == continueVariable.Variable &&
+                    ifNode4.Condition is VariableNode ifVar2 && ifVar2.Variable == breakVariable.Variable)
+                {
+                    block.Children.RemoveAt(i + 1);
+                }
+            }
+        }
+
+        // Set up for cleaning the try itself, next iteration
+        return i - 1;
     }
 
     public void Print(ASTPrinter printer)

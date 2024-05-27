@@ -70,8 +70,28 @@ public class ASTFragmentContext
     /// </summary>
     internal Loop SurroundingLoop { get; set; } = null;
 
+    /// <summary>
+    /// Contains local variable names that should be entirely removed from the fragment. 
+    /// (For removing compiler-generated code.)
+    /// </summary>
+    internal HashSet<string> LocalVariablesToPurge { get; } = new();
+
+    /// <summary>
+    /// Stack of the number of statements contained in all enveloping try finally blocks.
+    /// </summary>
+    internal Stack<int> FinallyStatementCount { get; set; } = new();
+
     internal ASTFragmentContext(Fragment fragment)
     {
         Fragment = fragment;
+    }
+
+    internal void RemoveLocal(string name)
+    {
+        if (LocalVariableNames.Contains(name))
+        {
+            LocalVariableNames.Remove(name);
+            LocalVariableNamesList.Remove(name);
+        }
     }
 }

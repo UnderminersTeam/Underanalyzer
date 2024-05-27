@@ -176,6 +176,37 @@ internal class TryCatch : IControlFlowNode
         return res;
     }
 
+    /// <summary>
+    /// Removes all branches to any try statement's immediate successor that is not the try statement itself.
+    /// This can occur when certain control flow is placed at the end of try block, with try/finally (without catch).
+    /// This should be called after all branches have been resolved.
+    /// </summary>
+    public static void CleanTryEndBranches(DecompileContext ctx)
+    {
+        foreach (TryCatch tc in ctx.TryCatchNodes)
+        {
+            // Only process if we have 1 successor (and more than 1 is an error at this point)
+            if (tc.Successors.Count == 0)
+            {
+                continue;
+            }
+            if (tc.Successors.Count > 1)
+            {
+                throw new DecompilerException("Unexpected branch");
+            }
+
+            // Remove predecessors from the successor that are not this node
+            IControlFlowNode succ = tc.Successors[0];
+            for (int i = succ.Predecessors.Count - 1; i >= 0; i--)
+            {
+                if (succ.Predecessors[i] != tc)
+                {
+                    IControlFlowNode.DisconnectPredecessor(succ, i);
+                }
+            }
+        }
+    }
+
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         // Build try block - but first follow all parents (e.g., in case a binary branch shows up at the start)

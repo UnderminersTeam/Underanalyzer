@@ -7,7 +7,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// Represents a single block of code in the AST.
 /// Blocks can have an arbitrary number of child nodes.
 /// </summary>
-public class BlockNode : IFragmentNode
+public class BlockNode : IFragmentNode, IBlockCleanupNode
 {
     /// <summary>
     /// Whether or not curly braces are required for this block.
@@ -37,14 +37,15 @@ public class BlockNode : IFragmentNode
         FragmentContext = fragmentContext;
     }
 
-    private void CleanLocals()
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
-        if (FragmentContext.LocalVariableNames.Contains(VMConstants.TempReturnVariable))
+        // Remove this block if empty
+        if (Children.Count == 0)
         {
-            FragmentContext.LocalVariableNames.Remove(VMConstants.TempReturnVariable);
-            FragmentContext.LocalVariableNamesList.Remove(VMConstants.TempReturnVariable);
+            block.Children.RemoveAt(i);
+            return i - 1;
         }
-        // TODO: try/catch loop locals, if possible?
+        return i;
     }
 
     private void CleanChildren(ASTCleaner cleaner)
@@ -52,112 +53,10 @@ public class BlockNode : IFragmentNode
         for (int i = 0; i < Children.Count; i++)
         {
             Children[i] = Children[i].Clean(cleaner);
-            if (Children[i] is BlockNode block)
+            if (Children[i] is IBlockCleanupNode blockCleanupNode)
             {
-                // Remove empty blocks
-                if (block.Children.Count == 0)
-                {
-                    Children.RemoveAt(i);
-                    i--;
-                }
-            }
-            else if (Children[i] is ReturnNode returnNode)
-            {
-                // Check for return temp variable
-                if (i > 0 && returnNode.Value is VariableNode returnVariable &&
-                    returnVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
-                {
-                    if (Children[i - 1] is AssignNode assign && assign.Variable is VariableNode assignVariable &&
-                        assignVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
-                    {
-                        // We found one - rewrite it as a normal return
-                        Children[i - 1] = new ReturnNode(assign.Value);
-                        Children.RemoveAt(i);
-                        i--;
-                    }
-                }
-            }
-            else if (Children[i] is WhileLoopNode whileLoop)
-            {
-                // Check if we should convert this loop into a for loop
-                if (!whileLoop.MustBeWhileLoop && i > 0 && Children[i - 1] is AssignNode initializer &&
-                    whileLoop.Body.Children is [.., AssignNode incrementor])
-                {
-                    // For readability, just stick to integer and variable assignments/compound operations
-                    if (initializer.Value is not (Int16Node or Int32Node or Int64Node or VariableNode) ||
-                        (incrementor.Value is not (Int16Node or Int32Node or Int64Node or VariableNode) &&
-                         incrementor.AssignKind != AssignNode.AssignType.Prefix &&
-                         incrementor.AssignKind != AssignNode.AssignType.Postfix))
-                    {
-                        continue;
-                    }
-                    if (incrementor.AssignKind is not (AssignNode.AssignType.Compound or 
-                        AssignNode.AssignType.Prefix or AssignNode.AssignType.Postfix))
-                    {
-                        continue;
-                    }
-
-                    // Also for readability, make sure the initializer and incrementor variables are similar
-                    if (initializer.Variable is not VariableNode initVariable || 
-                        incrementor.Variable is not VariableNode incVariable)
-                    {
-                        continue;
-                    }
-                    if (!initVariable.SimilarToInForIncrementor(incVariable))
-                    {
-                        continue;
-                    }
-
-                    // Convert into for loop!
-                    BlockNode body = whileLoop.Body;
-                    body.Children.RemoveAt(body.Children.Count - 1);
-                    BlockNode incrementorBlock = new(body.FragmentContext);
-                    incrementorBlock.Children.Add(incrementor);
-                    Children.RemoveAt(i - 1);
-                    i--;
-                    Children[i] = new ForLoopNode(initializer, whileLoop.Condition, incrementorBlock, body);
-                    Children[i] = Children[i].Clean(cleaner);
-                }
-            }
-            else if (Children[i] is ForLoopNode forLoop)
-            {
-                // Check if this for loop needs an initializer, and if so (and there's a readable one), add it
-                if (forLoop.Initializer is null && i > 0 && Children[i - 1] is AssignNode assign &&
-                    assign.Value is (Int16Node or Int32Node or Int64Node or VariableNode) &&
-                    forLoop.Condition is not null)
-                {
-                    forLoop.Initializer = assign;
-                    Children.RemoveAt(i - 1);
-                    i--;
-                    Children[i] = forLoop.Clean(cleaner);
-                }
-            }
-            else if (Children[i] is TryCatchNode.FinishFinallyNode)
-            {
-                // Search for the try statement this is associated with, and build a block for its finally
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    IStatementNode curr = Children[j];
-                    if (curr is TryCatchNode tryCatchNode)
-                    {
-                        // Create finally block with all statements in between
-                        BlockNode finallyBlock = new(FragmentContext);
-                        finallyBlock.UseBraces = true;
-                        finallyBlock.Children = Children.GetRange(j + 1, i - (j + 1));
-                        Children.RemoveRange(j + 1, i - (j + 1));
-                        i -= finallyBlock.Children.Count;
-
-                        // Assign finally block, and re-clean try statement
-                        tryCatchNode.Finally = finallyBlock;
-                        tryCatchNode.Clean(cleaner);
-
-                        break;
-                    }
-                }
-
-                // Remove this statement from AST
-                Children.RemoveAt(i);
-                i--;
+                // Clean this node with the additional context of this block
+                i = blockCleanupNode.BlockClean(cleaner, this, i);
             }
         }
     }
@@ -165,7 +64,7 @@ public class BlockNode : IFragmentNode
     public IFragmentNode Clean(ASTCleaner cleaner)
     {
         cleaner.PushFragmentContext(FragmentContext);
-        CleanLocals();
+        FragmentContext.RemoveLocal(VMConstants.TempReturnVariable);
         CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
@@ -174,7 +73,7 @@ public class BlockNode : IFragmentNode
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         cleaner.PushFragmentContext(FragmentContext);
-        CleanLocals();
+        FragmentContext.RemoveLocal(VMConstants.TempReturnVariable);
         CleanChildren(cleaner);
         cleaner.PopFragmentContext();
         return this;
