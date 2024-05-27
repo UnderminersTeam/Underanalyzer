@@ -135,23 +135,23 @@ public class BlockNode : IFragmentNode
             else if (Children[i] is TryCatchNode.FinishFinallyNode)
             {
                 // Search for the try statement this is associated with, and build a block for its finally
-                BlockNode finallyBlock = new(FragmentContext);
-                finallyBlock.UseBraces = true;
                 for (int j = i - 1; j >= 0; j--)
                 {
                     IStatementNode curr = Children[j];
                     if (curr is TryCatchNode tryCatchNode)
                     {
+                        // Create finally block with all statements in between
+                        BlockNode finallyBlock = new(FragmentContext);
+                        finallyBlock.UseBraces = true;
+                        finallyBlock.Children = Children.GetRange(j, i - j);
+                        Children.RemoveRange(j, i - j);
+                        i -= finallyBlock.Children.Count;
+
                         // Assign finally block, and re-clean try statement
                         tryCatchNode.Finally = finallyBlock;
                         tryCatchNode.Clean(cleaner);
+
                         break;
-                    }
-                    else
-                    {
-                        finallyBlock.Children.Add(curr);
-                        Children.RemoveAt(j);
-                        i--;
                     }
                 }
 
