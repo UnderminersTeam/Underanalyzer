@@ -466,7 +466,12 @@ internal class BlockSimulator
                     builder.ExpressionStack.Pop();
                     builder.TopFragmentContext.BaseParentCall = builder.ExpressionStack.Pop();
                     return;
-                // TODO: other special functions need to go here
+                case VMConstants.FinishFinallyFunction:
+                    builder.ExpressionStack.Push(new TryCatchNode.FinishFinallyNode());
+                    return;
+                case VMConstants.TryUnhookFunction:
+                    // We just ignore this call - no need to even put anything on the stack
+                    return;
             }
         }
 

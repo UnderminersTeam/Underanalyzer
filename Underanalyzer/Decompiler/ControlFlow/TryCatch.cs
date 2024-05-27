@@ -178,6 +178,33 @@ internal class TryCatch : IControlFlowNode
 
     public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
-        throw new NotImplementedException();
+        // Build try block
+        BlockNode tryBlock = builder.BuildBlock(Try);
+
+        // Handle catch block, if it exists
+        BlockNode catchBlock = null;
+        VariableNode catchVariable = null;
+        if (Catch is not null)
+        {
+            // Get variable from start of catch - assume it's a Block
+            Block catchInstrBlock = Catch as Block;
+            if (catchInstrBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.Pop, Variable: IGMVariable variable }, ..])
+            {
+                throw new DecompilerException("Expected first instruction of catch block to store to variable");
+            }
+            catchVariable = new VariableNode(variable, IGMInstruction.VariableType.Normal)
+            {
+                Left = new InstanceTypeNode(IGMInstruction.InstanceType.Local)
+            };
+            catchInstrBlock.Instructions.RemoveAt(0);
+
+            // Register this as a local variable, but not to local variable declaration list
+            builder.LocalVariableNames.Add(variable.Name.Content);
+
+            // Build actual catch body
+            catchBlock = builder.BuildBlock(Catch);
+        }
+
+        output.Add(new TryCatchNode(tryBlock, catchBlock, catchVariable));
     }
 }

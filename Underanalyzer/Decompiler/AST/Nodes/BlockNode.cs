@@ -132,6 +132,32 @@ public class BlockNode : IFragmentNode
                     Children[i] = forLoop.Clean(cleaner);
                 }
             }
+            else if (Children[i] is TryCatchNode.FinishFinallyNode)
+            {
+                // Search for the try statement this is associated with, and build a block for its finally
+                BlockNode finallyBlock = new(FragmentContext);
+                finallyBlock.UseBraces = true;
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    IStatementNode curr = Children[j];
+                    if (curr is TryCatchNode tryCatchNode)
+                    {
+                        // Assign finally block, and re-clean try statement
+                        tryCatchNode.Finally = finallyBlock;
+                        tryCatchNode.Clean(cleaner);
+                    }
+                    else
+                    {
+                        finallyBlock.Children.Add(curr);
+                        Children.RemoveAt(j);
+                        i--;
+                    }
+                }
+
+                // Remove this statement from AST
+                Children.RemoveAt(i);
+                i--;
+            }
         }
     }
 
