@@ -191,8 +191,8 @@ internal class TryCatch : IControlFlowNode
         VariableNode catchVariable = null;
         if (Catch is not null)
         {
-            // Get variable from start of catch - assume it's a Block
-            Block catchInstrBlock = Catch as Block;
+            // Get variable from start of catch's initial block
+            Block catchInstrBlock = builder.Context.BlocksByAddress[Catch.StartAddress];
             if (catchInstrBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.Pop, Variable: IGMVariable variable }, ..])
             {
                 throw new DecompilerException("Expected first instruction of catch block to store to variable");
@@ -206,8 +206,13 @@ internal class TryCatch : IControlFlowNode
             // Register this as a local variable, but not to local variable declaration list
             builder.LocalVariableNames.Add(variable.Name.Content);
 
-            // Build actual catch body
-            catchBlock = builder.BuildBlock(Catch);
+            // Build actual catch body - also follow any parents, as needed
+            IControlFlowNode catchNode = Catch;
+            while (catchNode.Parent is not null)
+            {
+                catchNode = catchNode.Parent;
+            }
+            catchBlock = builder.BuildBlock(catchNode);
         }
 
         output.Add(new TryCatchNode(tryBlock, catchBlock, catchVariable));
