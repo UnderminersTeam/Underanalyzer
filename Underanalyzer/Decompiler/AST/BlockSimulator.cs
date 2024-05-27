@@ -470,6 +470,7 @@ internal class BlockSimulator
                     builder.ExpressionStack.Push(new TryCatchNode.FinishFinallyNode());
                     return;
                 case VMConstants.TryUnhookFunction:
+                case VMConstants.FinishCatchFunction:
                     // We just ignore this call - no need to even put anything on the stack
                     return;
             }
