@@ -143,8 +143,8 @@ public class BlockNode : IFragmentNode
                         // Create finally block with all statements in between
                         BlockNode finallyBlock = new(FragmentContext);
                         finallyBlock.UseBraces = true;
-                        finallyBlock.Children = Children.GetRange(j, i - j);
-                        Children.RemoveRange(j, i - j);
+                        finallyBlock.Children = Children.GetRange(j + 1, i - (j + 1));
+                        Children.RemoveRange(j + 1, i - (j + 1));
                         i -= finallyBlock.Children.Count;
 
                         // Assign finally block, and re-clean try statement
