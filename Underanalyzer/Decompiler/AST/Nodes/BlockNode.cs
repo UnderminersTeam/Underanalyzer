@@ -145,6 +145,7 @@ public class BlockNode : IFragmentNode
                         // Assign finally block, and re-clean try statement
                         tryCatchNode.Finally = finallyBlock;
                         tryCatchNode.Clean(cleaner);
+                        break;
                     }
                     else
                     {
