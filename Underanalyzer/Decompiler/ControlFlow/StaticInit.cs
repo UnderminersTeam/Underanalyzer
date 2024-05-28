@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.AST;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -51,8 +52,8 @@ internal class StaticInit : IControlFlowNode
         {
             // Check for pattern
             if (block.Instructions is [..,
-                { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.HasStaticInitialized },
-                { Kind: IGMInstruction.Opcode.BranchTrue }])
+                { Kind: Opcode.Extended, ExtKind: ExtendedOpcode.HasStaticInitialized },
+                { Kind: Opcode.BranchTrue }])
             {
                 StaticInit si = new(block.EndAddress, block.Successors[1].StartAddress, block.Successors[0]);
                 res.Add(si);
@@ -60,20 +61,23 @@ internal class StaticInit : IControlFlowNode
                 // Remove instructions from this block
                 block.Instructions.RemoveRange(block.Instructions.Count - 2, 2);
 
-                // Remove instruction from ending block
-                Block afterBlock = block.Successors[1] as Block;
-                afterBlock.Instructions.RemoveAt(0);
+                // Remove instruction from ending block, if it's the right one (changes depending on version)
+                IControlFlowNode afterNode = block.Successors[1];
+                if (afterNode is Block { Instructions: [{ Kind: Opcode.Extended, ExtKind: ExtendedOpcode.ResetStatic }, ..] } afterBlock)
+                {
+                    afterBlock.Instructions.RemoveAt(0);
+                }
 
                 // Disconnect predecessors of the head and our after block
                 IControlFlowNode.DisconnectPredecessor(si.Head, 0);
-                IControlFlowNode.DisconnectPredecessor(afterBlock, 1);
-                IControlFlowNode.DisconnectPredecessor(afterBlock, 0);
+                IControlFlowNode.DisconnectPredecessor(afterNode, 1);
+                IControlFlowNode.DisconnectPredecessor(afterNode, 0);
 
                 // Insert into control flow graph (done manually, here)
                 block.Successors.Add(si);
                 si.Predecessors.Add(block);
-                si.Successors.Add(afterBlock);
-                afterBlock.Predecessors.Add(si);
+                si.Successors.Add(afterNode);
+                afterNode.Predecessors.Add(si);
 
                 // Update parent status of head and this structure
                 si.Parent = si.Head.Parent;
