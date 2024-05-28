@@ -12,6 +12,7 @@ public class DecompileContext
     public IGameContext GameContext { get; }
     public IGMCode Code { get; private set; }
     public IDecompileSettings Settings { get; private set; }
+    public List<IDecompileWarning> Warnings { get; } = new();
 
     // Helpers to refer to data on game context
     internal bool OlderThanBytecode15 { get => GameContext.Bytecode14OrLower; }

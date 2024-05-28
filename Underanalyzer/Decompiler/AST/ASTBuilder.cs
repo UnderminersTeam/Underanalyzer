@@ -244,8 +244,16 @@ public class ASTBuilder
         ASTFragmentContext context = FragmentContextStack.Pop();
         if (context.ExpressionStack.Count > 0)
         {
-            // TODO: maybe don't make this an exception, and instead use temp vars
-            throw new DecompilerException("Data left over on stack");
+            if (Context.Settings.AllowLeftoverDataOnStack)
+            {
+                // We have leftover data on stack; this is seemingly invalid code that can't be accurately recompiled.
+                // Create a new warning for this fragment.
+                Context.Warnings.Add(new DecompileDataLeftoverWarning(context.ExpressionStack.Count, context.CodeEntryName));
+            }
+            else
+            {
+                throw new DecompilerException("Data left over on VM stack at end of fragment.");
+            }
         }
 
         // Add sub-function names to lookup, if any exist

@@ -67,11 +67,12 @@ internal static class TestUtil
     /// <summary>
     /// Asserts that the decompilation result of the assembly equals the provided GML, as a string.
     /// </summary>
-    public static void VerifyDecompileResult(string asm, string gml, GameContextMock? gameContext = null)
+    public static DecompileContext VerifyDecompileResult(string asm, string gml, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
     {
         gameContext ??= new();
-        DecompileContext decompilerContext = new(gameContext, GetCode(asm));
+        DecompileContext decompilerContext = new(gameContext, GetCode(asm), decompileSettings);
         string decompileResult = decompilerContext.DecompileToString().Trim();
         Assert.Equal(gml.Trim().ReplaceLineEndings("\n"), decompileResult);
+        return decompilerContext;
     }
 }
