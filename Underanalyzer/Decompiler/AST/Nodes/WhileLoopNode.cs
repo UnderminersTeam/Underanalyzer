@@ -1,6 +1,4 @@
-﻿using Underanalyzer.Decompiler.ControlFlow;
-
-namespace Underanalyzer.Decompiler.AST;
+﻿namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a while loop in the AST.

@@ -224,8 +224,26 @@ internal static class Branches
                     }
                     else if (block.Successors[0].StartAddress >= loop.EndAddress)
                     {
-                        // Detected trivial break
-                        node = new BreakNode(block.EndAddress - 4);
+                        if (loop is WithLoop withLoop)
+                        {
+                            // In a with loop specifically, we only track specifically greater than here
+                            // (as our loop end address is technically a little bit earlier than other loops)
+                            if (block.Successors[0].StartAddress > withLoop.EndAddress)
+                            {
+                                if (withLoop.BreakBlock is null)
+                                {
+                                    throw new DecompilerException("Expected break block on with loop");
+                                }
+
+                                // Detected trivial break
+                                node = new BreakNode(block.EndAddress - 4);
+                            }
+                        }
+                        else
+                        {
+                            // Detected trivial break
+                            node = new BreakNode(block.EndAddress - 4);
+                        }
                     }
                 }
 

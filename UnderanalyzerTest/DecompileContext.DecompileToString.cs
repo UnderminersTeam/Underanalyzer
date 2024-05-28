@@ -1485,4 +1485,28 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestWithContinue()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [2]
+            
+            :[1]
+            b [2]
+            
+            :[2]
+            popenv [1]
+            """,
+            """
+            with (123)
+            {
+                continue;
+            }
+            """
+        );
+    }
 }
