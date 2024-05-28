@@ -9,5 +9,12 @@ public class GameContextMock : IGameContext
     public bool Bytecode14OrLower { get; set; } = false;
     public bool UsingFinallyBeforeThrow { get; set; } = false;
     public IGlobalFunctions GlobalFunctions { get; } = new GlobalFunctions();
-    public string GetAssetName(int assetIndex, AssetType assetType) => null;
+    public string GetAssetName(int assetIndex, AssetType assetType)
+    {
+        return assetType switch
+        {
+            AssetType.RoomInstance => $"inst_id_{assetIndex}",
+            _ => null
+        };
+    }
 }

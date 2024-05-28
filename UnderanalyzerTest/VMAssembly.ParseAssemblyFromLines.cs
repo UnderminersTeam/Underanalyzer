@@ -106,7 +106,7 @@ public class VMAssembly_ParseInstructions
         savearef.e
         restorearef.e
         isnullish.e
-        pushref.i 1234
+        pushref.i 1234 Sprite
 
         # Function index push
         push.i [function]test_function_reference

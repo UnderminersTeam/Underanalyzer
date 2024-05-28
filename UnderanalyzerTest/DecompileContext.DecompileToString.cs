@@ -1466,4 +1466,23 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestRoomInstanceReference()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            pushref.i 123123 RoomInstance
+            pushi.e -9
+            push.v [stacktop]self.a
+            pop.v.v self.b
+            pushref.i 456456 RoomInstance
+            pop.v.v self.c
+            """,
+            """
+            b = inst_id_123123.a;
+            c = inst_id_456456;
+            """
+        );
+    }
 }

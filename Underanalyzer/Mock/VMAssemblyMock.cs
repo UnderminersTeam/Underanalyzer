@@ -14,6 +14,7 @@ public static class VMAssembly
     private static readonly Dictionary<string, IGMInstruction.Opcode> StringToOpcode = new();
     private static readonly Dictionary<string, IGMInstruction.ExtendedOpcode> StringToExtOpcode = new();
     private static readonly Dictionary<char, IGMInstruction.DataType> CharToDataType = new();
+    private static readonly Dictionary<string, AssetType> StringToAssetType = new();
 
     /// <summary>
     /// Initializes precomputed data for parsing VM assembly
@@ -46,6 +47,13 @@ public static class VMAssembly
             var field = typeDataType.GetField(Enum.GetName(typeDataType, dataType));
             var info = field.GetCustomAttribute<IGMInstruction.DataTypeInfo>();
             CharToDataType[info.Mnemonic] = dataType;
+        }
+
+        // Asset types
+        Type typeAssetType = typeof(AssetType);
+        foreach (AssetType assetType in Enum.GetValues(typeAssetType))
+        {
+            StringToAssetType[Enum.GetName(typeAssetType, assetType)] = assetType;
         }
     }
 
@@ -367,15 +375,17 @@ public static class VMAssembly
                         if (extOpcode == IGMInstruction.ExtendedOpcode.PushReference)
                         {
                             if (parts.Length < 2)
-                                throw new Exception("PushReference needs reference ID parameter");
+                                throw new Exception("PushReference needs reference ID (or function)");
                             if (!int.TryParse(parts[1], out int referenceID))
                             {
                                 // Not a reference ID. Instead, a function reference
                                 instr.Function = new GMFunction(parts[1]);
                                 break;
                             }
+                            if (parts.Length < 3)
+                                throw new Exception("PushReference needs reference ID and type parameters");
                             instr.AssetReferenceId = referenceID;
-                            instr.AssetReferenceType = AssetType.Sprite; // TODO: support specifying asset type
+                            instr.AssetReferenceType = StringToAssetType[parts[2]];
                         }
                     }
                     break;

@@ -19,7 +19,8 @@ public enum AssetType
     Shader,
     Sequence,
     AnimCurve,
-    ParticleSystem
+    ParticleSystem,
+    RoomInstance
 }
 
 /// <summary>

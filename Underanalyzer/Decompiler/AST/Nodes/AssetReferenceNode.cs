@@ -32,6 +32,23 @@ public class AssetReferenceNode : IExpressionNode
 
     public void Print(ASTPrinter printer)
     {
-        printer.Write(printer.Context.GameContext.GetAssetName(AssetId, AssetType));
+        string assetName = printer.Context.GameContext.GetAssetName(AssetId, AssetType);
+        if (assetName is not null)
+        {
+            printer.Write(assetName);
+        }
+        else
+        {
+            // Unknown asset ID
+            if (Group)
+            {
+                printer.Write('(');
+            }
+            printer.Write(AssetId);
+            if (Group)
+            {
+                printer.Write(')');
+            }
+        }
     }
 }
