@@ -61,6 +61,12 @@ internal class WithLoop : Loop
 
     public override void UpdateFlowGraph()
     {
+        // Ensure Head is the outermost parent (not an inner block of a loop, for instance)
+        while (Head.Parent is not null)
+        {
+            Head = Head.Parent;
+        }
+
         // Add a new node that is branched to at the end, to keep control flow internal
         var oldAfter = After;
         var newAfter = new EmptyNode(After.StartAddress);

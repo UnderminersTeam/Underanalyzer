@@ -1434,4 +1434,36 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestWithNestedWhile()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.a
+            pushi.e -9
+            pushenv [3]
+
+            :[1]
+            push.v self.b
+            conv.v.b
+            bf [3]
+
+            :[2]
+            b [1]
+
+            :[3]
+            popenv [1]
+            """,
+            """
+            with (a)
+            {
+                while (b)
+                {
+                }
+            }
+            """
+        );
+    }
 }
