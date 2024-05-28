@@ -22,6 +22,7 @@ public class DecompileContext
     internal Dictionary<int, Block> BlocksByAddress { get; set; }
     internal List<Fragment> FragmentNodes { get; set; }
     internal List<Loop> LoopNodes { get; set; }
+    internal List<Block> ShortCircuitBlocks { get; set; }
     internal List<ShortCircuit> ShortCircuitNodes { get; set; }
     internal List<StaticInit> StaticInitNodes { get; set; }
     internal List<TryCatch> TryCatchNodes { get; set; }
@@ -58,8 +59,9 @@ public class DecompileContext
             Fragment.FindFragments(this);
             StaticInit.FindStaticInits(this);
             Nullish.FindNullish(this);
-            Loop.FindLoops(this);
             ShortCircuit.FindShortCircuits(this);
+            Loop.FindLoops(this);
+            ShortCircuit.InsertShortCircuits(this);
             TryCatch.FindTryCatch(this);
             Switch.FindSwitchStatements(this);
             BinaryBranch.FindBinaryBranches(this);
