@@ -22,6 +22,24 @@ public interface IDecompileSettings
     public bool CleanupElseToContinue { get; }
 
     /// <summary>
+    /// If true, enum values that are detected in a code entry (including any unknown ones) will 
+    /// be given declarations at the top of the code.
+    /// </summary>
+    public bool CreateEnumDeclarations { get; }
+
+    /// <summary>
+    /// Base type name for the enum representing all unknown enum values.
+    /// Should be a valid enum name in GML, or null if the unknown enum should not be generated/used at all.
+    /// </summary>
+    public string UnknownEnumName { get; }
+
+    /// <summary>
+    /// Format string for the values in the enum representing all unknown enum values.
+    /// Should be a valid enum value name in GML.
+    /// </summary>
+    public string UnknownEnumValuePattern { get; }
+
+    /// <summary>
     /// Whether leftover data on the simulated VM stack will be allowed in decompilation output. 
     /// If false, an exception is thrown when data is left over on the stack at the end of a fragment.
     /// If true, a warning is added to the decompile context.
@@ -37,5 +55,8 @@ public class DecompileSettings : IDecompileSettings
     public string IndentString { get; set; } = "    ";
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
+    public bool CreateEnumDeclarations { get; set; } = true;
+    public string UnknownEnumName { get; set; } = "UnknownEnum";
+    public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
     public bool AllowLeftoverDataOnStack { get; set; } = false;
 }

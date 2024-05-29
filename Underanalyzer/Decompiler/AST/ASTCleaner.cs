@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -62,5 +63,14 @@ public class ASTCleaner
             TopFragmentContext = null;
         }
         return popped;
+    }
+
+    /// <summary>
+    /// Helper function to declare a new enum.
+    /// </summary>
+    internal void DeclareEnum(GMEnum gmEnum)
+    {
+        Context.EnumDeclarations.Add(gmEnum);
+        Context.NameToEnumDeclaration[gmEnum.Name] = gmEnum;
     }
 }

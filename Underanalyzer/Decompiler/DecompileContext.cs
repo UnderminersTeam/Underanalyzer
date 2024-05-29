@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.ControlFlow;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler;
 
@@ -9,9 +10,24 @@ namespace Underanalyzer.Decompiler;
 /// </summary>
 public class DecompileContext
 {
+    /// <summary>
+    /// The game context this decompile context belongs to.
+    /// </summary>
     public IGameContext GameContext { get; }
+
+    /// <summary>
+    /// The specific code entry within the game this decompile context belongs to.
+    /// </summary>
     public IGMCode Code { get; private set; }
+
+    /// <summary>
+    /// The decompilation settings to be used for this decompile context in its operation.
+    /// </summary>/
     public IDecompileSettings Settings { get; private set; }
+
+    /// <summary>
+    /// Any warnings produced throughout the decompilation process.
+    /// </summary>
     public List<IDecompileWarning> Warnings { get; } = new();
 
     // Helpers to refer to data on game context
@@ -36,6 +52,9 @@ public class DecompileContext
     internal List<Switch> SwitchNodes { get; set; }
     internal Dictionary<Block, Loop> BlockSurroundingLoops { get; set; }
     internal Dictionary<Block, int> BlockAfterLimits { get; set; }
+    internal List<GMEnum> EnumDeclarations { get; set; } = new();
+    internal Dictionary<string, GMEnum> NameToEnumDeclaration { get; set; } = new();
+    internal GMEnum UnknownEnumDeclaration { get; set; } = null;
 
     public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
     {
@@ -101,7 +120,12 @@ public class DecompileContext
     {
         try
         {
-            return ast.Clean(new AST.ASTCleaner(this));
+            AST.IStatementNode cleaned = ast.Clean(new AST.ASTCleaner(this));
+            if (Settings.CreateEnumDeclarations)
+            {
+                AST.EnumDeclNode.GenerateDeclarations(this, cleaned);
+            }
+            return cleaned;
         }
         catch (DecompilerException ex)
         {

@@ -41,4 +41,7 @@ internal static class VMConstants
     public const string TryBreakVariable = "__yy_breakEx";
     public const string TryContinueVariable = "__yy_continueEx";
     public const string TryCopyVariable = "copyVar";
+
+    // Function name used to set struct variables (used to de-optimize to be closer to source code)
+    public const string StructGetFromHashFunction = "struct_get_from_hash";
 }
