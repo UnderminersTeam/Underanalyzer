@@ -37,6 +37,14 @@ public class StructNode : IFragmentNode, IExpressionNode
 
     public void Print(ASTPrinter printer)
     {
-        Body.Print(printer);
+        if (Body.Children.Count == 0)
+        {
+            // Don't print a normal block in this case; condense down
+            printer.Write("{}");
+        }
+        else
+        {
+            Body.Print(printer);
+        }
     }
 }
