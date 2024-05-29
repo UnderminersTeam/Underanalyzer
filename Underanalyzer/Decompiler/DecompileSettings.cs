@@ -11,6 +11,12 @@ public interface IDecompileSettings
     public string IndentString { get; }
 
     /// <summary>
+    /// If true, semicolons are emitted after statements that generally have them.
+    /// If false, some statements may still use semicolons to prevent ambiguity.
+    /// </summary>
+    public bool UseSemicolon { get; }
+
+    /// <summary>
     /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
@@ -53,6 +59,7 @@ public interface IDecompileSettings
 public class DecompileSettings : IDecompileSettings
 {
     public string IndentString { get; set; } = "    ";
+    public bool UseSemicolon { get; set; } = true;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;

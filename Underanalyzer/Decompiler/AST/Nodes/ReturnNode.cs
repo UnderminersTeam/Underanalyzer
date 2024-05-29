@@ -27,6 +27,12 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
     {
         printer.Write("return ");
         Value.Print(printer);
+
+        if (!printer.Context.Settings.UseSemicolon)
+        {
+            // Manually print semicolon for this specific statement, to prevent ambiguity
+            printer.Write(';');
+        }
     }
 
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)

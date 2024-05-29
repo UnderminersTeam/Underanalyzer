@@ -206,8 +206,10 @@ public class ASTPrinter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Semicolon()
     {
-        // TODO: use a setting to enable/disable this
-        stringBuilder.Append(';');
+        if (Context.Settings.UseSemicolon)
+        {
+            stringBuilder.Append(';');
+        }
     }
 
     /// <summary>
