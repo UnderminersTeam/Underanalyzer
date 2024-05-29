@@ -25,6 +25,7 @@ public class DoUntilLoopNode : IStatementNode
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
+        ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
         Condition = Condition.Clean(cleaner);
         Condition.Group = false;

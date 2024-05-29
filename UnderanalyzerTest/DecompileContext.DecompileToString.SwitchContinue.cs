@@ -158,7 +158,12 @@ public class DecompileContext_DecompileToString_SwitchContinue
                         }
                     }
             }
-            """
+            """,
+            null,
+            new Underanalyzer.Decompiler.DecompileSettings()
+            {
+                CleanupElseToContinue = false
+            }
         );
     }
 
@@ -227,7 +232,12 @@ public class DecompileContext_DecompileToString_SwitchContinue
                         }
                     }
             }
-            """
+            """,
+            null,
+            new Underanalyzer.Decompiler.DecompileSettings()
+            {
+                CleanupElseToContinue = false
+            }
         );
     }
 

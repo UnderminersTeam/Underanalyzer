@@ -26,6 +26,7 @@ public class RepeatLoopNode : IStatementNode
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         TimesToRepeat = TimesToRepeat.Clean(cleaner);
+        ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
         return this;
     }

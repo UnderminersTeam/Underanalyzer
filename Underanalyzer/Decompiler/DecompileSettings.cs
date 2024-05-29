@@ -17,6 +17,11 @@ public interface IDecompileSettings
     public bool CleanupTry { get; }
 
     /// <summary>
+    /// Whether empty if/else chains at the end of a loop body should be rewritten as continue statements, when possible.
+    /// </summary>
+    public bool CleanupElseToContinue { get; }
+
+    /// <summary>
     /// Whether leftover data on the simulated VM stack will be allowed in decompilation output. 
     /// If false, an exception is thrown when data is left over on the stack at the end of a fragment.
     /// If true, a warning is added to the decompile context.
@@ -31,5 +36,6 @@ public class DecompileSettings : IDecompileSettings
 {
     public string IndentString { get; set; } = "    ";
     public bool CleanupTry { get; set; } = true;
+    public bool CleanupElseToContinue { get; set; } = true;
     public bool AllowLeftoverDataOnStack { get; set; } = false;
 }

@@ -26,6 +26,7 @@ public class WithLoopNode : IStatementNode
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Target = Target.Clean(cleaner);
+        ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
         return this;
     }

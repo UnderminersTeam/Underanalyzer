@@ -10,17 +10,17 @@ public class IfNode : IStatementNode
     /// <summary>
     /// The condition of the if statement.
     /// </summary>
-    public IExpressionNode Condition { get; private set; }
+    public IExpressionNode Condition { get; internal set; }
 
     /// <summary>
     /// The main (true) block of the if statement.
     /// </summary>
-    public BlockNode TrueBlock { get; private set; }
+    public BlockNode TrueBlock { get; internal set; }
 
     /// <summary>
     /// The else (false) block of the if statement, or null if none exists.
     /// </summary>
-    public BlockNode ElseBlock { get; private set; }
+    public BlockNode ElseBlock { get; internal set; }
 
     public bool SemicolonAfter { get => false; }
 

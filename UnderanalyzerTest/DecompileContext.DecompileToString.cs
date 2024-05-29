@@ -1509,4 +1509,56 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestWithBreakContinue()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            pushi.e 123
+            pushenv [5]
+            
+            :[1]
+            push.v self.a
+            conv.v.b
+            bf [3]
+            
+            :[2]
+            b [7]
+            
+            :[3]
+            push.v self.b
+            conv.v.b
+            bf [5]
+            
+            :[4]
+            b [5]
+            
+            :[5]
+            popenv [1]
+            
+            :[6]
+            b [8]
+            
+            :[7]
+            popenv <drop>
+            
+            :[8]
+            """,
+            """
+            with (123)
+            {
+                if (a)
+                {
+                    break;
+                }
+                if (b)
+                {
+                    continue;
+                }
+            }
+            """
+        );
+    }
 }

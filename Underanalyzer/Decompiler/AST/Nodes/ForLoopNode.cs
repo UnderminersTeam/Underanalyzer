@@ -40,7 +40,9 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
         Initializer = Initializer?.Clean(cleaner);
         Condition = Condition.Clean(cleaner);
         Condition.Group = false;
-        Incrementor.Clean(cleaner);
+        Incrementor?.Clean(cleaner);
+
+        ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
 
         IStatementNode res = this;
@@ -100,8 +102,15 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
             Initializer?.Print(printer);
             printer.Write("; ");
             Condition.Print(printer);
-            printer.Write("; ");
-            Incrementor.GetShortestStatement().Print(printer);
+            if (Incrementor is not null)
+            {
+                printer.Write("; ");
+                Incrementor.GetShortestStatement().Print(printer);
+            }
+            else
+            {
+                printer.Write(';');
+            }
         }
         printer.Write(')');
 
