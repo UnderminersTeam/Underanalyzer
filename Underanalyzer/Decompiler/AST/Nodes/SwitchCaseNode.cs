@@ -8,7 +8,7 @@ public class SwitchCaseNode : IStatementNode
     /// <summary>
     /// The case expression, or null if default.
     /// </summary>
-    public IExpressionNode Expression { get; private set; }
+    public IExpressionNode Expression { get; internal set; }
 
     public bool SemicolonAfter { get => false; }
 

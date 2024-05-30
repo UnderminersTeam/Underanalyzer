@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents the "new" keyword being used to instantiate an object in the AST.
 /// </summary>
-public class NewObjectNode : IExpressionNode, IStatementNode
+public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueNode
 {
     /// <summary>
     /// The function (constructor) being used.
@@ -22,6 +23,9 @@ public class NewObjectNode : IExpressionNode, IStatementNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter { get => true; }
+
+    public string ConditionalTypeName => "NewObject";
+    public string ConditionalValue => ""; // TODO?
 
     public NewObjectNode(IExpressionNode function, List<IExpressionNode> arguments)
     {
@@ -73,5 +77,14 @@ public class NewObjectNode : IExpressionNode, IStatementNode
         {
             printer.Write(')');
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

@@ -1,9 +1,11 @@
-﻿namespace Underanalyzer.Decompiler.AST;
+﻿using Underanalyzer.Decompiler.Macros;
+
+namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a variable hash in the AST, generated at compile-time in more recent GMLv2 versions.
 /// </summary>
-public class VariableHashNode : IExpressionNode, IStatementNode
+public class VariableHashNode : IExpressionNode, IStatementNode, IConditionalValueNode
 {
     /// <summary>
     /// The variable being referenced.
@@ -14,6 +16,9 @@ public class VariableHashNode : IExpressionNode, IStatementNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
     public bool SemicolonAfter { get => true; }
+
+    public string ConditionalTypeName => "VariableHash";
+    public string ConditionalValue => Variable.Name.Content; // TODO?
 
     public VariableHashNode(IGMVariable variable)
     {
@@ -45,6 +50,15 @@ public class VariableHashNode : IExpressionNode, IStatementNode
         {
             printer.Write(")");
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }
 

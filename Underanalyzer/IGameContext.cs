@@ -1,4 +1,5 @@
 ﻿using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer;
 
@@ -39,6 +40,18 @@ public interface IGameContext
     public bool UsingGMLv2 { get; }
 
     /// <summary>
+    /// True if the game is using typed booleans in code; false otherwise.
+    /// This should be true for GMS 2.3.7 and above.
+    /// </summary>
+    public bool UsingTypedBooleans { get; }
+
+    /// <summary>
+    /// True if the game is using the PushReference instruction to use asset references in code; false otherwise.
+    /// This should be true for GameMaker 2023.8 and above.
+    /// </summary>
+    public bool UsingAssetReferences { get; }
+
+    /// <summary>
     /// True if the game uses bytecode 14 or lower; false otherwise.
     /// </summary>
     public bool Bytecode14OrLower { get; }
@@ -52,8 +65,16 @@ public interface IGameContext
     /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
+    /// This should not be modified during decompilation.
     /// </summary>
     public IGlobalFunctions GlobalFunctions { get; }
+
+    /// <summary>
+    /// Macro type registry used for resolving constant macros/enums in decompiled code.
+    /// The default constructor for <see cref="MacroTypeRegistry"/> results in an empty registry, which can be populated.
+    /// This should not be modified during decompilation.
+    /// </summary>
+    public MacroTypeRegistry MacroTypeRegistry { get; }
 
     /// <summary>
     /// Returns the string name of an asset, or null if no such asset exists.

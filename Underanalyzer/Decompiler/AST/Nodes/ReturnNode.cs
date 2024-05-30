@@ -1,4 +1,6 @@
-﻿namespace Underanalyzer.Decompiler.AST;
+﻿using Underanalyzer.Decompiler.Macros;
+
+namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a "return" statement (with a value) in the AST.
@@ -20,6 +22,15 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Value = Value.Clean(cleaner);
+
+        // Handle macro type resolution
+        if (Value is IMacroResolvableNode valueResolvable && 
+            cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, cleaner.TopFragmentContext.CodeEntryName) is IMacroType returnMacroType &&
+            valueResolvable.ResolveMacroType(cleaner, returnMacroType) is IExpressionNode valueResolved)
+        {
+            Value = valueResolved;
+        }
+
         return this;
     }
 

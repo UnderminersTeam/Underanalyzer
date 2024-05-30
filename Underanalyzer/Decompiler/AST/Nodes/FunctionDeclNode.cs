@@ -1,11 +1,12 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// A function declaration within the AST.
 /// </summary>
-public class FunctionDeclNode : IFragmentNode, IExpressionNode
+public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// Name of the function, or null if anonymous.
@@ -32,6 +33,9 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
     public bool SemicolonAfter { get => false; }
+
+    public string ConditionalTypeName => "FunctionDecl";
+    public string ConditionalValue => Name;
 
     public FunctionDeclNode(string name, bool isConstructor, BlockNode body, ASTFragmentContext fragmentContext)
     {
@@ -92,5 +96,14 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode
             printer.Write(" constructor");
         }
         Body.Print(printer);
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

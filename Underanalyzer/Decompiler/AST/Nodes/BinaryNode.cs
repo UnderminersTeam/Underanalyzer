@@ -1,4 +1,5 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -6,7 +7,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a binary expression, such as basic two-operand arithmetic operations.
 /// </summary>
-public class BinaryNode : IExpressionNode
+public class BinaryNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// Left side of the binary operation.
@@ -26,6 +27,9 @@ public class BinaryNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; }
+
+    public string ConditionalTypeName => "Binary";
+    public string ConditionalValue => ""; // TODO?
 
     public BinaryNode(IExpressionNode left, IExpressionNode right, IGMInstruction instruction)
     {
@@ -83,6 +87,20 @@ public class BinaryNode : IExpressionNode
         Left = Left.Clean(cleaner);
         Right = Right.Clean(cleaner);
 
+        // Resolve macro types carrying between left and right nodes
+        if (Left is IMacroTypeNode leftTypeNode && Right is IMacroResolvableNode rightResolvableNode &&
+            leftTypeNode.GetExpressionMacroType(cleaner) is IMacroType leftMacroType &&
+            rightResolvableNode.ResolveMacroType(cleaner, leftMacroType) is IExpressionNode rightResolved)
+        {
+            Right = rightResolved;
+        }
+        else if (Right is IMacroTypeNode rightTypeNode && Left is IMacroResolvableNode leftResolvableNode &&
+                 rightTypeNode.GetExpressionMacroType(cleaner) is IMacroType rightMacroType &&
+                 leftResolvableNode.ResolveMacroType(cleaner, rightMacroType) is IExpressionNode leftResolved)
+        {
+            Left = leftResolved;
+        }
+
         CheckGroup(Left);
         CheckGroup(Right);
 
@@ -130,5 +148,25 @@ public class BinaryNode : IExpressionNode
         {
             printer.Write(')');
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        bool didAnything = false;
+
+        if (Left is IMacroResolvableNode leftResolvable &&
+            leftResolvable.ResolveMacroType(cleaner, type) is IExpressionNode leftResolved)
+        {
+            Left = leftResolved;
+            didAnything = true;
+        }
+        if (Right is IMacroResolvableNode rightResolvable &&
+            rightResolvable.ResolveMacroType(cleaner, type) is IExpressionNode rightResolved)
+        {
+            Right = rightResolved;
+            didAnything = true;
+        }
+
+        return didAnything ? this : null;
     }
 }

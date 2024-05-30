@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Underanalyzer.Decompiler.Macros;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -6,7 +6,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a unary expression, such as not (!) and bitwise negation (~).
 /// </summary>
-public class UnaryNode : IExpressionNode
+public class UnaryNode : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The expression that this operation is being performed on.
@@ -21,6 +21,9 @@ public class UnaryNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; }
+
+    public string ConditionalTypeName => "Unary";
+    public string ConditionalValue => ""; // TODO?
 
     public UnaryNode(IExpressionNode value, IGMInstruction instruction)
     {
@@ -64,5 +67,14 @@ public class UnaryNode : IExpressionNode
         {
             printer.Write(')');
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

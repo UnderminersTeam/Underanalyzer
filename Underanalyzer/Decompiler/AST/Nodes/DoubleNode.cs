@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Globalization;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a double constant in the AST.
 /// </summary>
-public class DoubleNode : IConstantNode<double>
+public class DoubleNode : IConstantNode<double>, IConditionalValueNode
 {
     public double Value { get; }
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Double;
+
+    public string ConditionalTypeName => "Double";
+    public string ConditionalValue => Value.ToString("R", CultureInfo.InvariantCulture); // TODO: maybe do full conversion here
 
     public DoubleNode(double value)
     {
@@ -98,5 +102,14 @@ public class DoubleNode : IConstantNode<double>
         }
 
         printer.Write(resultStr);
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

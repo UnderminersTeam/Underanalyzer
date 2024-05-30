@@ -1,28 +1,28 @@
-﻿using System;
-using Underanalyzer.Decompiler.Macros;
+﻿using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
-/// Represents a function reference in the AST.
+/// Represents a reference to a single macro value in the AST.
+/// This is only generated during AST cleanup, so the stack type is undefined.
 /// </summary>
-public class FunctionReferenceNode : IExpressionNode, IConditionalValueNode
+public class MacroValueNode : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
-    /// The function being referenced.
+    /// The content of the macro value name.
     /// </summary>
-    public IGMFunction Function { get; }
+    public string ValueName { get; }
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
 
-    public string ConditionalTypeName => "FunctionReference";
-    public string ConditionalValue => Function.Name.Content;
+    public string ConditionalTypeName => "MacroValue";
+    public string ConditionalValue => ValueName;
 
-    public FunctionReferenceNode(IGMFunction function)
+    public MacroValueNode(string valueName)
     {
-        Function = function;
+        ValueName = valueName;
     }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
@@ -32,7 +32,15 @@ public class FunctionReferenceNode : IExpressionNode, IConditionalValueNode
 
     public void Print(ASTPrinter printer)
     {
-        printer.Write(printer.LookupFunction(Function));
+        if (Group)
+        {
+            printer.Write('(');
+        }
+        printer.Write(ValueName);
+        if (Group)
+        {
+            printer.Write(')');
+        }
     }
 
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)

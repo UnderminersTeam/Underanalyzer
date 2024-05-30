@@ -19,6 +19,9 @@ public class AssetReferenceNode : IExpressionNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
+    public string ConditionalTypeName => "AssetReference";
+    public string ConditionalValue => $"{AssetType}:{AssetId}";
+
     public AssetReferenceNode(int assetId, AssetType assetType)
     {
         AssetId = assetId;

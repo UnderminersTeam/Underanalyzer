@@ -1,11 +1,12 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// A struct declaration/instantiation within the AST.
 /// </summary>
-public class StructNode : IFragmentNode, IExpressionNode
+public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The body of the struct (typically a block with assignments).
@@ -17,6 +18,9 @@ public class StructNode : IFragmentNode, IExpressionNode
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
     public bool SemicolonAfter { get => false; }
+
+    public string ConditionalTypeName => "Struct";
+    public string ConditionalValue => "";
 
     public StructNode(BlockNode body, ASTFragmentContext fragmentContext)
     {
@@ -46,5 +50,14 @@ public class StructNode : IFragmentNode, IExpressionNode
         {
             Body.Print(printer);
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

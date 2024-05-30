@@ -33,6 +33,32 @@ public class ASTCleaner
     /// </summary>
     internal ASTFragmentContext TopFragmentContext { get; private set; }
 
+    /// <summary>
+    /// Helper to access the global macro resolver used for resolving macro types.
+    /// </summary>
+    internal IMacroTypeResolver GlobalMacroResolver => Context.GameContext.MacroTypeRegistry.Resolver;
+
+    /// <summary>
+    /// Helper to access an ID instance and object type union, for resolving macro types.
+    /// </summary>
+    internal IMacroType MacroInstanceIdOrObjectAsset
+    {
+        get
+        {
+            if (_macroInstanceIdOrObjectAsset is null)
+            {
+                if (!Context.GameContext.MacroTypeRegistry.TypeExists("Id.Instance") ||
+                    !Context.GameContext.MacroTypeRegistry.TypeExists("Asset.Object"))
+                {
+                    return null;
+                }
+                _macroInstanceIdOrObjectAsset = Context.GameContext.MacroTypeRegistry.FindTypeUnion(["Id.Instance", "Asset.Object"]);
+            }
+            return _macroInstanceIdOrObjectAsset;
+        }
+    }
+    private IMacroType _macroInstanceIdOrObjectAsset = null;
+
     public ASTCleaner(DecompileContext context)
     {
         Context = context;

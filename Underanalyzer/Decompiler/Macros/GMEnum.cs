@@ -43,6 +43,26 @@ public class GMEnum
     }
 
     /// <summary>
+    /// Makes a new enum, using an enum macro type.
+    /// </summary>
+    public GMEnum(EnumMacroType enumMacroType)
+    {
+        Name = enumMacroType.Name;
+
+        // Construct list and lookup dictionaries
+        _values = new(enumMacroType.ValueToValueName.Count);
+        _valueLookupByValue = new(enumMacroType.ValueToValueName.Count);
+        _valueLookupByName = new(enumMacroType.ValueToValueName.Count);
+        foreach ((long value, string valueName) in enumMacroType.ValueToValueName)
+        {
+            GMEnumValue newValue = new(valueName, value);
+            _values.Add(newValue);
+            _valueLookupByValue[value] = newValue;
+            _valueLookupByName[valueName] = newValue;
+        }
+    }
+
+    /// <summary>
     /// Makes a copy of an existing enum, so that new values can be added without affecting the original.
     /// </summary>
     public GMEnum(GMEnum existing)

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a function call in the AST.
 /// </summary>
-public class FunctionCallNode : IExpressionNode, IStatementNode
+public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// The function reference being called.
@@ -21,6 +22,9 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter { get => true; }
+
+    public string ConditionalTypeName => "FunctionCall";
+    public string ConditionalValue => Function.Name.Content;
 
     public FunctionCallNode(IGMFunction function, List<IExpressionNode> arguments)
     {
@@ -55,7 +59,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
                 return Arguments[0];
         }
 
-        return this;
+        return CleanupMacroTypes(cleaner);
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
@@ -65,6 +69,22 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
+
+        return CleanupMacroTypes(cleaner);
+    }
+
+    private FunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
+    {
+        if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, Function.Name.Content) is IMacroTypeFunctionArgs argsMacroType)
+        {
+            if (argsMacroType.Resolve(cleaner, this) is FunctionCallNode resolved)
+            {
+                // We found a match!
+                return resolved;
+            }
+        }
+
+        // No resolution found
         return this;
     }
 
@@ -81,5 +101,38 @@ public class FunctionCallNode : IExpressionNode, IStatementNode
             }
         }
         printer.Write(')');
+    }
+
+    public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
+    {
+        return cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, Function.Name.Content);
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+
+        // For choose(...), propagate type to all parameters
+        if (Function.Name.Content == VMConstants.ChooseFunction)
+        {
+            bool didAnything = false;
+
+            for (int i = 0; i < Arguments.Count; i++)
+            {
+                if (Arguments[i] is IMacroResolvableNode argResolvable &&
+                    argResolvable.ResolveMacroType(cleaner, type) is IExpressionNode argResolved)
+                {
+                    Arguments[i] = argResolved;
+                    didAnything = true;
+                }
+            }
+
+            return didAnything ? this : null;
+        }
+
+        return null;
     }
 }

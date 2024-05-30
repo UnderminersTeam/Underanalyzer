@@ -1,11 +1,12 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an instance type (<see cref="IGMInstruction.InstanceType"/>) in the AST.
 /// </summary>
-public class InstanceTypeNode : IExpressionNode
+public class InstanceTypeNode : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The instance type for this node.
@@ -15,6 +16,9 @@ public class InstanceTypeNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
+
+    public string ConditionalTypeName => "InstanceType";
+    public string ConditionalValue => InstanceType.ToString();
 
     public InstanceTypeNode(IGMInstruction.InstanceType instType)
     {
@@ -37,5 +41,14 @@ public class InstanceTypeNode : IExpressionNode
             IGMInstruction.InstanceType.Global => "global",
             _ => throw new DecompilerException($"Printing unknown instance type {InstanceType}")
         });
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

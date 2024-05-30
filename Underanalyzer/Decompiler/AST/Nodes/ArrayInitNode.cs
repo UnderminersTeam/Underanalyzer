@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an array literal in the AST.
 /// </summary>
-public class ArrayInitNode : IExpressionNode
+public class ArrayInitNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// List of elements in this array literal.
@@ -16,6 +17,9 @@ public class ArrayInitNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    public string ConditionalTypeName => "ArrayInit";
+    public string ConditionalValue => "";
 
     public ArrayInitNode(List<IExpressionNode> elements)
     {
@@ -43,5 +47,14 @@ public class ArrayInitNode : IExpressionNode
             }
         }
         printer.Write(']');
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeArrayInit typeArrayInit)
+        {
+            return typeArrayInit.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

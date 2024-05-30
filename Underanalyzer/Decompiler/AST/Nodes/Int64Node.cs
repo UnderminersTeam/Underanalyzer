@@ -5,13 +5,16 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a 64-bit signed integer constant in the AST.
 /// </summary>
-public class Int64Node : IConstantNode<long>
+public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditionalValueNode
 {
     public long Value { get; }
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int64;
+
+    public string ConditionalTypeName => "Integer";
+    public string ConditionalValue => Value.ToString();
 
     public Int64Node(long value)
     {
@@ -20,8 +23,6 @@ public class Int64Node : IConstantNode<long>
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
-        // TODO: macro/enum resolution
-
         // If we aren't detected as an enum yet, and we're within signed 32-bit range, we assume this is an unknown enum
         if (Value >= int.MinValue && Value <= int.MaxValue)
         {
@@ -51,9 +52,10 @@ public class Int64Node : IConstantNode<long>
                         enumValueName = gmEnumValue.Name;
                     }
                 }
-                
+
                 // Turn into reference to this enum
-                return new EnumValueNode(unknownEnumName, enumValueName);
+                cleaner.Context.UnknownEnumReferenceCount++;
+                return new EnumValueNode(unknownEnumName, enumValueName, Value, true);
             }
         }
 
@@ -63,5 +65,14 @@ public class Int64Node : IConstantNode<long>
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value);
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeInt64 type64)
+        {
+            return type64.Resolve(cleaner, this, Value);
+        }
+        return null;
     }
 }

@@ -26,6 +26,11 @@ public class WithLoopNode : IStatementNode
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Target = Target.Clean(cleaner);
+        if (Target is IMacroResolvableNode targetResolvable && cleaner.MacroInstanceIdOrObjectAsset is not null &&
+            targetResolvable.ResolveMacroType(cleaner, cleaner.MacroInstanceIdOrObjectAsset) is IExpressionNode targetResolved)
+        {
+            Target = targetResolved;
+        }
         ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
         return this;

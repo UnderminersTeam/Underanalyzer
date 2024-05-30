@@ -1,9 +1,11 @@
-﻿namespace Underanalyzer.Decompiler.AST;
+﻿using Underanalyzer.Decompiler.Macros;
+
+namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a nullish coalescing operator (??) in the AST.
 /// </summary>
-public class NullishCoalesceNode : IExpressionNode
+public class NullishCoalesceNode : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The left side of the operator.
@@ -18,6 +20,9 @@ public class NullishCoalesceNode : IExpressionNode
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    public string ConditionalTypeName => "NullishCoalesce";
+    public string ConditionalValue => ""; // TODO?
 
     public NullishCoalesceNode(IExpressionNode left, IExpressionNode right)
     {
@@ -47,5 +52,14 @@ public class NullishCoalesceNode : IExpressionNode
         {
             printer.Write(')');
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

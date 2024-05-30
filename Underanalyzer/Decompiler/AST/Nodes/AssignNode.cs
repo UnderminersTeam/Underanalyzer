@@ -1,4 +1,5 @@
-﻿using static Underanalyzer.IGMInstruction;
+﻿using Underanalyzer.Decompiler.Macros;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -70,6 +71,17 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
+        if (AssignKind == AssignType.Normal)
+        {
+            // Handle resolution of macro types based on variable
+            if (Variable is IMacroTypeNode variableTypeNode && Value is IMacroResolvableNode valueResolvable &&
+                variableTypeNode.GetExpressionMacroType(cleaner) is IMacroType variableMacroType &&
+                valueResolvable.ResolveMacroType(cleaner, variableMacroType) is IExpressionNode valueResolved)
+            {
+                Value = valueResolved;
+            }
+        }
+
         Variable = Variable.Clean(cleaner);
         Value = Value?.Clean(cleaner);
 

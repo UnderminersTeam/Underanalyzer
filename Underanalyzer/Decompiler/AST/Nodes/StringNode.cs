@@ -1,17 +1,21 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a string constant in the AST.
 /// </summary>
-public class StringNode : IConstantNode<IGMString>
+public class StringNode : IConstantNode<IGMString>, IConditionalValueNode
 {
     public IGMString Value { get; }
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.String;
+
+    public string ConditionalTypeName => "String";
+    public string ConditionalValue => Value.Content;
 
     public StringNode(IGMString value)
     {
@@ -107,5 +111,14 @@ public class StringNode : IConstantNode<IGMString>
             }
             printer.Write(quoteChar);
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

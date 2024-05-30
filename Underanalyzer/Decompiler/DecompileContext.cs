@@ -55,6 +55,7 @@ public class DecompileContext
     internal List<GMEnum> EnumDeclarations { get; set; } = new();
     internal Dictionary<string, GMEnum> NameToEnumDeclaration { get; set; } = new();
     internal GMEnum UnknownEnumDeclaration { get; set; } = null;
+    internal int UnknownEnumReferenceCount { get; set; } = 0;
 
     public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
     {

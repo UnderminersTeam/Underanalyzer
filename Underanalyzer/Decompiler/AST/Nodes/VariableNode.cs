@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Underanalyzer.Decompiler.Macros;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -7,7 +7,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a variable reference in the AST.
 /// </summary>
-public class VariableNode : IExpressionNode
+public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNode
 {
     /// <summary>
     /// The variable being referenced.
@@ -37,6 +37,9 @@ public class VariableNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    public string ConditionalTypeName => "Variable";
+    public string ConditionalValue => Variable.Name.Content;
 
     public VariableNode(IGMVariable variable, IGMInstruction.VariableType referenceType, bool regularPush = false)
     {
@@ -299,5 +302,19 @@ public class VariableNode : IExpressionNode
                 printer.Write(']');
             }
         }
+    }
+
+    public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
+    {
+        return cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, Variable.Name.Content);
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

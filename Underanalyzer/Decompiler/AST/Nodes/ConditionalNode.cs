@@ -1,11 +1,12 @@
 ﻿using System;
+using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a conditional expression in the AST.
 /// </summary>
-public class ConditionalNode : IExpressionNode
+public class ConditionalNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// The condition of the conditional expression.
@@ -25,6 +26,9 @@ public class ConditionalNode : IExpressionNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    public string ConditionalTypeName => "Conditional";
+    public string ConditionalValue => ""; // TODO?
 
     public ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr, IExpressionNode falseExpr)
     {
@@ -73,5 +77,30 @@ public class ConditionalNode : IExpressionNode
         {
             printer.Write(')');
         }
+    }
+
+    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+
+        bool didAnything = false;
+
+        if (True is IMacroResolvableNode trueResolvable && 
+            trueResolvable.ResolveMacroType(cleaner, type) is IExpressionNode trueResolved)
+        {
+            True = trueResolved;
+            didAnything = true;
+        }
+        if (False is IMacroResolvableNode falseResolvable &&
+            falseResolvable.ResolveMacroType(cleaner, type) is IExpressionNode falseResolved)
+        {
+            False = falseResolved;
+            didAnything = true;
+        }
+
+        return didAnything ? this : null;
     }
 }

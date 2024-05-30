@@ -1,4 +1,6 @@
-﻿namespace Underanalyzer.Decompiler.AST;
+﻿using Underanalyzer.Decompiler.Macros;
+
+namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a switch statement in the AST.
@@ -27,6 +29,20 @@ public class SwitchNode : IStatementNode
     {
         Expression = Expression.Clean(cleaner);
         Body.Clean(cleaner);
+
+        // Handle macro type resolution for cases
+        if (Expression is IMacroTypeNode exprTypeNode && exprTypeNode.GetExpressionMacroType(cleaner) is IMacroType exprMacroType)
+        {
+            foreach (IStatementNode statement in Body.Children)
+            {
+                if (statement is SwitchCaseNode caseNode && caseNode.Expression is IMacroResolvableNode exprResolvable &&
+                    exprResolvable.ResolveMacroType(cleaner, exprMacroType) is IExpressionNode exprResolved)
+                {
+                    caseNode.Expression = exprResolved;
+                }
+            }
+        }
+
         return this;
     }
 
