@@ -32,7 +32,7 @@ public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditional
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int64;
 
     public string ConditionalTypeName => "EnumValue";
-    public string ConditionalValue => IsUnknownEnum ? EnumName.ToString() : $"{EnumName}.{EnumValueName}";
+    public string ConditionalValue => IsUnknownEnum ? EnumValue.ToString() : $"{EnumName}.{EnumValueName}";
 
     public EnumValueNode(string enumName, string enumValueName, long enumValue, bool isUnknownEnum)
     {
