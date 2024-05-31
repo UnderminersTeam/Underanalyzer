@@ -48,7 +48,7 @@ internal class NameMacroTypeResolverConverter
         throw new JsonException();
     }
 
-    private void ReadMacroNameList(ref Utf8JsonReader reader, JsonSerializerOptions options, Action<string, IMacroType> define)
+    private static void ReadMacroNameList(ref Utf8JsonReader reader, JsonSerializerOptions options, Action<string, IMacroType> define)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
