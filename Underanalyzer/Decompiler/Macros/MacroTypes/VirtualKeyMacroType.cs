@@ -14,7 +14,6 @@ public class VirtualKeyMacroType : IMacroTypeInt32
         { 1, "vk_anykey" },
         { 8, "vk_backspace" },
         { 9, "vk_tab" },
-        { 13, "vk_return" },
         { 13, "vk_enter" },
         { 16, "vk_shift" },
         { 17, "vk_control" },
