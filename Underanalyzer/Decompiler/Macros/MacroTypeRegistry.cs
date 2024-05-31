@@ -72,6 +72,7 @@ public class MacroTypeRegistry
         RegisterType("Asset.ParticleSystem", new AssetMacroType(AssetType.ParticleSystem));
         RegisterType("Asset.RoomInstance", new AssetMacroType(AssetType.RoomInstance));
         RegisterType("Constant.Color", new ColorMacroType());
+        RegisterType("Constant.VirtualKey", new VirtualKeyMacroType());
     }
 
     public bool TypeExists(string name)
