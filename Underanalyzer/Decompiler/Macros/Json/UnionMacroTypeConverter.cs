@@ -29,6 +29,12 @@ internal class UnionMacroTypeConverter
         {
             if (reader.TokenType == JsonTokenType.EndArray)
             {
+                reader.Read();
+                if (reader.TokenType != JsonTokenType.EndObject)
+                {
+                    throw new JsonException();
+                }
+
                 return new UnionMacroType(types);
             }
 
