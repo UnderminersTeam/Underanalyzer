@@ -43,6 +43,11 @@ internal class MacroTypeRegistryConverter : JsonConverter<MacroTypeRegistry>
                     break;
                 case "GlobalNames":
                     reader.Read();
+                    NameMacroTypeResolverConverter.ReadContents(ref reader, options, Registry.Resolver.GlobalNames);
+                    break;
+                case "CodeEntryNames":
+                    reader.Read();
+                    ReadCodeEntryNames(ref reader, options);
                     break;
                 default:
                     throw new JsonException($"Unknown field {propertyName}");
@@ -175,6 +180,40 @@ internal class MacroTypeRegistryConverter : JsonConverter<MacroTypeRegistry>
 
             // Register macro type under name
             Registry.RegisterType(propertyName, macroType);
+        }
+
+        throw new JsonException();
+    }
+
+    private void ReadCodeEntryNames(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new JsonException();
+        }
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonTokenType.PropertyName)
+            {
+                throw new JsonException();
+            }
+            string propertyName = reader.GetString();
+            if (propertyName is null)
+            {
+                throw new JsonException();
+            }
+
+            // Read contents and register under code entry name
+            reader.Read();
+            NameMacroTypeResolver newResolver = new();
+            NameMacroTypeResolverConverter.ReadContents(ref reader, options, newResolver);
+            Registry.Resolver.DefineCodeEntry(propertyName, newResolver);
         }
 
         throw new JsonException();

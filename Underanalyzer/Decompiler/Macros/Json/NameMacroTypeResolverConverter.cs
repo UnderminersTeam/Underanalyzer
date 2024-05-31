@@ -4,16 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Underanalyzer.Decompiler.Macros.Json;
 
-internal class NameMacroTypeResolverConverter : JsonConverter<NameMacroTypeResolver>
+internal class NameMacroTypeResolverConverter
 {
-    public NameMacroTypeResolver Resolver { get; }
-
-    public NameMacroTypeResolverConverter(NameMacroTypeResolver existing)
-    {
-        Resolver = existing;
-    }
-
-    public override NameMacroTypeResolver Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public static void ReadContents(ref Utf8JsonReader reader, JsonSerializerOptions options, NameMacroTypeResolver existing)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
@@ -24,7 +17,7 @@ internal class NameMacroTypeResolverConverter : JsonConverter<NameMacroTypeResol
         {
             if (reader.TokenType == JsonTokenType.EndObject)
             {
-                return Resolver;
+                return;
             }
 
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -37,15 +30,15 @@ internal class NameMacroTypeResolverConverter : JsonConverter<NameMacroTypeResol
             {
                 case "Variables":
                     reader.Read();
-                    ReadMacroNameList(ref reader, options, Resolver.DefineVariableType);
+                    ReadMacroNameList(ref reader, options, existing.DefineVariableType);
                     break;
                 case "FunctionArguments":
                     reader.Read();
-                    ReadMacroNameList(ref reader, options, Resolver.DefineFunctionArgumentsType);
+                    ReadMacroNameList(ref reader, options, existing.DefineFunctionArgumentsType);
                     break;
                 case "FunctionReturn":
                     reader.Read();
-                    ReadMacroNameList(ref reader, options, Resolver.DefineFunctionReturnType);
+                    ReadMacroNameList(ref reader, options, existing.DefineFunctionReturnType);
                     break;
                 default:
                     throw new JsonException($"Unknown property name {propertyName}");
@@ -83,10 +76,5 @@ internal class NameMacroTypeResolverConverter : JsonConverter<NameMacroTypeResol
         }
 
         throw new JsonException();
-    }
-
-    public override void Write(Utf8JsonWriter writer, NameMacroTypeResolver value, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
     }
 }
