@@ -87,6 +87,9 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
                 {
                     // We found a script!
                     functionName = name;
+
+                    // Update first argument with this name, as well, as it won't get resolved otherwise
+                    Arguments[0] = new MacroValueNode(functionName);
                 }
             }
             else if (Arguments is [FunctionReferenceNode functionReference, ..])
