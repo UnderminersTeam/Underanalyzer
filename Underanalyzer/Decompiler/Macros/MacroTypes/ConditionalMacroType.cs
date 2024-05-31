@@ -13,6 +13,9 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
     /// </summary>
     public IMacroType InnerType { get; }
 
+    // We make this macro type required when we aren't trying to satisfy for any inner type
+    public bool Required { get => InnerType is null; }
+
     /// <summary>
     /// Base constructor for all conditional macro types; requires inner type.
     /// Inner type can be null, specifying that the node will be passed through when resolved.

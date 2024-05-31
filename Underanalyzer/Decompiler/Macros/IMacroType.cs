@@ -60,6 +60,11 @@ public interface IMacroTypeArrayInit : IMacroType
 public interface IMacroTypeConditional : IMacroType
 {
     /// <summary>
+    /// True if this macro type is required to be resolved in the context of a larger scope, such as function arguments.
+    /// </summary>
+    public bool Required { get; }
+
+    /// <summary>
     /// Resolves the macro type with the given AST array initialization, or null if there is no resolution.
     /// </summary>
     public IExpressionNode Resolve(ASTCleaner cleaner, IConditionalValueNode node);

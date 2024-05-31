@@ -10,9 +10,22 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
 {
     private List<IMacroType> Types { get; }
 
+    public bool Required { get; }
+
     public UnionMacroType(IEnumerable<IMacroType> types)
     {
         Types = new(types);
+
+        // Set this macro type as required if any sub-macro types are required
+        Required = false;
+        foreach (IMacroType type in types)
+        {
+            if (type is IMacroTypeConditional conditional && conditional.Required)
+            {
+                Required = true;
+                break;
+            }
+        }
     }
 
     public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
