@@ -25,20 +25,16 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
             return null;
         }
 
+        bool didAnything = false;
+
         List<IExpressionNode> resolved = new(Types.Count);
         for (int i = 0; i < call.Arguments.Count; i++)
         {
-            if (Types[i] is null)
+            if (Types[i] is null || call.Arguments[i] is not IMacroResolvableNode node)
             {
-                // Current type is not defined, so just use existing argument
+                // Current type is not defined, or current argument is not resolvable, so just use existing argument
                 resolved.Add(call.Arguments[i]);
                 continue;
-            }
-
-            if (call.Arguments[i] is not IMacroResolvableNode node)
-            {
-                // Current argument is not resolvable as a macro
-                return null;
             }
 
             if (node.ResolveMacroType(cleaner, Types[i]) is not IExpressionNode nodeResolved)
@@ -49,6 +45,12 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
 
             // Add to resolved arguments list
             resolved.Add(nodeResolved);
+            didAnything = true;
+        }
+
+        if (!didAnything)
+        {
+            return null;
         }
 
         // Assign resolved values to arguments
