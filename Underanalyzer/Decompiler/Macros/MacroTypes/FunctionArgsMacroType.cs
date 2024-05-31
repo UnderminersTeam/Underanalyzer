@@ -39,8 +39,15 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
 
             if (node.ResolveMacroType(cleaner, Types[i]) is not IExpressionNode nodeResolved)
             {
-                // Failed to resolve current argument's macro type
-                return null;
+                // Failed to resolve current argument's macro type.
+                // If the type is strictly a conditional node with no inner type, then we fail this call;
+                // otherwise, use existing argument.
+                if (Types[i] is ConditionalMacroType conditional && conditional.InnerType is null)
+                {
+                    return null;
+                }
+                resolved.Add(call.Arguments[i]);
+                continue;
             }
 
             // Add to resolved arguments list
