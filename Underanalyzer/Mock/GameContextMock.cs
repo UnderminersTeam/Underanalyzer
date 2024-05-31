@@ -12,10 +12,12 @@ public class GameContextMock : IGameContext
     public bool UsingFinallyBeforeThrow { get; set; } = false;
     public bool UsingTypedBooleans { get; set; } = true;
     public bool UsingAssetReferences { get; set; } = true;
+    public bool UsingRoomInstanceReferences { get; set; } = true;
     public IGlobalFunctions GlobalFunctions { get; } = new GlobalFunctions();
     public MacroTypeRegistry MacroTypeRegistry { get; set; } = new();
 
     public Dictionary<AssetType, Dictionary<int, string>> MockAssets { get; set; } = new();
+
     public void DefineMockAsset(int assetIndex, string assetName, AssetType assetType)
     {
         Dictionary<int, string> assets;

@@ -19,7 +19,10 @@ public class AssetMacroType : IMacroTypeInt32
         // Ensure we don't resolve this on newer GameMaker versions where this is unnecessary
         if (cleaner.Context.GameContext.UsingAssetReferences)
         {
-            return null;
+            if (cleaner.Context.GameContext.UsingRoomInstanceReferences || Type != AssetType.RoomInstance)
+            {
+                return null;
+            }
         }
 
         // Check for asset name with the given type

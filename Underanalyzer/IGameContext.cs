@@ -52,6 +52,12 @@ public interface IGameContext
     public bool UsingAssetReferences { get; }
 
     /// <summary>
+    /// True if the game is using the PushReference instruction to reference room instances in code; false otherwise.
+    /// This should be true for GameMaker 2024.2 and above.
+    /// </summary>
+    public bool UsingRoomInstanceReferences { get; }
+
+    /// <summary>
     /// True if the game uses bytecode 14 or lower; false otherwise.
     /// </summary>
     public bool Bytecode14OrLower { get; }

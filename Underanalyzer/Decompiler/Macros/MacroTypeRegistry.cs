@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
+using Underanalyzer.Decompiler.Macros.Json;
 
 namespace Underanalyzer.Decompiler.Macros;
 
@@ -19,6 +21,23 @@ public class MacroTypeRegistry
     {
         MacroTypes = new();
         Resolver = new();
+    }
+
+    /// <summary>
+    /// Deserializes a macro type registry from the given JSON, merging/appending it with the existing registry.
+    /// </summary>
+    public void DeserializeFromJson(ReadOnlySpan<char> json)
+    {
+        JsonSerializerOptions options = new()
+        {
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip
+        };
+        options.Converters.Add(new EnumMacroTypeConverter());
+        options.Converters.Add(new ConstantsMacroTypeConverter());
+        options.Converters.Add(new IMacroTypeConverter(this));
+        options.Converters.Add(new MacroTypeRegistryConverter(this));
+        JsonSerializer.Deserialize<MacroTypeRegistry>(json, options);
     }
 
     /// <summary>
@@ -51,6 +70,7 @@ public class MacroTypeRegistry
         RegisterType("Asset.Sequence", new AssetMacroType(AssetType.Sequence));
         RegisterType("Asset.AnimationCurve", new AssetMacroType(AssetType.AnimCurve));
         RegisterType("Asset.ParticleSystem", new AssetMacroType(AssetType.ParticleSystem));
+        RegisterType("Asset.RoomInstance", new AssetMacroType(AssetType.RoomInstance));
     }
 
     public bool TypeExists(string name)
