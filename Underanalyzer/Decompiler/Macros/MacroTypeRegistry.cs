@@ -71,6 +71,7 @@ public class MacroTypeRegistry
         RegisterType("Asset.AnimationCurve", new AssetMacroType(AssetType.AnimCurve));
         RegisterType("Asset.ParticleSystem", new AssetMacroType(AssetType.ParticleSystem));
         RegisterType("Asset.RoomInstance", new AssetMacroType(AssetType.RoomInstance));
+        RegisterType("Constant.Color", new ColorMacroType());
     }
 
     public bool TypeExists(string name)

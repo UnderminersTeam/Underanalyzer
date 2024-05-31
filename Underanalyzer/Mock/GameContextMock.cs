@@ -44,7 +44,7 @@ public class GameContextMock : IGameContext
     {
         return assetType switch
         {
-            AssetType.RoomInstance => $"inst_id_{assetIndex}",
+            AssetType.RoomInstance => assetIndex >= 100000 ? $"inst_id_{assetIndex}" : null,
             _ => GetMockAsset(assetIndex, assetType)
         };
     }

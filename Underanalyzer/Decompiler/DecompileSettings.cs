@@ -17,6 +17,12 @@ public interface IDecompileSettings
     public bool UseSemicolon { get; }
 
     /// <summary>
+    /// If true, color constants are written in "#RRGGBB" notation, rather than the normal BGR ordering.
+    /// Only applicable if "Constant.Color" is resolved as a macro type.
+    /// </summary>
+    public bool UseCSSColors { get; }
+
+    /// <summary>
     /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
@@ -60,6 +66,7 @@ public class DecompileSettings : IDecompileSettings
 {
     public string IndentString { get; set; } = "    ";
     public bool UseSemicolon { get; set; } = true;
+    public bool UseCSSColors { get; set; } = true;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;
