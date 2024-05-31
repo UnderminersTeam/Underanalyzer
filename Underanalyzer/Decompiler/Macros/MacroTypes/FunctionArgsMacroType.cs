@@ -20,29 +20,38 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
     /// </summary>
     public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode call)
     {
-        if (Types.Count != call.Arguments.Count)
+        int callArgumentsCount = call.Arguments.Count;
+        int callArgumentsStart = 0;
+        if (call.Function.Name.Content == VMConstants.ScriptExecuteFunction)
+        {
+            // Special case: arguments are shifted to the right by 1
+            callArgumentsCount -= 1;
+            callArgumentsStart = 1;
+        }
+
+        if (Types.Count != callArgumentsCount)
         {
             return null;
         }
 
         bool didAnything = false;
 
-        List<IExpressionNode> resolved = new(Types.Count);
-        for (int i = 0; i < call.Arguments.Count; i++)
+        List<IExpressionNode> resolved = new(callArgumentsCount);
+        for (int i = callArgumentsStart; i < (callArgumentsStart + callArgumentsCount); i++)
         {
-            if (Types[i] is null || call.Arguments[i] is not IMacroResolvableNode node)
+            if (Types[i - callArgumentsStart] is null || call.Arguments[i] is not IMacroResolvableNode node)
             {
                 // Current type is not defined, or current argument is not resolvable, so just use existing argument
                 resolved.Add(call.Arguments[i]);
                 continue;
             }
 
-            if (node.ResolveMacroType(cleaner, Types[i]) is not IExpressionNode nodeResolved)
+            if (node.ResolveMacroType(cleaner, Types[i - callArgumentsStart]) is not IExpressionNode nodeResolved)
             {
                 // Failed to resolve current argument's macro type.
                 // If the type is a conditional which is required in this scope, then fail this resolution;
                 // otherwise, use existing argument.
-                if (Types[i] is IMacroTypeConditional conditional && conditional.Required)
+                if (Types[i - callArgumentsStart] is IMacroTypeConditional conditional && conditional.Required)
                 {
                     return null;
                 }
@@ -61,9 +70,9 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
         }
 
         // Assign resolved values to arguments
-        for (int i = 0; i < resolved.Count; i++)
+        for (int i = 0; i < callArgumentsCount; i++)
         {
-            call.Arguments[i] = resolved[i];
+            call.Arguments[i + callArgumentsStart] = resolved[i];
         }
 
         return call;

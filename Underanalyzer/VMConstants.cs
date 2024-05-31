@@ -45,6 +45,7 @@ internal static class VMConstants
     // Function name used to set struct variables (used to de-optimize to be closer to source code)
     public const string StructGetFromHashFunction = "struct_get_from_hash";
 
-    // Just the normal choose function, used during macro resolution
+    // Special-case GML functions used during macro resolution
     public const string ChooseFunction = "choose";
+    public const string ScriptExecuteFunction = "script_execute";
 }
