@@ -539,6 +539,12 @@ internal class BlockSimulator
             args.Add(builder.ExpressionStack.Pop());
         }
 
+        // Prevent needless recursion on the variable's left side
+        if (function is VariableNode variable && variable.Left == instance)
+        {
+            instance = null;
+        }
+
         builder.ExpressionStack.Push(new VariableCallNode(function, instance, args));
     }
 

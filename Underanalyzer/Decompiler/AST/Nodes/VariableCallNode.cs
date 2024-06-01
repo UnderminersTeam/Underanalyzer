@@ -42,7 +42,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         Function = Function.Clean(cleaner);
-        Instance = Instance.Clean(cleaner);
+        Instance = Instance?.Clean(cleaner);
         for (int i = 0; i < Arguments.Count; i++)
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
@@ -54,7 +54,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         Function = Function.Clean(cleaner);
-        Instance = Instance.Clean(cleaner);
+        Instance = Instance?.Clean(cleaner);
         for (int i = 0; i < Arguments.Count; i++)
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
@@ -65,16 +65,19 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
 
     public void Print(ASTPrinter printer)
     {
-        if (Function is VariableNode variable && variable is { Left: InstanceTypeNode instType } && 
-            instType.InstanceType == IGMInstruction.InstanceType.Builtin)
+        if (Instance is not null)
         {
-            // We have a "builtin" type on our variable, so use what's on the stack instead.
-            // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
-            if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self ||
-                printer.LocalVariableNames.Contains(variable.Variable.Name.Content))
+            if (Function is VariableNode variable && variable is { Left: InstanceTypeNode instType } &&
+                instType.InstanceType == IGMInstruction.InstanceType.Builtin)
             {
-                Instance.Print(printer);
-                printer.Write('.');
+                // We have a "builtin" type on our variable, so use what's on the stack instead.
+                // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
+                if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self ||
+                    printer.LocalVariableNames.Contains(variable.Variable.Name.Content))
+                {
+                    Instance.Print(printer);
+                    printer.Write('.');
+                }
             }
         }
         Function.Print(printer);
