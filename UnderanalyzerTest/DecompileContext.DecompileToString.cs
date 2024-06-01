@@ -1593,4 +1593,45 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestConditionalNestedNullish2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.b
+            conv.v.b
+            bf [2]
+
+            :[1]
+            push.v self.c
+            b [6]
+
+            :[2]
+            push.v self.d
+            isnullish.e
+            bf [6]
+
+            :[3]
+            popz.v
+            push.v self.e
+            conv.v.b
+            bf [5]
+
+            :[4]
+            push.v self.f
+            b [6]
+
+            :[5]
+            push.v self.g
+
+            :[6]
+            pop.v.v self.a
+            """,
+            """
+            a = b ? c : (d ?? (e ? f : g));
+            """
+        );
+    }
 }

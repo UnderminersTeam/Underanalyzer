@@ -37,7 +37,8 @@ public class Nullish_FindNullish
         Assert.Equal([nulls[0]], blocks[2].Predecessors);
         Assert.Equal(blocks[1], nulls[0].IfNullish);
         Assert.Empty(blocks[1].Predecessors);
-        Assert.Empty(blocks[1].Successors);
+        Assert.Single(blocks[1].Successors);
+        Assert.IsType<EmptyNode>(blocks[1].Successors[0]);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.Equal(nulls[0], blocks[1].Parent);
@@ -132,7 +133,8 @@ public class Nullish_FindNullish
         Assert.Equal([nulls[0]], blocks[2].Predecessors);
         Assert.Equal(blocks[1], nulls[0].IfNullish);
         Assert.Empty(blocks[1].Predecessors);
-        Assert.Empty(blocks[1].Successors);
+        Assert.Single(blocks[1].Successors);
+        Assert.IsType<EmptyNode>(blocks[1].Successors[0]);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.Equal(nulls[0], blocks[1].Parent);
@@ -144,7 +146,8 @@ public class Nullish_FindNullish
         Assert.Equal([nulls[1]], blocks[4].Predecessors);
         Assert.Equal(blocks[3], nulls[1].IfNullish);
         Assert.Empty(blocks[3].Predecessors);
-        Assert.Empty(blocks[3].Successors);
+        Assert.Single(blocks[3].Successors);
+        Assert.IsType<EmptyNode>(blocks[3].Successors[0]);
         Assert.Equal([nulls[1]], blocks[2].Successors);
         Assert.True(blocks[2].Instructions is []);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
@@ -211,7 +214,8 @@ public class Nullish_FindNullish
         Assert.Equal([nulls[1]], blocks[3].Predecessors);
         Assert.Equal(blocks[2], nulls[1].IfNullish);
         Assert.Empty(blocks[2].Predecessors);
-        Assert.Empty(blocks[2].Successors);
+        Assert.Single(blocks[2].Successors);
+        Assert.IsType<EmptyNode>(blocks[2].Successors[0]);
         Assert.True(blocks[2].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Pop }]);
         Assert.Equal(nulls[1], blocks[2].Parent);

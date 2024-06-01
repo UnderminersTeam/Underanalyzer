@@ -34,6 +34,16 @@ public class NullishCoalesceNode : IExpressionNode, IConditionalValueNode
     {
         Left = Left.Clean(cleaner);
         Right = Right.Clean(cleaner);
+
+        if (Left is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        {
+            Left.Group = true;
+        }
+        if (Right is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        {
+            Right.Group = true;
+        }
+
         return this;
     }
 

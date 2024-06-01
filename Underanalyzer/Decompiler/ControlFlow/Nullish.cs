@@ -97,7 +97,21 @@ internal class Nullish : IControlFlowNode
                 // Disconnect sections of graph
                 IControlFlowNode.DisconnectPredecessor(ifNullishBlock, 0);
                 if (nullishKind == NullishType.Expression)
-                    IControlFlowNode.DisconnectPredecessor(afterBlock, afterBlock.Predecessors.Count - 1);
+                {
+                    EmptyNode emptyDest = new(afterBlock.StartAddress);
+                    for (int i = 0; i < afterBlock.Predecessors.Count; i++)
+                    {
+                        IControlFlowNode afterPred = afterBlock.Predecessors[i];
+                        if (afterPred.StartAddress >= block.EndAddress)
+                        {
+                            // Route all nodes going into after into a unique empty node
+                            IControlFlowNode.ReplaceConnections(afterPred.Successors, afterBlock, emptyDest);
+                            emptyDest.Predecessors.Add(afterPred);
+                            afterBlock.Predecessors.RemoveAt(i);
+                            i--;
+                        }
+                    }
+                }
                 IControlFlowNode.DisconnectSuccessor(block, 0);
                 if (endOfNullishBlock is not null)
                     IControlFlowNode.DisconnectSuccessor(endOfNullishBlock, 0);

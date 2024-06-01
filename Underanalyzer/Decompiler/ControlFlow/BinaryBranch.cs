@@ -114,6 +114,8 @@ internal class BinaryBranch : IControlFlowNode
     /// </summary>
     private static void CleanupAfterPredecessors(BinaryBranch bb, IControlFlowNode after)
     {
+        bool removedElseBranch = false;
+
         // All branches going into "after" from this branch should come from this branch *only*
         for (int j = after.Predecessors.Count - 1; j >= 0; j--)
         {
@@ -136,12 +138,19 @@ internal class BinaryBranch : IControlFlowNode
                         throw new DecompilerException("Expected branch to skip past else block");
                     }
                     b.Instructions.RemoveAt(b.Instructions.Count - 1);
+                    removedElseBranch = true;
                 }
 
                 // Get rid of this connection to "after" from this internal node.
                 curr.Successors.RemoveAll(a => a == after);
                 after.Predecessors.RemoveAt(j);
             }
+        }
+
+        // Sanity check
+        if (bb.Else is not null && !removedElseBranch)
+        {
+            throw new DecompilerException("Failed to remove else branch");
         }
     }
 
