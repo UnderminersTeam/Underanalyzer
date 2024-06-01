@@ -34,7 +34,7 @@ public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditional
                 if (cleaner.Context.UnknownEnumDeclaration is null)
                 {
                     // Create a new unknown enum declaration, populated with this enum value
-                    enumValueName = string.Format(cleaner.Context.Settings.UnknownEnumValuePattern, Value);
+                    enumValueName = string.Format(cleaner.Context.Settings.UnknownEnumValuePattern, Value.ToString().Replace("-", "m"));
                     cleaner.Context.UnknownEnumDeclaration = new GMEnum(unknownEnumName, [new(enumValueName, Value)]);
                     cleaner.DeclareEnum(cleaner.Context.UnknownEnumDeclaration);
                 }
@@ -43,7 +43,7 @@ public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditional
                     // If the enum doesn't already contain this value, add this new one
                     if (cleaner.Context.UnknownEnumDeclaration.FindValue(Value) is not GMEnumValue gmEnumValue)
                     {
-                        enumValueName = string.Format(cleaner.Context.Settings.UnknownEnumValuePattern, Value);
+                        enumValueName = string.Format(cleaner.Context.Settings.UnknownEnumValuePattern, Value.ToString().Replace("-", "m"));
                         cleaner.Context.UnknownEnumDeclaration.AddValue(enumValueName, Value);
                     }
                     else
