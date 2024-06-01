@@ -54,9 +54,10 @@ internal class Nullish : IControlFlowNode
 
         List<Nullish> res = new();
 
-        foreach (var block in blocks)
+        for (int j = blocks.Count - 1; j >= 0; j--)
         {
             // Search for pattern
+            Block block = blocks[j];
             if (block.Instructions is
                 [..,
                 { Kind: IGMInstruction.Opcode.Extended, ExtKind: IGMInstruction.ExtendedOpcode.IsNullishValue },

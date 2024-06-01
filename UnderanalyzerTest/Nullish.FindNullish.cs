@@ -125,33 +125,36 @@ public class Nullish_FindNullish
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Nullish> nulls = Nullish.FindNullish(ctx);
 
+        Nullish firstNull = nulls[1];
+        Nullish secondNull = nulls[0];
+
         Assert.Equal(2, nulls.Count);
-        Assert.Equal(Nullish.NullishType.Expression, nulls[0].NullishKind);
-        Assert.Equal([blocks[0]], nulls[0].Predecessors);
-        Assert.Equal([blocks[2]], nulls[0].Successors);
-        Assert.Equal([nulls[0]], blocks[0].Successors);
-        Assert.Equal([nulls[0]], blocks[2].Predecessors);
-        Assert.Equal(blocks[1], nulls[0].IfNullish);
+        Assert.Equal(Nullish.NullishType.Expression, firstNull.NullishKind);
+        Assert.Equal([blocks[0]], firstNull.Predecessors);
+        Assert.Equal([blocks[2]], firstNull.Successors);
+        Assert.Equal([firstNull], blocks[0].Successors);
+        Assert.Equal([firstNull], blocks[2].Predecessors);
+        Assert.Equal(blocks[1], firstNull.IfNullish);
         Assert.Empty(blocks[1].Predecessors);
         Assert.Single(blocks[1].Successors);
         Assert.IsType<EmptyNode>(blocks[1].Successors[0]);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
-        Assert.Equal(nulls[0], blocks[1].Parent);
+        Assert.Equal(firstNull, blocks[1].Parent);
 
-        Assert.Equal(Nullish.NullishType.Expression, nulls[1].NullishKind);
-        Assert.Equal([blocks[2]], nulls[1].Predecessors);
-        Assert.Equal([blocks[4]], nulls[1].Successors);
-        Assert.Equal([nulls[1]], blocks[2].Successors);
-        Assert.Equal([nulls[1]], blocks[4].Predecessors);
-        Assert.Equal(blocks[3], nulls[1].IfNullish);
+        Assert.Equal(Nullish.NullishType.Expression, secondNull.NullishKind);
+        Assert.Equal([blocks[2]], secondNull.Predecessors);
+        Assert.Equal([blocks[4]], secondNull.Successors);
+        Assert.Equal([secondNull], blocks[2].Successors);
+        Assert.Equal([secondNull], blocks[4].Predecessors);
+        Assert.Equal(blocks[3], secondNull.IfNullish);
         Assert.Empty(blocks[3].Predecessors);
         Assert.Single(blocks[3].Successors);
         Assert.IsType<EmptyNode>(blocks[3].Successors[0]);
-        Assert.Equal([nulls[1]], blocks[2].Successors);
+        Assert.Equal([secondNull], blocks[2].Successors);
         Assert.True(blocks[2].Instructions is []);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
-        Assert.Equal(nulls[1], blocks[3].Parent);
+        Assert.Equal(secondNull, blocks[3].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -193,32 +196,35 @@ public class Nullish_FindNullish
         List<Fragment> fragments = Fragment.FindFragments(ctx);
         List<Nullish> nulls = Nullish.FindNullish(ctx);
 
+        Nullish firstNull = nulls[1];
+        Nullish secondNull = nulls[0];
+
         Assert.Equal(2, nulls.Count);
-        Assert.Equal(Nullish.NullishType.Assignment, nulls[0].NullishKind);
-        Assert.Equal([blocks[0]], nulls[0].Predecessors);
-        Assert.Equal([blocks[4]], nulls[0].Successors);
-        Assert.Equal([nulls[0]], blocks[0].Successors);
-        Assert.Equal([nulls[0]], blocks[4].Predecessors);
-        Assert.Equal(blocks[1], nulls[0].IfNullish);
+        Assert.Equal(Nullish.NullishType.Assignment, firstNull.NullishKind);
+        Assert.Equal([blocks[0]], firstNull.Predecessors);
+        Assert.Equal([blocks[4]], firstNull.Successors);
+        Assert.Equal([firstNull], blocks[0].Successors);
+        Assert.Equal([firstNull], blocks[4].Predecessors);
+        Assert.Equal(blocks[1], firstNull.IfNullish);
         Assert.Empty(blocks[1].Predecessors);
         Assert.Empty(blocks[3].Successors);
         Assert.True(blocks[0].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[1].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[4].Instructions is []);
-        Assert.Equal(nulls[0], blocks[1].Parent);
+        Assert.Equal(firstNull, blocks[1].Parent);
 
-        Assert.Equal(Nullish.NullishType.Expression, nulls[1].NullishKind);
-        Assert.Equal([blocks[1]], nulls[1].Predecessors);
-        Assert.Equal([blocks[3]], nulls[1].Successors);
-        Assert.Equal([nulls[1]], blocks[1].Successors);
-        Assert.Equal([nulls[1]], blocks[3].Predecessors);
-        Assert.Equal(blocks[2], nulls[1].IfNullish);
+        Assert.Equal(Nullish.NullishType.Expression, secondNull.NullishKind);
+        Assert.Equal([blocks[1]], secondNull.Predecessors);
+        Assert.Equal([blocks[3]], secondNull.Successors);
+        Assert.Equal([secondNull], blocks[1].Successors);
+        Assert.Equal([secondNull], blocks[3].Predecessors);
+        Assert.Equal(blocks[2], secondNull.IfNullish);
         Assert.Empty(blocks[2].Predecessors);
         Assert.Single(blocks[2].Successors);
         Assert.IsType<EmptyNode>(blocks[2].Successors[0]);
         Assert.True(blocks[2].Instructions is [{ Kind: IGMInstruction.Opcode.Push }]);
         Assert.True(blocks[3].Instructions is [{ Kind: IGMInstruction.Opcode.Pop }]);
-        Assert.Equal(nulls[1], blocks[2].Parent);
+        Assert.Equal(secondNull, blocks[2].Parent);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
