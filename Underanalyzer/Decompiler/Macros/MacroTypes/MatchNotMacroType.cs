@@ -29,6 +29,10 @@ public class MatchNotMacroType : ConditionalMacroType
         {
             return true;
         }
+        if (ConditionalTypeName is null)
+        {
+            return false;
+        }
         return node.ConditionalTypeName != ConditionalTypeName;
     }
 }
