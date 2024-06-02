@@ -605,12 +605,12 @@ public interface IGMInstruction
         Instance = 0xE0,
 
         /// <summary>
-        /// Used in tandem with multi-dimensional array push operations (<c>pushaf</c> extended opcode).
+        /// Used in tandem with multi-dimensional array push operations (<see cref="ExtendedOpcode.PushArrayFinal"/> extended opcode).
         /// </summary>
         MultiPush = 0x10,
 
         /// <summary>
-        /// Used in tandem with multi-dimensional array push and pop operations (<c>pushaf</c>/<c>popaf</c> extended opcodes).
+        /// Used in tandem with multi-dimensional array push and pop operations (<see cref="ExtendedOpcode.PushArrayFinal"/>/<see cref="ExtendedOpcode.PopArrayFinal"/> extended opcodes).
         /// </summary>
         MultiPushPop = 0x90
     }
