@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+using System;
 using System.Collections.Generic;
 
 namespace Underanalyzer;
@@ -34,7 +40,7 @@ public interface IGMCode
     public int StartOffset { get; }
 
     /// <summary>
-    /// Parent code entry, if this is a sub-function entry. Otherwise, if a root code entry, this is null.
+    /// Parent code entry, if this is a sub-function entry. Otherwise, if a root code entry, this is <see langword="null"/>.
     /// </summary>
     public IGMCode Parent { get; }
 
@@ -44,17 +50,17 @@ public interface IGMCode
     public IGMCode GetChild(int index);
 
     /// <summary>
-    /// Returns the number of children of this code entry. If this is a sub-function entry, this is 0.
+    /// Returns the number of children of this code entry. If this is a sub-function entry, this is <c>0</c>.
     /// </summary>
     public int ChildCount { get; }
 
     /// <summary>
-    /// The number of arguments this code entry takes in. Expected to be 0 for root entries.
+    /// The number of arguments this code entry takes in. Expected to be <c>0</c> for root entries.
     /// </summary>
     public int ArgumentCount { get; }
 
     /// <summary>
-    /// The number of local variables this code entry uses. Root entries tend to include an additional 1 for "arguments".
+    /// The number of local variables this code entry uses. Root entries tend to include an additional 1 for <c>arguments</c>.
     /// </summary>
     public int LocalCount { get; }
 }
@@ -74,6 +80,10 @@ public interface IGMInstruction
         /// </summary>
         public string Mnemonic { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Opcode"/> class.
+        /// </summary>
+        /// <param name="mnemonic">A unique shorthand identifier.</param>
         public OpcodeInfo(string mnemonic)
         {
             Mnemonic = mnemonic;
@@ -91,10 +101,15 @@ public interface IGMInstruction
         public char Mnemonic { get; }
 
         /// <summary>
-        /// Size in bytes on the VM stack.
+        /// Size in bytes taken on the VM stack.
         /// </summary>
         public int Size { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataTypeInfo"/> class.
+        /// </summary>
+        /// <param name="mnemonic">A unique character to represent this type.</param>
+        /// <param name="size">How many bytes the type takes on the VM stack.</param>
         public DataTypeInfo(char mnemonic, int size)
         {
             Mnemonic = mnemonic;
@@ -108,7 +123,7 @@ public interface IGMInstruction
     public enum Opcode : byte
     {
         /// <summary>
-        /// Converts between one type of value on the stack to another.
+        /// Converts the top of the stack from one type to another.
         /// Mnemonic: "conv"
         /// </summary>
         [OpcodeInfo("conv")]
@@ -125,13 +140,15 @@ public interface IGMInstruction
         /// Pops two values from the stack, divides them, and pushes the result.
         /// Mnemonic: "div"
         /// </summary>
+        /// <remarks>The second popped value is divided by the first popped value.</remarks>
         [OpcodeInfo("div")]
         Divide = 0x09,
 
         /// <summary>
-        /// Pops two values from the stack, performs a GML "div" operation (remainder), and pushes the result.
+        /// Pops two values from the stack, performs a GML "div" operation (division with remainder), and pushes the result.
         /// Mnemonic: "rem"
         /// </summary>
+        /// <remarks>The second popped value is divided (with remainder) by the first popped value.</remarks>
         [OpcodeInfo("rem")]
         GMLDivRemainder = 0x0A,
 
@@ -139,6 +156,7 @@ public interface IGMInstruction
         /// Pops two values from the stack, performs a GML "mod"/% operation, and pushes the result.
         /// Mnemonic: "mod"
         /// </summary>
+        /// <remarks>The second popped value is modulo'd against the first popped value.</remarks>
         [OpcodeInfo("mod")]
         GMLModulo = 0x0B,
 
@@ -153,6 +171,7 @@ public interface IGMInstruction
         /// Pops two values from the stack, subtracts them, and pushes the result.
         /// Mnemonic: "sub"
         /// </summary>
+        /// <remarks>The second popped value is subtracted by the first popped value.</remarks>
         [OpcodeInfo("sub")]
         Subtract = 0x0D,
 
@@ -195,16 +214,18 @@ public interface IGMInstruction
         Not = 0x12,
 
         /// <summary>
-        /// Pops two values from the stack, performs a bitwise left shift operation (<<), and pushes the result.
+        /// Pops two values from the stack, performs a bitwise left shift operation ( <c>&lt;&lt;</c> ), and pushes the result.
         /// Mnemonic: "shl"
         /// </summary>
+        /// <remarks>The second popped value is shifted left by the first popped value.</remarks>
         [OpcodeInfo("shl")]
         ShiftLeft = 0x13,
 
         /// <summary>
-        /// Pops two values from the stack, performs a bitwise right shift operation (>>), and pushes the result.
+        /// Pops two values from the stack, performs a bitwise right shift operation ( <c>&gt;&gt;</c> ), and pushes the result.
         /// Mnemonic: "shr"
         /// </summary>
+        /// <remarks>The second popped value is shifted right by the first popped value.</remarks>
         [OpcodeInfo("shr")]
         ShiftRight = 0x14,
 
@@ -260,14 +281,14 @@ public interface IGMInstruction
         Branch = 0xB6,
 
         /// <summary>
-        /// Pops a boolean/int32 value from the stack. If true/nonzero, branches to another instruction in the code entry.
+        /// Pops a boolean/int32 value from the stack. If <see langword="true"/>/nonzero, branches to another instruction in the code entry.
         /// Mnemonic: "bt"
         /// </summary>
         [OpcodeInfo("bt")]
         BranchTrue = 0xB7,
 
         /// <summary>
-        /// Pops a boolean/int32 value from the stack. If false/zero, branches to another instruction in the code entry.
+        /// Pops a boolean/int32 value from the stack. If <see langword="false"/>/zero, branches to another instruction in the code entry.
         /// Mnemonic: "bf"
         /// </summary>
         [OpcodeInfo("bf")]
@@ -445,12 +466,12 @@ public interface IGMInstruction
     /// </summary>
     public enum ComparisonType : byte
     {
-        Lesser = 1,
-        LesserEqual = 2,
-        Equal = 3,
-        NotEqual = 4,
-        GreaterEqual = 5,
-        Greater = 6
+        LesserThan = 1,
+        LesserEqualThan = 2,
+        EqualTo = 3,
+        NotEqualTo = 4,
+        GreaterEqualThan = 5,
+        GreaterThan = 6
     }
 
     /// <summary>
@@ -483,7 +504,7 @@ public interface IGMInstruction
         Boolean = 4,
 
         /// <summary>
-        /// Dynamic type representing any GML value. Externally known as a structure called 'RValue'.
+        /// Dynamic type representing any GML value. Externally known as a structure called <c>RValue</c>RValue.
         /// 128 bits in size, or 16 bytes.
         /// </summary>
         [DataTypeInfo('v', 16)]
@@ -492,7 +513,7 @@ public interface IGMInstruction
         /// <summary>
         /// String, represented as a 32-bit ID.
         /// </summary>
-        [DataTypeInfo('s', 4 /* todo: unsure on this for the VM stack */)]
+        [DataTypeInfo('s', 4 /* TODO: unsure on this for the VM stack */)]
         String = 6,
 
         /// <summary>
@@ -504,17 +525,17 @@ public interface IGMInstruction
 
     /// <summary>
     /// Represents the special types of instance IDs used in VM bytecode, as well as in GML overall.
-    /// Values greater than or equal to 0 can also be object asset IDs, depending on version.
+    /// Values greater than or equal to 0 can also be object asset IDs, depending on the version.
     /// </summary>
     public enum InstanceType : short
     {
         /// <summary>
-        /// Represents the current "self" instance.
+        /// Represents the current <c>self</c>self instance.
         /// </summary>
         Self = -1,
 
         /// <summary>
-        /// Represents the "other" context, which has multiple definitions based on location.
+        /// Represents the <c>other</c>other context, which has multiple definitions based on the location used.
         /// </summary>
         Other = -2,
 
@@ -551,6 +572,7 @@ public interface IGMInstruction
         /// <summary>
         /// Used for function argument variables in later versions of GML.
         /// </summary>
+        // TODO: which later versions?
         Argument = -15,
 
         /// <summary>
@@ -567,7 +589,7 @@ public interface IGMInstruction
         /// <summary>
         /// Used for normal single-dimension array variables.
         /// </summary>
-        Array,
+        Array = 0,
 
         /// <summary>
         /// Used when referencing a variable on another variable, e.g. a chain reference.
@@ -585,12 +607,12 @@ public interface IGMInstruction
         Instance = 0xE0,
 
         /// <summary>
-        /// Used in tandem with multi-dimensional array push operations ("pushaf" extended opcode).
+        /// Used in tandem with multi-dimensional array push operations (<c>pushaf</c> extended opcode).
         /// </summary>
         MultiPush = 0x10,
 
         /// <summary>
-        /// Used in tandem with multi-dimensional array push and pop operations ("pushaf"/"popaf" extended opcodes).
+        /// Used in tandem with multi-dimensional array push and pop operations (<c>pushaf</c>/<c>popaf</c> extended opcodes).
         /// </summary>
         MultiPushPop = 0x90
     }
@@ -608,11 +630,13 @@ public interface IGMInstruction
     /// <summary>
     /// The extended opcode of this instruction, if <see cref="Kind"/> is <see cref="Opcode.Extended"/>.
     /// </summary>
+    // TODO: should extended opcode have some default value akin to nil?
     public ExtendedOpcode ExtKind { get; }
 
     /// <summary>
     /// For comparison instructions, represents the comparison kind.
     /// </summary>
+    // TODO: should this have a default nil value if this is not a comparison instruction?
     public ComparisonType ComparisonKind { get; }
 
     /// <summary>
@@ -628,21 +652,25 @@ public interface IGMInstruction
     /// <summary>
     /// For instructions that have an instance type, represents the kind of instance or object ID.
     /// </summary>
+    // TODO: see comment above
     public InstanceType InstType { get; }
 
     /// <summary>
     /// For instructions that reference a variable, represents the variable being referenced.
     /// </summary>
+    // TODO: see comment above
     public IGMVariable Variable { get; }
 
     /// <summary>
     /// For instructions that reference a function, represents the function being referenced.
     /// </summary>
+    /// // TODO: see comment above
     public IGMFunction Function { get; }
 
     /// <summary>
     /// For instructions that reference a variable or function, this represents the variable type.
     /// </summary>
+    /// // TODO: see comment above
     public VariableType ReferenceVarType { get; }
 
     /// <summary>
@@ -681,7 +709,7 @@ public interface IGMInstruction
     public int BranchOffset { get; }
 
     /// <summary>
-    /// For "popenv" instructions, represents whether the flag is set to exit the "with" loop early.
+    /// For <see cref="Opcode.PopWithContext"/> instructions, represents whether the flag is set to exit the <c>with</c> loop early.
     /// </summary>
     public bool PopWithContextExit { get; }
 
@@ -698,12 +726,12 @@ public interface IGMInstruction
     public byte DuplicationSize2 { get; }
 
     /// <summary>
-    /// Returns the number of arguments encoded in this instruction, for Call and CallVariable instructions.
+    /// Returns the number of arguments encoded in this instruction, for <see cref="Opcode.Call"/> and <see cref="Opcode.CallVariable"/> instructions.
     /// </summary>
     public int ArgumentCount { get; }
 
     /// <summary>
-    /// For pop.e.v instructions, this should return either 5 or 6, depending on the "pop swap" size.
+    /// For <c>pop.e.v</c> instructions, this should return either 5 or 6, depending on the "pop swap" size.
     /// </summary>
     public int PopSwapSize { get; }
 
@@ -728,13 +756,17 @@ public interface IGMInstruction
             return 8;
         switch (instr.Kind)
         {
-            case Opcode.Push or Opcode.PushLocal or Opcode.PushGlobal or
-                 Opcode.PushBuiltin or Opcode.PushImmediate:
-                if (instr.Type1 == DataType.Double || instr.Type1 == DataType.Int64)
+            case Opcode.Push or 
+                 Opcode.PushLocal or 
+                 Opcode.PushGlobal or
+                 Opcode.PushBuiltin or 
+                 Opcode.PushImmediate:
+                if (instr.Type1 is (DataType.Double or DataType.Int64))
                     return 12;
                 if (instr.Type1 != DataType.Int16)
                     return 8;
                 break;
+            
             case Opcode.Extended:
                 if (instr.Type1 == DataType.Int32)
                     return 8;
@@ -761,7 +793,7 @@ public interface IGMVariable
 
     /// <summary>
     /// The ID of the variable in the game's data file.
-    /// This can sometimes be -6, representing the instance type of a built-in variable.
+    /// This can sometimes be -6, representing the instance type, of a built-in variable.
     /// </summary>
     public int VariableID { get; }
 }
