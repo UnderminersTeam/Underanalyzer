@@ -14,7 +14,7 @@ internal class MatchNotMacroTypeConverter
         {
             if (reader.TokenType == JsonTokenType.EndObject)
             {
-                if (conditionalValue is null || conditionalType is null)
+                if (conditionalValue is null && conditionalType is null)
                 {
                     throw new JsonException();
                 }
