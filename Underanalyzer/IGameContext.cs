@@ -1,4 +1,10 @@
-﻿using Underanalyzer.Decompiler;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer;
@@ -30,41 +36,41 @@ public enum AssetType
 public interface IGameContext
 {
     /// <summary>
-    /// True if this game is using GMS2 or above; false otherwise.
+    /// <see langword="true"/> if this game is using GMS2 or above; <see langword="false"/> otherwise.
     /// </summary>
     public bool UsingGMS2OrLater { get; }
 
     /// <summary>
-    /// True if this game is using GMLv2 features (e.g., GameMaker Studio 2.3 and above); false otherwise.
+    /// <see langword="true"/> if this game is using GMLv2 features (e.g., GameMaker Studio 2.3 and above); <see langword="false"/> otherwise.
     /// </summary>
     public bool UsingGMLv2 { get; }
 
     /// <summary>
-    /// True if the game is using typed booleans in code; false otherwise.
-    /// This should be true for GMS 2.3.7 and above.
+    /// <see langword="true"/> if the game is using typed booleans in code; <see langword="false"/> otherwise.
+    /// This should be <see langword="true"/> for GMS 2.3.7 and above.
     /// </summary>
     public bool UsingTypedBooleans { get; }
 
     /// <summary>
-    /// True if the game is using the PushReference instruction to use asset references in code; false otherwise.
-    /// This should be true for GameMaker 2023.8 and above.
+    /// <see langword="true"/> if the game is using the <see cref="IGMInstruction.ExtendedOpcode.PushReference"/> instruction to use asset references in code; <see langword="false"/> otherwise.
+    /// This should be <see langword="true"/> for GameMaker 2023.8 and above.
     /// </summary>
     public bool UsingAssetReferences { get; }
 
     /// <summary>
-    /// True if the game is using the PushReference instruction to reference room instances in code; false otherwise.
-    /// This should be true for GameMaker 2024.2 and above.
+    /// <see langword="true"/> if the game is using the <see cref="IGMInstruction.ExtendedOpcode.PushReference"/> instruction to reference room instances in code; <see langword="false"/> otherwise.
+    /// This should be <see langword="true"/> for GameMaker 2024.2 and above.
     /// </summary>
     public bool UsingRoomInstanceReferences { get; }
 
     /// <summary>
-    /// True if the game uses bytecode 14 or lower; false otherwise.
+    /// <see langword="true"/> if the game uses bytecode 14 or lower; <see langword="true"/> otherwise.
     /// </summary>
     public bool Bytecode14OrLower { get; }
 
     /// <summary>
-    /// True if this game uses the old behavior of "throw" statements with finally blocks; false otherwise.
-    /// As of writing, this is true before GameMaker version 2024.6, and false otherwise.
+    /// <see langword="true"/> if this game uses the old behavior of "throw" statements with finally blocks; <see langword="false"/> otherwise.
+    /// As of writing, this is <see langword="true"/> before GameMaker version 2024.6, and <see langword="false"/> otherwise.
     /// </summary>
     public bool UsingFinallyBeforeThrow { get; }
 
@@ -83,7 +89,7 @@ public interface IGameContext
     public MacroTypeRegistry MacroTypeRegistry { get; }
 
     /// <summary>
-    /// Returns the string name of an asset, or null if no such asset exists.
+    /// Returns the string name of an asset, or <see langword="null"/> if no such asset exists.
     /// </summary>
     public string GetAssetName(int assetIndex, AssetType assetType);
 }

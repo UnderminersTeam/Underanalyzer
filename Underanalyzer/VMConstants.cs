@@ -1,11 +1,19 @@
-﻿namespace Underanalyzer;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+namespace Underanalyzer;
 
 /// <summary>
 /// Contains constant values used by the GameMaker VM.
 /// </summary>
 internal static class VMConstants
 {
-    // Function names used for try..catch..finally statements
+    // TODO: these are public, give them summary tags or private them.
+    
+    // Function names used for try...catch...finally statements
     public const string TryHookFunction = "@@try_hook@@";
     public const string TryUnhookFunction = "@@try_unhook@@";
     public const string FinishCatchFunction = "@@finish_catch@@";
@@ -16,7 +24,7 @@ internal static class VMConstants
     public const string NullObjectFunction = "@@NullObject@@";
     public const string NewObjectFunction = "@@NewGMLObject@@";
 
-    // Function name used to copy static information from an inherited constructor functioon in GML
+    // Function name used to copy static information from an inherited constructor function in GML
     public const string CopyStaticFunction = "@@CopyStatic@@";
 
     // Instance type helpers used in GMLv2

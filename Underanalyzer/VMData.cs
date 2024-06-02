@@ -5,7 +5,6 @@
 */
 
 using System;
-using System.Collections.Generic;
 
 namespace Underanalyzer;
 
@@ -504,7 +503,7 @@ public interface IGMInstruction
         Boolean = 4,
 
         /// <summary>
-        /// Dynamic type representing any GML value. Externally known as a structure called <c>RValue</c>RValue.
+        /// Dynamic type representing any GML value. Externally known as a structure called <c>RValue</c>.
         /// 128 bits in size, or 16 bytes.
         /// </summary>
         [DataTypeInfo('v', 16)]
@@ -530,12 +529,12 @@ public interface IGMInstruction
     public enum InstanceType : short
     {
         /// <summary>
-        /// Represents the current <c>self</c>self instance.
+        /// Represents the current <c>self</c> instance.
         /// </summary>
         Self = -1,
 
         /// <summary>
-        /// Represents the <c>other</c>other context, which has multiple definitions based on the location used.
+        /// Represents the <c>other</c> context, which has multiple definitions based on the location used.
         /// </summary>
         Other = -2,
 
@@ -630,13 +629,11 @@ public interface IGMInstruction
     /// <summary>
     /// The extended opcode of this instruction, if <see cref="Kind"/> is <see cref="Opcode.Extended"/>.
     /// </summary>
-    // TODO: should extended opcode have some default value akin to nil?
     public ExtendedOpcode ExtKind { get; }
 
     /// <summary>
     /// For comparison instructions, represents the comparison kind.
     /// </summary>
-    // TODO: should this have a default nil value if this is not a comparison instruction?
     public ComparisonType ComparisonKind { get; }
 
     /// <summary>
@@ -652,25 +649,21 @@ public interface IGMInstruction
     /// <summary>
     /// For instructions that have an instance type, represents the kind of instance or object ID.
     /// </summary>
-    // TODO: see comment above
     public InstanceType InstType { get; }
 
     /// <summary>
     /// For instructions that reference a variable, represents the variable being referenced.
     /// </summary>
-    // TODO: see comment above
     public IGMVariable Variable { get; }
 
     /// <summary>
     /// For instructions that reference a function, represents the function being referenced.
     /// </summary>
-    /// // TODO: see comment above
     public IGMFunction Function { get; }
 
     /// <summary>
     /// For instructions that reference a variable or function, this represents the variable type.
     /// </summary>
-    /// // TODO: see comment above
     public VariableType ReferenceVarType { get; }
 
     /// <summary>
@@ -793,7 +786,7 @@ public interface IGMVariable
 
     /// <summary>
     /// The ID of the variable in the game's data file.
-    /// This can sometimes be -6, representing the instance type, of a built-in variable.
+    /// This can sometimes be -6, representing the instance type of a built-in variable.
     /// </summary>
     public int VariableID { get; }
 }
