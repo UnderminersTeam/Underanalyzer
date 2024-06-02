@@ -569,9 +569,8 @@ public interface IGMInstruction
         StackTop = -9,
 
         /// <summary>
-        /// Used for function argument variables in later versions of GML.
+        /// Used for function argument variables in GMLv2 (GMS 2.3).
         /// </summary>
-        // TODO: which later versions?
         Argument = -15,
 
         /// <summary>
