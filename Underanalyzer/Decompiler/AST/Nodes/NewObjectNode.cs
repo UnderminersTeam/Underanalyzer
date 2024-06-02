@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Underanalyzer.Decompiler.Macros;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -7,7 +6,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents the "new" keyword being used to instantiate an object in the AST.
 /// </summary>
-public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueNode
+public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function (constructor) being used.
@@ -23,6 +22,7 @@ public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueN
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter { get => true; }
+    public string FunctionName { get => (Function is FunctionReferenceNode functionRef) ? functionRef.Function.Name.Content : null; }
 
     public string ConditionalTypeName => "NewObject";
     public string ConditionalValue => ""; // TODO?
@@ -40,6 +40,16 @@ public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueN
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
+
+        if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, FunctionName) is IMacroTypeFunctionArgs argsMacroType)
+        {
+            if (argsMacroType.Resolve(cleaner, this) is IFunctionCallNode resolved)
+            {
+                // We found a match!
+                return resolved;
+            }
+        }
+
         return this;
     }
 

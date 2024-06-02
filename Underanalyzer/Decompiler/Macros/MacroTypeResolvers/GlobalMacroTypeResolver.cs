@@ -31,6 +31,11 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveVariableType(ASTCleaner cleaner, string variableName)
     {
+        if (variableName is null)
+        {
+            return null;
+        }
+
         if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
         {
             IMacroType resolved = resolver.ResolveVariableType(cleaner, variableName);
@@ -45,6 +50,11 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveFunctionArgumentTypes(ASTCleaner cleaner, string functionName)
     {
+        if (functionName is null)
+        {
+            return null;
+        }
+
         if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
         {
             IMacroType resolved = resolver.ResolveFunctionArgumentTypes(cleaner, functionName);
@@ -59,6 +69,11 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveReturnValueType(ASTCleaner cleaner, string functionName)
     {
+        if (functionName is null)
+        {
+            return null;
+        }
+
         if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
         {
             IMacroType resolved = resolver.ResolveReturnValueType(cleaner, functionName);

@@ -7,7 +7,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a variable being called as a method/function in the AST.
 /// </summary>
-public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalValueNode
+public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function/method variable being called.
@@ -28,6 +28,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter { get => true; }
+    public string FunctionName { get => null; }
 
     public string ConditionalTypeName => "VariableCall";
     public string ConditionalValue => ""; // TODO?

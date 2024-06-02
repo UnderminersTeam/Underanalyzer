@@ -64,9 +64,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         return result;
     }
 
-    public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode functionCall)
+    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
     {
-        FunctionCallNode result = null;
+        IFunctionCallNode result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeFunctionArgs typeFuncArgs)

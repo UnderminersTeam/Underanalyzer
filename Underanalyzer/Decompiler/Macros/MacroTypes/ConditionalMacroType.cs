@@ -130,7 +130,7 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
         }
     }
 
-    public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode call)
+    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call)
     {
         // Check whether we specify any inner type at all
         if (InnerType is not null)

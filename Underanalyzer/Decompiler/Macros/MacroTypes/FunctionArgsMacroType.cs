@@ -18,11 +18,11 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
     /// <summary>
     /// Resolves this macro type for a given function call in the AST.
     /// </summary>
-    public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode call)
+    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call)
     {
         int callArgumentsCount = call.Arguments.Count;
         int callArgumentsStart = 0;
-        if (call.Function.Name.Content == VMConstants.ScriptExecuteFunction)
+        if (call.FunctionName == VMConstants.ScriptExecuteFunction)
         {
             // Special case: arguments are shifted to the right by 1
             callArgumentsCount -= 1;

@@ -6,7 +6,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a function call in the AST.
 /// </summary>
-public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode, IMacroResolvableNode, IConditionalValueNode
+public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode, IMacroResolvableNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function reference being called.
@@ -22,6 +22,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter { get => true; }
+    public string FunctionName { get => Function.Name.Content; }
 
     public string ConditionalTypeName => "FunctionCall";
     public string ConditionalValue => Function.Name.Content;
@@ -73,7 +74,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
         return CleanupMacroTypes(cleaner);
     }
 
-    private FunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
+    private IFunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
     {
         string functionName = Function.Name.Content;
 
@@ -109,7 +110,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
 
         if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, functionName) is IMacroTypeFunctionArgs argsMacroType)
         {
-            if (argsMacroType.Resolve(cleaner, this) is FunctionCallNode resolved)
+            if (argsMacroType.Resolve(cleaner, this) is IFunctionCallNode resolved)
             {
                 // We found a match!
                 return resolved;

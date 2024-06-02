@@ -60,7 +60,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveVariableType(ASTCleaner cleaner, string variableName)
     {
-        if (Variables.TryGetValue(variableName, out IMacroType macroType))
+        if (variableName is not null && Variables.TryGetValue(variableName, out IMacroType macroType))
         {
             return macroType;
         }
@@ -69,7 +69,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveFunctionArgumentTypes(ASTCleaner cleaner, string functionName)
     {
-        if (FunctionArguments.TryGetValue(functionName, out IMacroType macroType))
+        if (functionName is not null && FunctionArguments.TryGetValue(functionName, out IMacroType macroType))
         {
             return macroType;
         }
@@ -78,7 +78,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
 
     public IMacroType ResolveReturnValueType(ASTCleaner cleaner, string functionName)
     {
-        if (FunctionReturn.TryGetValue(functionName, out IMacroType macroType))
+        if (functionName is not null && FunctionReturn.TryGetValue(functionName, out IMacroType macroType))
         {
             return macroType;
         }

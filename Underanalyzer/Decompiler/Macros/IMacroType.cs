@@ -39,7 +39,7 @@ public interface IMacroTypeFunctionArgs : IMacroType
     /// <summary>
     /// Resolves the macro type with the given AST function, or null if there is no resolution.
     /// </summary>
-    public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode call);
+    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call);
 }
 
 /// <summary>

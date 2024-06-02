@@ -62,7 +62,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         return null;
     }
 
-    public FunctionCallNode Resolve(ASTCleaner cleaner, FunctionCallNode functionCall)
+    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
     {
         foreach (IMacroType type in Types)
         {
@@ -70,7 +70,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            FunctionCallNode result = typeFuncArgs.Resolve(cleaner, functionCall);
+            IFunctionCallNode result = typeFuncArgs.Resolve(cleaner, functionCall);
             if (result is not null)
             {
                 return result;
