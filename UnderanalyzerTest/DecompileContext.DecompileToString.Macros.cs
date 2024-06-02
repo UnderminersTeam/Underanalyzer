@@ -91,8 +91,8 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test", AssetType.Sprite);
-        gameContext.DefineMockAsset(123, "obj_test", AssetType.Object);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test");
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -211,7 +211,7 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -245,10 +245,10 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test0", AssetType.Sprite);
-        gameContext.DefineMockAsset(1, "spr_test1", AssetType.Sprite);
-        gameContext.DefineMockAsset(2, "spr_test2", AssetType.Sprite);
-        gameContext.DefineMockAsset(3, "spr_test3", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test0");
+        gameContext.DefineMockAsset(AssetType.Sprite, 1, "spr_test1");
+        gameContext.DefineMockAsset(AssetType.Sprite, 2, "spr_test2");
+        gameContext.DefineMockAsset(AssetType.Sprite, 3, "spr_test3");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -283,10 +283,10 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test0", AssetType.Sprite);
-        gameContext.DefineMockAsset(1, "spr_test1", AssetType.Sprite);
-        gameContext.DefineMockAsset(2, "spr_test2", AssetType.Sprite);
-        gameContext.DefineMockAsset(3, "spr_test3", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test0");
+        gameContext.DefineMockAsset(AssetType.Sprite, 1, "spr_test1");
+        gameContext.DefineMockAsset(AssetType.Sprite, 2, "spr_test2");
+        gameContext.DefineMockAsset(AssetType.Sprite, 3, "spr_test3");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -321,10 +321,10 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test0", AssetType.Sprite);
-        gameContext.DefineMockAsset(1, "spr_test1", AssetType.Sprite);
-        gameContext.DefineMockAsset(2, "spr_test2", AssetType.Sprite);
-        gameContext.DefineMockAsset(3, "spr_test3", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test0");
+        gameContext.DefineMockAsset(AssetType.Sprite, 1, "spr_test1");
+        gameContext.DefineMockAsset(AssetType.Sprite, 2, "spr_test2");
+        gameContext.DefineMockAsset(AssetType.Sprite, 3, "spr_test3");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -363,8 +363,8 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test", AssetType.Sprite);
-        gameContext.DefineMockAsset(0, "obj_test", AssetType.Object);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test");
+        gameContext.DefineMockAsset(AssetType.Object, 0, "obj_test");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -423,7 +423,7 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
@@ -478,7 +478,7 @@ public class DecompileContext_DecompileToString_Macros
         {
             UsingAssetReferences = false
         };
-        gameContext.DefineMockAsset(0, "spr_test", AssetType.Sprite);
+        gameContext.DefineMockAsset(AssetType.Sprite, 0, "spr_test");
 
         MacroTypeRegistry registry = gameContext.MacroTypeRegistry;
         registry.RegisterBasic();
