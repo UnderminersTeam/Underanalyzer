@@ -11,8 +11,6 @@ namespace Underanalyzer;
 /// </summary>
 internal static class VMConstants
 {
-    // TODO: these are public, give them summary tags or private them.
-    
     // Function names used for try...catch...finally statements
     public const string TryHookFunction = "@@try_hook@@";
     public const string TryUnhookFunction = "@@try_unhook@@";
