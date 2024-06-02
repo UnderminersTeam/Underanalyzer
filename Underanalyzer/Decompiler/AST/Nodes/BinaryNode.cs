@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+using System;
 using Underanalyzer.Decompiler.Macros;
 using static Underanalyzer.IGMInstruction;
 
@@ -132,12 +138,12 @@ public class BinaryNode : IExpressionNode, IMacroResolvableNode, IConditionalVal
             { Kind: Opcode.Xor } => " ^ ",
             { Kind: Opcode.ShiftLeft } => " << ",
             { Kind: Opcode.ShiftRight } => " >> ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.Lesser } => " < ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.LesserEqual } => " <= ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.Equal } => " == ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.NotEqual } => " != ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.GreaterEqual } => " >= ",
-            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.Greater } => " > ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.LesserThan } => " < ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.LesserEqualThan } => " <= ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.EqualTo } => " == ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.NotEqualTo } => " != ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.GreaterEqualThan } => " >= ",
+            { Kind: Opcode.Compare, ComparisonKind: ComparisonType.GreaterThan } => " > ",
             _ => throw new DecompilerException("Failed to match binary instruction to string")
         };
         printer.Write(op);

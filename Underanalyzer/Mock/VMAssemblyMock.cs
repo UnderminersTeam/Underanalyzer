@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -190,12 +196,12 @@ public static class VMAssembly
                             throw new Exception("Compare needs comparison kind parameter");
                         instr.ComparisonKind = parts[1].ToLowerInvariant() switch
                         {
-                            "lt" =>             IGMInstruction.ComparisonType.Lesser,
-                            "leq" or "lte" =>   IGMInstruction.ComparisonType.LesserEqual,
-                            "eq" =>             IGMInstruction.ComparisonType.Equal,
-                            "neq" =>            IGMInstruction.ComparisonType.NotEqual,
-                            "geq" or "gte" =>   IGMInstruction.ComparisonType.GreaterEqual,
-                            "gt" =>             IGMInstruction.ComparisonType.Greater,
+                            "lt" =>             IGMInstruction.ComparisonType.LesserThan,
+                            "leq" or "lte" =>   IGMInstruction.ComparisonType.LesserEqualThan,
+                            "eq" =>             IGMInstruction.ComparisonType.EqualTo,
+                            "neq" =>            IGMInstruction.ComparisonType.NotEqualTo,
+                            "geq" or "gte" =>   IGMInstruction.ComparisonType.GreaterEqualThan,
+                            "gt" =>             IGMInstruction.ComparisonType.GreaterThan,
                             _ => throw new Exception("Unknown comparison kind")
                         };
                     }
