@@ -61,7 +61,7 @@ public class GameContextMock : IGameContext
     /// </summary>
     /// <param name="assetType">The asset type of the asset that should be fetched.</param>
     /// <param name="assetIndex">The index of the asset that should be fetched.</param>
-    /// <returns></returns>
+    /// <returns>The name of the asset, or <see langword="null"/> if it does not exist.</returns>
     public string GetMockAsset(AssetType assetType, int assetIndex)
     {
         if (!MockAssets.TryGetValue(assetType, out var dict)) return null;
@@ -74,7 +74,7 @@ public class GameContextMock : IGameContext
     }
     
     /// <inheritdoc/>
-    public string GetAssetName(int assetIndex, AssetType assetType)
+    public string GetAssetName(AssetType assetType, int assetIndex)
     {
         return assetType switch
         {

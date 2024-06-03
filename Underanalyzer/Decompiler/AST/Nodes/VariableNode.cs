@@ -249,7 +249,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             else
             {
                 // Check if we have an object asset name to use
-                string objectName = printer.Context.GameContext.GetAssetName(value, AssetType.Object);
+                string objectName = printer.Context.GameContext.GetAssetName(AssetType.Object, value);
 
                 if (objectName is not null)
                 {

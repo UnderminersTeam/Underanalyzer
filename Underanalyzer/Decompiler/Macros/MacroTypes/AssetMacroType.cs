@@ -26,7 +26,7 @@ public class AssetMacroType : IMacroTypeInt32
         }
 
         // Check for asset name with the given type
-        string assetName = cleaner.Context.GameContext.GetAssetName(data, Type);
+        string assetName = cleaner.Context.GameContext.GetAssetName(Type, data);
         if (assetName is not null)
         {
             return new MacroValueNode(assetName);
