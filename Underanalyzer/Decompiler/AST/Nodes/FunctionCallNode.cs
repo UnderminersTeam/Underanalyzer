@@ -86,7 +86,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
             // Try finding the script/function name.
             if (Arguments is [Int16Node scriptIndexInt16, ..])
             {
-                if (cleaner.Context.GameContext.GetAssetName(scriptIndexInt16.Value, AssetType.Script) is string name)
+                if (cleaner.Context.GameContext.GetAssetName(AssetType.Script, scriptIndexInt16.Value) is string name)
                 {
                     // We found a script!
                     functionName = name;
@@ -102,7 +102,7 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
             }
             else if (Arguments is [AssetReferenceNode { AssetType: AssetType.Script } assetReference, ..])
             {
-                if (cleaner.Context.GameContext.GetAssetName(assetReference.AssetId, AssetType.Script) is string name)
+                if (cleaner.Context.GameContext.GetAssetName(AssetType.Script, assetReference.AssetId) is string name)
                 {
                     // We found a script!
                     functionName = name;

@@ -1,10 +1,19 @@
-﻿namespace Underanalyzer.Decompiler;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+namespace Underanalyzer.Decompiler;
 
 /// <summary>
 /// Describes the necessary settings properties for the decompiler.
 /// </summary>
 public interface IDecompileSettings
 {
+    // TODO: more settings :)
+    
+    
     /// <summary>
     /// String used to indent, e.g. tabs or some amount of spaces generally.
     /// </summary>
