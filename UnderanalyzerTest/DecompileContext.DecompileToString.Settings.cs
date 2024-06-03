@@ -1,4 +1,5 @@
 ﻿using Underanalyzer.Decompiler;
+using Underanalyzer.Decompiler.Warnings;
 
 namespace UnderanalyzerTest;
 
