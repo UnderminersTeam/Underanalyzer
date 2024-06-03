@@ -27,7 +27,7 @@ public interface IFragmentNode : IStatementNode
         {
             BlockNode block = builder.BuildBlock(fragment.Children[0]);
             block.UseBraces = false;
-            block.PrintLocalsAtTop = true;
+            block.AddBlockLocalVarDecl(builder.Context);
             return block;
         }
 
@@ -91,6 +91,7 @@ public interface IFragmentNode : IStatementNode
                     builder.PushFragmentContext(fragment);
                     builder.TopFragmentContext.FunctionName = funcName;
                     BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                    block.AddBlockLocalVarDecl(builder.Context);
                     builder.PopFragmentContext();
 
                     // Return result if not anonymous (we have a name)
@@ -168,6 +169,7 @@ public interface IFragmentNode : IStatementNode
                             builder.PushFragmentContext(fragment);
                             builder.TopFragmentContext.FunctionName = funcName;
                             BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                            block.AddBlockLocalVarDecl(builder.Context);
                             builder.PopFragmentContext();
 
                             builder.StartBlockInstructionIndex = 7;
@@ -181,6 +183,7 @@ public interface IFragmentNode : IStatementNode
                         // Build body
                         builder.PushFragmentContext(fragment);
                         BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                        block.AddBlockLocalVarDecl(builder.Context);
                         builder.PopFragmentContext();
 
                         builder.StartBlockInstructionIndex = 4;

@@ -17,7 +17,9 @@ public class SwitchNode : IStatementNode
     /// </summary>
     public BlockNode Body { get; private set; }
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public SwitchNode(IExpressionNode expression, BlockNode body)
     {
@@ -42,6 +44,8 @@ public class SwitchNode : IStatementNode
                 }
             }
         }
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
         return this;
     }

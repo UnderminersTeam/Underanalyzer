@@ -32,7 +32,9 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; }
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public string ConditionalTypeName => "FunctionDecl";
     public string ConditionalValue => Name;
@@ -49,7 +51,6 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
     {
         Body.Clean(cleaner);
         Body.UseBraces = true;
-        Body.PrintLocalsAtTop = true;
         if (Body.FragmentContext.BaseParentCall is not null)
         {
             cleaner.PushFragmentContext(Body.FragmentContext);
@@ -58,15 +59,22 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
         }
     }
 
+    private void CleanEmptyLines(ASTCleaner cleaner)
+    {
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundFunctionDeclarations;
+    }
+
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         CleanBody(cleaner);
+        CleanEmptyLines(cleaner);
         return this;
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         CleanBody(cleaner);
+        CleanEmptyLines(cleaner);
         return this;
     }
 

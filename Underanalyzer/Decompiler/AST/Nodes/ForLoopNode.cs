@@ -26,6 +26,8 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
     public BlockNode Body { get; private set; }
 
     public bool SemicolonAfter { get => false; }
+    public bool EmptyLineBefore { get; internal set; }
+    public bool EmptyLineAfter { get; internal set; }
 
     public ForLoopNode(IStatementNode initializer, IExpressionNode condition, BlockNode incrementor, BlockNode body)
     {
@@ -65,6 +67,8 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
 
             Initializer = null;
         }
+
+
 
         return res;
     }

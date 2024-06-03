@@ -22,6 +22,8 @@ public class WhileLoopNode : IStatementNode, IBlockCleanupNode
     public bool MustBeWhileLoop { get; }
 
     public bool SemicolonAfter { get => false; }
+    public bool EmptyLineBefore { get; internal set; }
+    public bool EmptyLineAfter { get; internal set; }
 
     public WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustBeWhileLoop)
     {
@@ -36,12 +38,18 @@ public class WhileLoopNode : IStatementNode, IBlockCleanupNode
         Condition.Group = false;
         Body.Clean(cleaner);
 
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
         if (!MustBeWhileLoop)
         {
             // Check if we can turn into a for (;;) loop
             if (Condition is Int64Node i64 && i64.Value == 1)
             {
-                return new ForLoopNode(null, null, null, Body);
+                return new ForLoopNode(null, null, null, Body)
+                {
+                    EmptyLineBefore = EmptyLineBefore,
+                    EmptyLineAfter = EmptyLineAfter
+                };
             }
         }
 

@@ -15,7 +15,9 @@ public class DoUntilLoopNode : IStatementNode
     /// </summary>
     public IExpressionNode Condition { get; private set; }
 
-    public bool SemicolonAfter { get => true; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public DoUntilLoopNode(BlockNode body, IExpressionNode condition)
     {
@@ -29,6 +31,8 @@ public class DoUntilLoopNode : IStatementNode
         Body.Clean(cleaner);
         Condition = Condition.Clean(cleaner);
         Condition.Group = false;
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
         return this;
     }

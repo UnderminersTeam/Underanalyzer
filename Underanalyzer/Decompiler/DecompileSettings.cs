@@ -23,6 +23,56 @@ public interface IDecompileSettings
     public bool UseCSSColors { get; }
 
     /// <summary>
+    /// If true, decompiler warnings will be printed as comments in the code.
+    /// </summary>
+    public bool PrintWarnings { get; }
+
+    /// <summary>
+    /// If true, macro declarations (such as enums) will be placed at the top of the code output, rather than the bottom.
+    /// </summary>
+    public bool MacroDeclarationsAtTop { get; }
+
+    /// <summary>
+    /// If true, an empty line will be inserted after local variable declarations belonging to a block.
+    /// </summary>
+    public bool EmptyLineAfterBlockLocals { get; }
+
+    /// <summary>
+    /// If true, an empty line will be inserted either before/after enum declarations, 
+    /// depending on if placed at the top or bottom of the code.
+    /// </summary>
+    public bool EmptyLineAroundEnums { get; }
+
+    /// <summary>
+    /// If true, empty lines will be inserted before and/or after branch statements, unless at the start/end of a block.
+    /// </summary>
+    /// <remarks>
+    /// This applies to <c>if</c>/<c>else</c>, <c>switch</c>, <c>try</c>/<c>catch</c>/<c>finally</c>, as well as all loops.
+    /// </remarks>
+    public bool EmptyLineAroundBranchStatements { get; }
+
+    /// <summary>
+    /// If true, empty lines will be inserted before case statements, unless at the start of a block.
+    /// </summary>
+    public bool EmptyLineBeforeSwitchCases { get; }
+
+    /// <summary>
+    /// If true, empty lines will be inserted after case statements, unless at the end of a block.
+    /// </summary>
+    public bool EmptyLineAfterSwitchCases { get; }
+
+    /// <summary>
+    /// If true, empty lines will be inserted before and/or after function declarations, unless at the start/end of a block,
+    /// or in an expression (with the exception of in the right side of assignment statements).
+    /// </summary>
+    public bool EmptyLineAroundFunctionDeclarations { get; }
+
+    /// <summary>
+    /// If true, empty lines will be inserted before and/or after static initialization blocks, unless at the start/end of a block.
+    /// </summary>
+    public bool EmptyLineAroundStaticInitialization { get; }
+
+    /// <summary>
     /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
@@ -67,10 +117,19 @@ public class DecompileSettings : IDecompileSettings
     public string IndentString { get; set; } = "    ";
     public bool UseSemicolon { get; set; } = true;
     public bool UseCSSColors { get; set; } = true;
+    public bool PrintWarnings { get; set; } = true;
+    public bool MacroDeclarationsAtTop { get; set; } = false;
+    public bool EmptyLineAroundBranchStatements { get; set; } = false;
+    public bool EmptyLineBeforeSwitchCases { get; set; } = false;
+    public bool EmptyLineAfterSwitchCases { get; set; } = false;
+    public bool EmptyLineAroundFunctionDeclarations { get; set; } = true;
+    public bool EmptyLineAroundStaticInitialization { get; set; } = true;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
     public bool AllowLeftoverDataOnStack { get; set; } = false;
+    public bool EmptyLineAfterBlockLocals { get; set; } = true;
+    public bool EmptyLineAroundEnums { get; set; } = true;
 }

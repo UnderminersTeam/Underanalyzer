@@ -27,8 +27,10 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
-    public bool SemicolonAfter { get => true; }
-    public string FunctionName { get => null; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
+    public string FunctionName => null;
 
     public string ConditionalTypeName => "VariableCall";
     public string ConditionalValue => ""; // TODO?

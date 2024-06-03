@@ -47,6 +47,11 @@ public class ASTPrinter
     /// </summary>
     internal bool OverrideDisableSemicolons { get; set; } = false;
 
+    /// <summary>
+    /// The first warning index that has not yet been printed by this printer.
+    /// </summary>
+    internal int FirstUnprintedWarningIndex { get; private set; } = 0;
+
     // Builder used to store resulting code
     private StringBuilder stringBuilder = new(128);
 
@@ -258,5 +263,45 @@ public class ASTPrinter
 
         // Just a normal function name, otherwise
         return funcName;
+    }
+
+    /// <summary>
+    /// Prints any unprinted warnings emitted during decompilation, either at the start of printing (or the end).
+    /// </summary>
+    public void PrintRemainingWarnings(bool start)
+    {
+        if (FirstUnprintedWarningIndex < Context.Warnings.Count)
+        {
+            // Print header
+            if (!start)
+            {
+                StartLine();
+                EndLine();
+            }
+            StartLine();
+            Write("/// Decompiler warnings:");
+            EndLine();
+
+            // Print all remaining current warnings
+            for (int i = FirstUnprintedWarningIndex; i < Context.Warnings.Count; i++)
+            {
+                StartLine();
+                Write("// ");
+                Write(Context.Warnings[i].CodeEntryName);
+                Write(": ");
+                Write(Context.Warnings[i].Message);
+                EndLine();
+            }
+
+            // Print extra line if at start
+            if (start)
+            {
+                StartLine();
+                EndLine();
+            }
+
+            // Update index of next warning
+            FirstUnprintedWarningIndex = Context.Warnings.Count;
+        }
     }
 }

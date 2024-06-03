@@ -16,8 +16,10 @@ public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
     public ASTFragmentContext FragmentContext { get; }
-    public bool SemicolonAfter { get => false; }
 
     public string ConditionalTypeName => "Struct";
     public string ConditionalValue => "";

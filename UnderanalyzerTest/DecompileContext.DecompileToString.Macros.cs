@@ -22,6 +22,11 @@ public class DecompileContext_DecompileToString_Macros
             pop.v.l builtin.value10
             """,
             """
+            value0 = UnknownEnum.Value_0;
+            value1 = UnknownEnum.Value_1;
+            value11 = UnknownEnum.Value_11;
+            value10 = UnknownEnum.Value_10;
+            
             enum UnknownEnum
             {
                 Value_0,
@@ -29,10 +34,6 @@ public class DecompileContext_DecompileToString_Macros
                 Value_10 = 10,
                 Value_11
             }
-            value0 = UnknownEnum.Value_0;
-            value1 = UnknownEnum.Value_1;
-            value11 = UnknownEnum.Value_11;
-            value10 = UnknownEnum.Value_10;
             """
         );
     }
@@ -67,6 +68,11 @@ public class DecompileContext_DecompileToString_Macros
             pop.v.l builtin.value10
             """,
             """
+            value0 = TestEnum.TestValue0;
+            value1 = TestEnum.TestValue1;
+            value11 = TestEnum.TestValue11;
+            value10 = TestEnum.TestValue10;
+            
             enum TestEnum
             {
                 TestValue0,
@@ -75,10 +81,6 @@ public class DecompileContext_DecompileToString_Macros
                 TestValue10 = 10,
                 TestValue11
             }
-            value0 = TestEnum.TestValue0;
-            value1 = TestEnum.TestValue1;
-            value11 = TestEnum.TestValue11;
-            value10 = TestEnum.TestValue10;
             """,
             gameContext
         );

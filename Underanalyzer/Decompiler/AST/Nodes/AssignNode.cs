@@ -31,6 +31,8 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     public bool SemicolonAfter { get => true; }
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
+    public bool EmptyLineBefore => Value is IStatementNode stmt && stmt.EmptyLineBefore;
+    public bool EmptyLineAfter => Value is IStatementNode stmt && stmt.EmptyLineAfter;
     public DataType StackType { get; set; } = DataType.Variable;
 
     /// <summary>

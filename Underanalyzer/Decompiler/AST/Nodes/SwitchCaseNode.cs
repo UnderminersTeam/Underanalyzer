@@ -3,14 +3,16 @@
 /// <summary>
 /// Represents a switch case in the AST.
 /// </summary>
-public class SwitchCaseNode : IStatementNode
+public class SwitchCaseNode : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// The case expression, or null if default.
     /// </summary>
     public IExpressionNode Expression { get; internal set; }
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public SwitchCaseNode(IExpressionNode expression)
     {
@@ -21,6 +23,26 @@ public class SwitchCaseNode : IStatementNode
     {
         Expression = Expression?.Clean(cleaner);
         return this;
+    }
+
+    public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
+    {
+        if (cleaner.Context.Settings.EmptyLineBeforeSwitchCases)
+        {
+            if (i > 0 && block.Children[i - 1] is not SwitchCaseNode)
+            {
+                EmptyLineBefore = true;
+            }
+        }
+        if (cleaner.Context.Settings.EmptyLineAfterSwitchCases)
+        {
+            if (i < block.Children.Count - 1 && block.Children[i + 1] is not SwitchCaseNode)
+            {
+                EmptyLineAfter = true;
+            }
+        }
+
+        return i;
     }
 
     public void Print(ASTPrinter printer)
@@ -36,4 +58,5 @@ public class SwitchCaseNode : IStatementNode
             printer.Write("default:");
         }
     }
+
 }

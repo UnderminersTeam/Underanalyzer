@@ -20,16 +20,13 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
     public bool PartOfSwitch { get; set; } = false;
 
     /// <summary>
-    /// Whether this block should declare all local variables in the current fragment at the top.
-    /// </summary>
-    public bool PrintLocalsAtTop { get; set; } = false;
-
-    /// <summary>
     /// All children contained within this block.
     /// </summary>
     public List<IStatementNode> Children { get; internal set; } = new();
 
     public bool SemicolonAfter { get => false; }
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
     public ASTFragmentContext FragmentContext { get; }
 
     public BlockNode(ASTFragmentContext fragmentContext)
@@ -48,6 +45,7 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
         return i;
     }
 
+    // Cleans all child nodes, and performs block cleanup logic
     private void CleanChildren(ASTCleaner cleaner)
     {
         for (int i = 0; i < Children.Count; i++)
@@ -61,21 +59,50 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
         }
     }
 
+    // If there are no local variables to be declared, removes the node where they would be declared.
+    private void CleanBlockLocalVars(ASTCleaner cleaner)
+    {
+        if (cleaner.TopFragmentContext.LocalVariableNamesList.Count > 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < Children.Count; i++)
+        {
+            if (Children[i] is BlockLocalVarDeclNode)
+            {
+                Children.RemoveAt(i);
+                break;
+            }
+        }
+    }
+
+    // Performs all cleanup operations for this block
+    private void CleanAll(ASTCleaner cleaner)
+    {
+        bool newFragment = FragmentContext != cleaner.TopFragmentContext;
+        if (newFragment)
+        {
+            cleaner.PushFragmentContext(FragmentContext);
+            FragmentContext.RemoveLocal(VMConstants.TempReturnVariable);
+        }
+        CleanChildren(cleaner);
+        if (newFragment)
+        {
+            CleanBlockLocalVars(cleaner);
+            cleaner.PopFragmentContext();
+        }
+    }
+
     public IFragmentNode Clean(ASTCleaner cleaner)
     {
-        cleaner.PushFragmentContext(FragmentContext);
-        FragmentContext.RemoveLocal(VMConstants.TempReturnVariable);
-        CleanChildren(cleaner);
-        cleaner.PopFragmentContext();
+        CleanAll(cleaner);
         return this;
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
-        cleaner.PushFragmentContext(FragmentContext);
-        FragmentContext.RemoveLocal(VMConstants.TempReturnVariable);
-        CleanChildren(cleaner);
-        cleaner.PopFragmentContext();
+        CleanAll(cleaner);
         return this;
     }
 
@@ -102,16 +129,32 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
             printer.OpenBlock();
 
             bool switchCaseIndent = false;
+            bool justDidAfterEmptyLine = false;
             for (int i = 0; i < Children.Count; i++)
             {
                 printer.StartLine();
 
+                // Print statement
                 IStatementNode current = Children[i];
-
+                if (current.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine && Children[i - 1] is not SwitchCaseNode)
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                }
                 current.Print(printer);
                 if (current.SemicolonAfter)
                 {
                     printer.Semicolon();
+                }
+                if (current.EmptyLineAfter && i != Children.Count - 1 && Children[i + 1] is not SwitchCaseNode)
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                    justDidAfterEmptyLine = true;
+                }
+                else
+                {
+                    justDidAfterEmptyLine = false;
                 }
 
                 // Check if we need to handle indents for switch
@@ -144,15 +187,34 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
             // We're a struct initialization block
             printer.OpenBlock();
 
+            bool justDidAfterEmptyLine = false;
             for (int i = 0; i < Children.Count; i++)
             {
                 printer.StartLine();
 
-                Children[i].Print(printer);
+                // Print statement
+                IStatementNode child = Children[i];
+                if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                }
+                child.Print(printer);
                 if (i != Children.Count - 1)
                 {
                     // Write comma after struct members
                     printer.Write(',');
+
+                    if (child.EmptyLineAfter)
+                    {
+                        printer.EndLine();
+                        printer.StartLine();
+                        justDidAfterEmptyLine = true;
+                    }
+                    else
+                    {
+                        justDidAfterEmptyLine = false;
+                    }
                 }
 
                 printer.EndLine();
@@ -168,31 +230,32 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
                 printer.OpenBlock();
             }
 
-            List<string> localNames = FragmentContext.LocalVariableNamesList;
-            if (PrintLocalsAtTop && localNames.Count > 0)
+            bool justDidAfterEmptyLine = false;
+            for (int i = 0; i < Children.Count; i++)
             {
                 printer.StartLine();
-                printer.Write("var ");
-                for (int i = 0; i < localNames.Count; i++)
+
+                // Print statement
+                IStatementNode child = Children[i];
+                if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
                 {
-                    printer.Write(localNames[i]);
-                    if (i != localNames.Count - 1)
-                    {
-                        printer.Write(", ");
-                    }
+                    printer.EndLine();
+                    printer.StartLine();
                 }
-                printer.Semicolon();
-                printer.EndLine();
-            }
-
-            foreach (IStatementNode child in Children)
-            {
-                printer.StartLine();
-
                 child.Print(printer);
                 if (child.SemicolonAfter)
                 {
                     printer.Semicolon();
+                }
+                if (child.EmptyLineAfter && i != Children.Count - 1)
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                    justDidAfterEmptyLine = true;
+                }
+                else
+                {
+                    justDidAfterEmptyLine = false;
                 }
 
                 printer.EndLine();
@@ -205,5 +268,16 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
         }
 
         printer.PopFragmentContext();
+    }
+
+    /// <summary>
+    /// Adds a block-level local variable declaration node to the top of this block.
+    /// </summary>
+    public void AddBlockLocalVarDecl(DecompileContext context)
+    {
+        Children.Insert(0, new BlockLocalVarDeclNode()
+        {
+            EmptyLineAfter = context.Settings.EmptyLineAfterBlockLocals
+        });
     }
 }

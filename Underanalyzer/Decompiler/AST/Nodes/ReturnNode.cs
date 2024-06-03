@@ -12,7 +12,9 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
     /// </summary>
     public IExpressionNode Value { get; private set; }
 
-    public bool SemicolonAfter { get => true; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
 
     public ReturnNode(IExpressionNode value)
     {

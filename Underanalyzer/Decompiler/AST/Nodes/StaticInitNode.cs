@@ -10,7 +10,9 @@ public class StaticInitNode : IStatementNode
     /// </summary>
     public BlockNode Body { get; private set; }
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public StaticInitNode(BlockNode body)
     {
@@ -21,6 +23,9 @@ public class StaticInitNode : IStatementNode
     {
         Body.Clean(cleaner);
         Body.UseBraces = false;
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundStaticInitialization;
+
         return this;
     }
 

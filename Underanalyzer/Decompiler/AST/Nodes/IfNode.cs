@@ -22,7 +22,9 @@ public class IfNode : IStatementNode
     /// </summary>
     public BlockNode ElseBlock { get; internal set; }
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode elseBlock = null)
     {
@@ -37,6 +39,9 @@ public class IfNode : IStatementNode
         Condition.Group = false;
         TrueBlock.Clean(cleaner);
         ElseBlock?.Clean(cleaner);
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
         return this;
     }
 

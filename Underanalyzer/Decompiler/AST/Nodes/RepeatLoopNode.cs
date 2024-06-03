@@ -15,7 +15,9 @@ public class RepeatLoopNode : IStatementNode
     /// </summary>
     public BlockNode Body { get; private set; }
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public RepeatLoopNode(IExpressionNode timesToRepeat, BlockNode body)
     {
@@ -28,6 +30,9 @@ public class RepeatLoopNode : IStatementNode
         TimesToRepeat = TimesToRepeat.Clean(cleaner);
         ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
         return this;
     }
 

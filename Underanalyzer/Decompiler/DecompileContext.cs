@@ -121,10 +121,11 @@ public class DecompileContext
     {
         try
         {
-            AST.IStatementNode cleaned = ast.Clean(new AST.ASTCleaner(this));
+            AST.ASTCleaner cleaner = new(this);
+            AST.IStatementNode cleaned = ast.Clean(cleaner);
             if (Settings.CreateEnumDeclarations)
             {
-                AST.EnumDeclNode.GenerateDeclarations(this, cleaned);
+                AST.EnumDeclNode.GenerateDeclarations(cleaner, cleaned);
             }
             return cleaned;
         }
@@ -157,7 +158,15 @@ public class DecompileContext
         try
         {
             AST.ASTPrinter printer = new(this);
+            if (Settings.PrintWarnings)
+            {
+                printer.PrintRemainingWarnings(true);
+            }
             ast.Print(printer);
+            if (Settings.PrintWarnings)
+            {
+                printer.PrintRemainingWarnings(false);
+            }
             return printer.OutputString;
         }
         catch (DecompilerException ex)

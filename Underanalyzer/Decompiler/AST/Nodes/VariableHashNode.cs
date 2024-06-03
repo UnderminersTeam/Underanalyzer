@@ -15,7 +15,9 @@ public class VariableHashNode : IExpressionNode, IStatementNode, IConditionalVal
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
-    public bool SemicolonAfter { get => true; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
 
     public string ConditionalTypeName => "VariableHash";
     public string ConditionalValue => Variable.Name.Content; // TODO?

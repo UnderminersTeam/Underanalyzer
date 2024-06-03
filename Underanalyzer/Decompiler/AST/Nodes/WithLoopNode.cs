@@ -16,6 +16,8 @@ public class WithLoopNode : IStatementNode
     public BlockNode Body { get; private set; }
 
     public bool SemicolonAfter { get => false; }
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public WithLoopNode(IExpressionNode target, BlockNode body)
     {
@@ -33,6 +35,9 @@ public class WithLoopNode : IStatementNode
         }
         ElseToContinueCleanup.Clean(cleaner, Body);
         Body.Clean(cleaner);
+
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
         return this;
     }
 

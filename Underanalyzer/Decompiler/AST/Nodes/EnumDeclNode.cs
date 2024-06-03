@@ -15,6 +15,8 @@ public class EnumDeclNode : IStatementNode
     public GMEnum Enum { get; }
 
     public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public EnumDeclNode(GMEnum gmEnum)
     {
@@ -23,6 +25,7 @@ public class EnumDeclNode : IStatementNode
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundEnums;
         return this;
     }
 
@@ -89,21 +92,34 @@ public class EnumDeclNode : IStatementNode
     /// <summary>
     /// Generates enum declarations for the given context, returning a modified AST.
     /// </summary>
-    internal static void GenerateDeclarations(DecompileContext context, IStatementNode ast)
+    internal static void GenerateDeclarations(ASTCleaner cleaner, IStatementNode ast)
     {
         if (ast is not BlockNode block)
         {
             throw new DecompilerException($"Expected final AST to be a {nameof(BlockNode)}");
         }
 
-        block.Children.InsertRange(0, ConvertEnumDeclarations(context));
-    }
-
-    private static IEnumerable<IStatementNode> ConvertEnumDeclarations(DecompileContext context)
-    {
-        foreach (GMEnum gmEnum in context.EnumDeclarations)
+        // Create nodes
+        List<EnumDeclNode> enums = new(cleaner.Context.EnumDeclarations.Count);
+        foreach (GMEnum gmEnum in cleaner.Context.EnumDeclarations)
         {
-            yield return new EnumDeclNode(gmEnum);
+            enums.Add(new EnumDeclNode(gmEnum));
+        }
+
+        // Insert nodes
+        if (cleaner.Context.Settings.MacroDeclarationsAtTop)
+        {
+            block.Children.InsertRange(0, enums);
+        }
+        else
+        {
+            block.Children.AddRange(enums);
+        }
+
+        // Perform cleanup on the nodes
+        foreach (EnumDeclNode enumDecl in enums)
+        {
+            enumDecl.Clean(cleaner);
         }
     }
 }

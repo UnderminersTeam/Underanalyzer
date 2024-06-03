@@ -2,7 +2,9 @@
 
 public class ContinueNode : IStatementNode
 {
-    public bool SemicolonAfter { get => true; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

@@ -13,7 +13,9 @@ public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
-    public bool SemicolonAfter { get => true; }
+    public bool SemicolonAfter => true;
+    public bool EmptyLineBefore => false;
+    public bool EmptyLineAfter => false;
 
     public ThrowNode(IExpressionNode value)
     {

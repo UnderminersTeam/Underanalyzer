@@ -1429,6 +1429,7 @@ public class DecompileContext_DecompileToString
                         }
                         exit;
                     };
+                    
                     break;
             }
             """

@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -38,7 +37,9 @@ public class TryCatchNode : IStatementNode
     /// </summary>
     public string ContinueVariableName { get; internal set; } = null;
 
-    public bool SemicolonAfter { get => false; }
+    public bool SemicolonAfter => false;
+    public bool EmptyLineBefore { get; private set; }
+    public bool EmptyLineAfter { get; private set; }
 
     public TryCatchNode(BlockNode tryBlock, BlockNode catchBlock, VariableNode catchVariable)
     {
@@ -121,6 +122,8 @@ public class TryCatchNode : IStatementNode
             }
         }
 
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
         return this;
     }
 
@@ -155,6 +158,8 @@ public class TryCatchNode : IStatementNode
     public class FinishFinallyNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     {
         public bool SemicolonAfter => false;
+        public bool EmptyLineBefore => false;
+        public bool EmptyLineAfter => false;
         public bool Duplicated { get; set; }
         public bool Group { get; set; } = false;
         public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
