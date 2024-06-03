@@ -73,6 +73,12 @@ public interface IDecompileSettings
     public bool EmptyLineAroundStaticInitialization { get; }
 
     /// <summary>
+    /// If true, opening curly braces at the start of blocks will be placed on the same line as the 
+    /// current code, rather than on the next line.
+    /// </summary>
+    public bool OpenBlockBraceOnSameLine { get; }
+
+    /// <summary>
     /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
@@ -124,6 +130,7 @@ public class DecompileSettings : IDecompileSettings
     public bool EmptyLineAfterSwitchCases { get; set; } = false;
     public bool EmptyLineAroundFunctionDeclarations { get; set; } = true;
     public bool EmptyLineAroundStaticInitialization { get; set; } = true;
+    public bool OpenBlockBraceOnSameLine { get; set; } = false;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;

@@ -118,6 +118,10 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
         }
         printer.Write(')');
 
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 }

@@ -103,6 +103,10 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
         {
             printer.Write(" constructor");
         }
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 

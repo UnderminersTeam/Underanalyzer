@@ -400,4 +400,185 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestOpenBraceOnSameLine()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v builtin.a
+            conv.v.b
+            bf [4]
+
+            :[1]
+            push.v builtin.b
+            conv.v.b
+            bf [3]
+
+            :[2]
+            pushi.e 1
+            pop.v.i builtin.c
+            b [1]
+
+            :[3]
+            b [10]
+
+            :[4]
+            push.v builtin.d
+            conv.v.b
+            bf [7]
+
+            :[5]
+            push.v builtin.e
+            conv.v.b
+            bf [5]
+
+            :[6]
+            b [10]
+
+            :[7]
+            b [9]
+
+            > struct
+            :[8]
+            pushi.e 123
+            pop.v.i self.g
+            exit.i
+
+            :[9]
+            push.i [function]struct
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -5
+            pop.v.v [stacktop]global.___struct___0
+            call.i @@NewGMLObject@@ 1
+            pop.v.v builtin.f
+
+            :[10]
+            """,
+            """
+            if (a) {
+                while (b) {
+                    c = 1;
+                }
+            } else if (d) {
+                do {
+                } until (e);
+            } else {
+                f = {
+                    g: 123
+                };
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                OpenBlockBraceOnSameLine = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestOpenBraceOnSameLineAndSpacious()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.i 100
+            conv.i.v
+            push.i 52
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            pushi.e 1
+            pop.v.i builtin.a
+            b [2]
+
+            :[1]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushi.e 1
+            pop.v.i builtin.b
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [3]
+
+            :[2]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[3]
+            pushi.e 1
+            pop.v.i builtin.c
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [4]
+
+            :[4]
+            b [10]
+
+            > fun
+            :[5]
+            push.v builtin.d
+            conv.v.b
+            bf [7]
+
+            :[6]
+            pushi.e 1
+            pop.v.i builtin.e
+
+            :[7]
+            push.v builtin.f
+            conv.v.b
+            bf [9]
+
+            :[8]
+            pushi.e 1
+            pop.v.i builtin.g
+
+            :[9]
+            exit.i
+
+            :[10]
+            push.i [function]fun
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.fun
+            popz.v
+            """,
+            """
+            try {
+                a = 1;
+            } catch (ex) {
+                b = 1;
+            } finally {
+                c = 1;
+            }
+
+            function fun() {
+                if (d) {
+                    e = 1;
+                }
+                
+                if (f) {
+                    g = 1;
+                }
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                OpenBlockBraceOnSameLine = true,
+                EmptyLineAroundBranchStatements = true
+            }
+        );
+    }
 }

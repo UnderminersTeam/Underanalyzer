@@ -46,6 +46,10 @@ public class WithLoopNode : IStatementNode
         printer.Write("with (");
         Target.Print(printer);
         printer.Write(')');
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 }

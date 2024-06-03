@@ -50,12 +50,22 @@ public class IfNode : IStatementNode
         printer.Write("if (");
         Condition.Print(printer);
         printer.Write(')');
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         TrueBlock.Print(printer);
         if (ElseBlock is not null)
         {
-            // TODO: change depending on code style
-            printer.EndLine();
-            printer.StartLine();
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            else
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
             printer.Write("else");
             if (ElseBlock is { Children: [IfNode elseIf] })
             {
@@ -64,6 +74,10 @@ public class IfNode : IStatementNode
             }
             else
             {
+                if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+                {
+                    printer.Write(' ');
+                }
                 ElseBlock.Print(printer);
             }
         }

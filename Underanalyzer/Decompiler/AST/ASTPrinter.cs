@@ -223,12 +223,20 @@ public class ASTPrinter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OpenBlock()
     {
-        // TODO: handle other kinds of brace styles through settings
-        EndLine();
-        StartLine();
-        Write('{');
-        EndLine();
-        Indent();
+        if (Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            Write('{');
+            EndLine();
+            Indent();
+        }
+        else
+        {
+            EndLine();
+            StartLine();
+            Write('{');
+            EndLine();
+            Indent();
+        }
     }
 
     /// <summary>

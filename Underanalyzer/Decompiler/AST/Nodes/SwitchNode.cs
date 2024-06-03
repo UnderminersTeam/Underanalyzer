@@ -55,6 +55,10 @@ public class SwitchNode : IStatementNode
         printer.Write("switch (");
         Expression.Print(printer);
         printer.Write(')');
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 }

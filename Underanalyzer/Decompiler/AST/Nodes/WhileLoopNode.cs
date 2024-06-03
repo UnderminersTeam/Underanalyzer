@@ -61,6 +61,10 @@ public class WhileLoopNode : IStatementNode, IBlockCleanupNode
         printer.Write("while (");
         Condition.Print(printer);
         printer.Write(')');
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 

@@ -40,10 +40,18 @@ public class DoUntilLoopNode : IStatementNode
     public void Print(ASTPrinter printer)
     {
         printer.Write("do");
-        Body.Print(printer);
-        // TODO: change depending on code style
-        printer.EndLine();
-        printer.StartLine();
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+            Body.Print(printer);
+            printer.Write(' ');
+        }
+        else
+        {
+            Body.Print(printer);
+            printer.EndLine();
+            printer.StartLine();
+        }
         printer.Write("until (");
         Condition.Print(printer);
         printer.Write(')');

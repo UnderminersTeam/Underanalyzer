@@ -130,23 +130,47 @@ public class TryCatchNode : IStatementNode
     public void Print(ASTPrinter printer)
     {
         printer.Write("try");
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Try.Print(printer);
         if (Catch is not null)
         {
-            // TODO: change based on code style
-            printer.EndLine();
-            printer.StartLine();
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            else
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
             printer.Write("catch (");
             CatchVariable.Print(printer);
             printer.Write(')');
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
             Catch.Print(printer);
         }
         if (Finally is not null)
         {
-            // TODO: change based on code style
-            printer.EndLine();
-            printer.StartLine();
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            else
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
             printer.Write("finally");
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
             Finally.Print(printer);
         }
     }

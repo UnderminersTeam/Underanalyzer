@@ -41,6 +41,10 @@ public class RepeatLoopNode : IStatementNode
         printer.Write("repeat (");
         TimesToRepeat.Print(printer);
         printer.Write(')');
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         Body.Print(printer);
     }
 }
