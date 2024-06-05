@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Underanalyzer.Decompiler.ControlFlow;
 using static Underanalyzer.IGMInstruction;
@@ -18,15 +19,19 @@ namespace Underanalyzer.Decompiler;
 public interface IGlobalFunctions
 {
     /// <summary>
-    /// Lookup of function reference to name. Should be the same references that are supplied to the decompiler.
+    /// Lookup of function reference to name.
     /// </summary>
-    // TODO: what exactly is "decompiler"? specific function where they're supplied?
+    /// <remarks>
+    /// Should be the same references that are supplied in <see cref="IGameContext"/> and <see cref="IGMInstruction"/>.
+    /// </remarks>
     public Dictionary<IGMFunction, string> FunctionToName { get; }
 
     /// <summary>
-    /// Lookup of function name to reference. Should be the same references that are supplied to the decompiler.
+    /// Lookup of function name to reference.
     /// </summary>
-    // TODO: what exactly is "decompiler"? specific function where they're supplied?
+    /// /// <remarks>
+    /// Should be the same references that are supplied in <see cref="IGameContext"/> and <see cref="IGMInstruction"/>.
+    /// </remarks>
     public Dictionary<string, IGMFunction> NameToFunction { get; }
 }
 
@@ -72,7 +77,7 @@ public class GlobalFunctions : IGlobalFunctions
             List<Fragment> fragments = Fragment.FindFragments(script, blocks);
 
             // Find names of functions after each fragment
-            foreach (Fragment fragment in fragments)
+            foreach (Fragment fragment in fragments.Skip(1))
             {
                 if (fragment.Successors.Count == 0)
                 {

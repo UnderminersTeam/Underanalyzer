@@ -18,7 +18,9 @@ public class DecompileDataLeftoverWarning : IDecompileWarning
     /// <inheritdoc/>
     public string CodeEntryName { get; }
     
-    // TODO: ??? How many elements are still left?
+    /// <summary>
+    /// How many unread elements on the stack are left.
+    /// </summary>
     public int NumberOfElements { get; }
 
     internal DecompileDataLeftoverWarning(int numberOfElements, string codeEntryName)
