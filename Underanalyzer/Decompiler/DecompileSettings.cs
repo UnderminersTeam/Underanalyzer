@@ -12,6 +12,7 @@ namespace Underanalyzer.Decompiler;
 public interface IDecompileSettings
 {
     // TODO: more settings :3. Also do some better phrasing for some of these.
+    
     /// <summary>
     /// String used to indent, e.g. tabs or some amount of spaces generally.
     /// </summary>
