@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Decompiler.Macros;
@@ -11,22 +17,22 @@ namespace Underanalyzer.Decompiler;
 public class DecompileContext
 {
     /// <summary>
-    /// The game context this decompile context belongs to.
+    /// The game context this <see cref="DecompileContext"/> belongs to.
     /// </summary>
     public IGameContext GameContext { get; }
 
     /// <summary>
-    /// The specific code entry within the game this decompile context belongs to.
+    /// The specific code entry within the game this <see cref="DecompileContext"/> belongs to.
     /// </summary>
     public IGMCode Code { get; private set; }
 
     /// <summary>
-    /// The decompilation settings to be used for this decompile context in its operation.
+    /// The decompilation settings to be used for this <see cref="DecompileContext"/> in its operation.
     /// </summary>/
     public IDecompileSettings Settings { get; private set; }
 
     /// <summary>
-    /// Any warnings produced throughout the decompilation process.
+    /// A list of warnings produced throughout the decompilation process.
     /// </summary>
     public List<IDecompileWarning> Warnings { get; } = new();
 
@@ -35,43 +41,63 @@ public class DecompileContext
     internal bool GMLv2 { get => GameContext.UsingGMLv2; }
 
     // Data structures used (and re-used) for decompilation, as well as tests
-    internal List<Block> Blocks { get; set; }
-    internal Dictionary<int, Block> BlocksByAddress { get; set; }
-    internal List<Fragment> FragmentNodes { get; set; }
-    internal List<Loop> LoopNodes { get; set; }
-    internal List<Block> ShortCircuitBlocks { get; set; }
-    internal List<ShortCircuit> ShortCircuitNodes { get; set; }
-    internal List<StaticInit> StaticInitNodes { get; set; }
-    internal List<TryCatch> TryCatchNodes { get; set; }
-    internal List<Nullish> NullishNodes { get; set; }
-    internal List<BinaryBranch> BinaryBranchNodes { get; set; }
-    internal HashSet<IControlFlowNode> SwitchEndNodes { get; set; }
-    internal List<Switch.SwitchDetectionData> SwitchData { get; set; }
-    internal HashSet<Block> SwitchContinueBlocks { get; set; }
-    internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
-    internal List<Switch> SwitchNodes { get; set; }
-    internal Dictionary<Block, Loop> BlockSurroundingLoops { get; set; }
-    internal Dictionary<Block, int> BlockAfterLimits { get; set; }
-    internal List<GMEnum> EnumDeclarations { get; set; } = new();
-    internal Dictionary<string, GMEnum> NameToEnumDeclaration { get; set; } = new();
-    internal GMEnum UnknownEnumDeclaration { get; set; } = null;
+    // See about changing these to not be nullable?
+    internal List<Block>? Blocks { get; set; }
+    internal Dictionary<int, Block>? BlocksByAddress { get; set; }
+    internal List<Fragment>? FragmentNodes { get; set; }
+    internal List<Loop>? LoopNodes { get; set; }
+    internal List<Block>? ShortCircuitBlocks { get; set; }
+    internal List<ShortCircuit>? ShortCircuitNodes { get; set; }
+    internal List<StaticInit>? StaticInitNodes { get; set; }
+    internal List<TryCatch>? TryCatchNodes { get; set; }
+    internal List<Nullish>? NullishNodes { get; set; }
+    internal List<BinaryBranch>? BinaryBranchNodes { get; set; }
+    internal HashSet<IControlFlowNode>? SwitchEndNodes { get; set; }
+    internal List<Switch.SwitchDetectionData>? SwitchData { get; set; }
+    internal HashSet<Block>? SwitchContinueBlocks { get; set; }
+    internal HashSet<Block>? SwitchIgnoreJumpBlocks { get; set; }
+    internal List<Switch>? SwitchNodes { get; set; }
+    internal Dictionary<Block, Loop>? BlockSurroundingLoops { get; set; }
+    internal Dictionary<Block, int>? BlockAfterLimits { get; set; }
+    internal List<GMEnum>? EnumDeclarations { get; set; } = new();
+    internal Dictionary<string, GMEnum>? NameToEnumDeclaration { get; set; } = new();
+    internal GMEnum? UnknownEnumDeclaration { get; set; } = null;
     internal int UnknownEnumReferenceCount { get; set; } = 0;
 
-    public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DecompileContext"/> class.
+    /// </summary>
+    /// <param name="gameContext">The game context.</param>
+    /// <param name="code">The code entry.</param>
+    /// <param name="settings">The decompilation settings that should be used.</param>
+    public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings)
     {
         GameContext = gameContext;
         Code = code;
-        Settings = settings ?? new DecompileSettings();
+        Settings = settings;
     }
+
+    /// <summary>
+    /// <inheritdoc cref="DecompileContext(IGameContext, IGMCode, IDecompileSettings)"/>
+    /// </summary>
+    /// <param name="gameContext"><inheritdoc cref="DecompileContext(IGameContext, IGMCode, IDecompileSettings)"/></param>
+    /// <param name="code"><see cref="DecompileContext(IGameContext, IGMCode, IDecompileSettings)"/></param>
+    public DecompileContext(IGameContext gameContext, IGMCode code) : this(gameContext, code, new DecompileSettings()) 
+    { }
+    
 
     // Constructor used for control flow tests
     internal DecompileContext(IGMCode code) 
     {
         Code = code;
         GameContext = new Mock.GameContextMock();
+        Settings = new DecompileSettings();
     }
 
-    // Solely decompiles control flow from the code entry
+    /// <summary>
+    /// Solely decompiles control flow from the code entry .
+    /// </summary>
+    /// <exception cref="DecompilerException">When a decompiler error occured.</exception>
     private void DecompileControlFlow()
     {
         try
@@ -93,13 +119,18 @@ public class DecompileContext
         {
             throw new DecompilerException($"Decompiler error during control flow analysis: {ex.Message}", ex);
         }
+        // Should probably throw something else, 'cause this should basically never happen.
         catch (Exception ex)
         {
             throw new DecompilerException($"Unexpected exception thrown in decompiler during control flow analysis: {ex.Message}", ex);
         }
     }
 
-    // Decompiles the AST from the code entry4
+    /// <summary>
+    /// Decompiles the AST from the code entry.
+    /// </summary>
+    /// <returns>The AST</returns>
+    /// <exception cref="DecompilerException">When a decompiler error occured.</exception>
     private AST.IStatementNode DecompileAST()
     {
         try
@@ -110,13 +141,19 @@ public class DecompileContext
         {
             throw new DecompilerException($"Decompiler error during AST building: {ex.Message}", ex);
         }
+        // See in DecompileControlFlow
         catch (Exception ex)
         {
             throw new DecompilerException($"Unexpected exception thrown in decompiler during AST building: {ex.Message}", ex);
         }
     }
-
-    // Decompiles the AST from the code entry
+    
+    /// <summary>
+    /// Cleans up a given AST.
+    /// </summary>
+    /// <param name="ast">The AST that should be cleaned up.</param>
+    /// <returns>A new cleaned AST.</returns>
+    /// <exception cref="DecompilerException">When a decompiler error occured.</exception>
     private AST.IStatementNode CleanupAST(AST.IStatementNode ast)
     {
         try
@@ -142,6 +179,7 @@ public class DecompileContext
     /// <summary>
     /// Decompiles the code entry, and returns the AST output.
     /// </summary>
+    /// <returns>The AST.</returns>
     public AST.IStatementNode DecompileToAST()
     {
         DecompileControlFlow();
@@ -152,6 +190,7 @@ public class DecompileContext
     /// <summary>
     /// Decompiles the code entry, and returns the string output.
     /// </summary>
+    /// <returns>The decompiled code.</returns>
     public string DecompileToString()
     {
         AST.IStatementNode ast = DecompileToAST();

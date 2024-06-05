@@ -70,7 +70,7 @@ internal static class TestUtil
     public static DecompileContext VerifyDecompileResult(string asm, string gml, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
     {
         gameContext ??= new();
-        DecompileContext decompilerContext = new(gameContext, GetCode(asm), decompileSettings);
+        DecompileContext decompilerContext = new(gameContext, GetCode(asm), decompileSettings ?? new DecompileSettings());
         string decompileResult = decompilerContext.DecompileToString().Trim();
         Assert.Equal(gml.Trim().ReplaceLineEndings("\n"), decompileResult);
         return decompilerContext;
