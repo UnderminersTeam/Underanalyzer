@@ -1068,4 +1068,49 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestSpaciousFor()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            pushi.e 1
+            pop.v.i self.a
+            pushi.e 0
+            pop.v.i self.b
+
+            :[1]
+            push.v self.b
+            push.v self.c
+            cmp.v.v LT
+            bf [3]
+
+            :[2]
+            push.v self.b
+            push.e 1
+            add.i.v
+            pop.v.v self.b
+            b [1]
+
+            :[3]
+            pushi.e 1
+            pop.v.i self.d
+            """,
+            """
+            a = 1;
+
+            for (b = 0; b < c; b++)
+            {
+            }
+
+            d = 1;
+            """,
+            null,
+            new DecompileSettings()
+            {
+                EmptyLineAroundBranchStatements = true
+            }
+        );
+    }
 }

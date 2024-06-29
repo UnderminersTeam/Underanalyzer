@@ -68,7 +68,7 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
             Initializer = null;
         }
 
-
+        EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
         return res;
     }
