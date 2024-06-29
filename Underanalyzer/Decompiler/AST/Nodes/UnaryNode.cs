@@ -1,4 +1,4 @@
-﻿using Underanalyzer.Decompiler.Macros;
+﻿using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -37,7 +37,7 @@ public class UnaryNode : IExpressionNode, IConditionalValueNode
         Value = Value.Clean(cleaner);
 
         // Ensure operation applies to entire node
-        if (Value is BinaryNode or ShortCircuitNode)
+        if (Value is IMultiExpressionNode)
         {
             Value.Group = true;
         }

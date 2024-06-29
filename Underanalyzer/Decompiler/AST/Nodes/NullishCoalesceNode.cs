@@ -1,11 +1,11 @@
-﻿using Underanalyzer.Decompiler.Macros;
+﻿using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a nullish coalescing operator (??) in the AST.
 /// </summary>
-public class NullishCoalesceNode : IExpressionNode, IConditionalValueNode
+public class NullishCoalesceNode : IMultiExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The left side of the operator.
@@ -35,11 +35,11 @@ public class NullishCoalesceNode : IExpressionNode, IConditionalValueNode
         Left = Left.Clean(cleaner);
         Right = Right.Clean(cleaner);
 
-        if (Left is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        if (Left is IMultiExpressionNode)
         {
             Left.Group = true;
         }
-        if (Right is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        if (Right is IMultiExpressionNode)
         {
             Right.Group = true;
         }

@@ -1,5 +1,5 @@
 ﻿using System;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 

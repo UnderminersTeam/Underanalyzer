@@ -6,7 +6,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents short circuit && and || in the AST.
 /// </summary>
-public class ShortCircuitNode : IExpressionNode
+public class ShortCircuitNode : IMultiExpressionNode
 {
     /// <summary>
     /// List of conditions in this short circuit chain.

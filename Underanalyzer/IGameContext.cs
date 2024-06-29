@@ -5,7 +5,7 @@
 */
 
 using Underanalyzer.Decompiler;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer;
 
@@ -82,11 +82,11 @@ public interface IGameContext
     public IGlobalFunctions GlobalFunctions { get; }
 
     /// <summary>
-    /// Macro type registry used for resolving constant macros/enums in decompiled code.
-    /// The default constructor for <see cref="MacroTypeRegistry"/> results in an empty registry, which can be populated.
+    /// Game-specific data registry used for resolving constant macros/enums, as well as other game-specific data, in decompiled code.
+    /// The default constructor for <see cref="GameSpecificRegistry"/> results in an empty registry, which can be populated.
     /// This should not be modified during decompilation.
     /// </summary>
-    public MacroTypeRegistry MacroTypeRegistry { get; }
+    public GameSpecificRegistry GameSpecificRegistry { get; }
 
     /// <summary>
     /// Returns the string name of an asset, or <see langword="null"/> if no such asset exists.

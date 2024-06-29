@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Underanalyzer.Decompiler.ControlFlow;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -81,11 +80,35 @@ public class ASTFragmentContext
     /// </summary>
     internal Stack<int> FinallyStatementCount { get; set; } = new();
 
+    /// <summary>
+    /// The maximum argument variable referenced within this context, if applicable. -1 means none are referenced.
+    /// </summary>
+    internal int MaxReferencedArgument { get; set; } = -1;
+
+    /// <summary>
+    /// Contains all named argument variables referenced from within this fragment.
+    /// </summary>
+    internal HashSet<string> NamedArguments { get; set; } = new();
+
+    /// <summary>
+    /// Lookup of argument index to argument name, for GMLv2 named arguments.
+    /// </summary>
+    private Dictionary<int, string> NamedArgumentByIndex { get; set; } = new();
+
     internal ASTFragmentContext(Fragment fragment)
     {
         Fragment = fragment;
+
+        // Update max referenced argument, if we have an argument count greater than 0
+        if (fragment.CodeEntry.ArgumentCount > 0)
+        {
+            MaxReferencedArgument = fragment.CodeEntry.ArgumentCount - 1;
+        }
     }
 
+    /// <summary>
+    /// Removes a local variable's declaration from this fragment.
+    /// </summary>
     internal void RemoveLocal(string name)
     {
         if (LocalVariableNames.Contains(name))
@@ -93,5 +116,42 @@ public class ASTFragmentContext
             LocalVariableNames.Remove(name);
             LocalVariableNamesList.Remove(name);
         }
+    }
+
+    /// <summary>
+    /// Generates and returns the named argument name that the given index should have.
+    /// By default, resorts to formatting string from settings.
+    /// Returns null if prior to GMLv2 (and no named argument should be used).
+    /// </summary>
+    internal string GetNamedArgumentName(DecompileContext context, int index)
+    {
+        // GMLv2 introduced named arguments
+        if (!context.GMLv2)
+        {
+            return null;
+        }
+
+        // Look up existing name, and use that, if it exists already
+        if (NamedArgumentByIndex.TryGetValue(index, out string existingName))
+        {
+            return existingName;
+        }
+
+        // Resolve name from registry
+        string name = context.GameContext.GameSpecificRegistry.NamedArgumentResolver.ResolveArgument(CodeEntryName, index);
+
+        // If no name exists in the registry, auto-generate one from settings
+        name ??= string.Format(context.Settings.UnknownArgumentNamePattern, index);
+
+        // Resolve conflicts with local variable names
+        while (LocalVariableNames.Contains(name) || NamedArguments.Contains(name))
+        {
+            name += "_";
+        }
+
+        // Add new named argument, and return it
+        NamedArguments.Add(name);
+        NamedArgumentByIndex[index] = name;
+        return name;
     }
 }

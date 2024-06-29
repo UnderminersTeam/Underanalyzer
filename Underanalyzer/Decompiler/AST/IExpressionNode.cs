@@ -20,3 +20,11 @@ public interface IExpressionNode : IASTNode<IExpressionNode>
     /// </summary>
     public IGMInstruction.DataType StackType { get; internal set; }
 }
+
+/// <summary>
+/// Interface for expression nodes that have multi-token parts (e.g., can have spaces, usually),
+/// and thus should have parentheses around them if used in certain expressions.
+/// </summary>
+public interface IMultiExpressionNode : IExpressionNode
+{
+}

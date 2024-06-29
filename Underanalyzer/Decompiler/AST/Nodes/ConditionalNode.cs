@@ -1,12 +1,12 @@
 ﻿using System;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents a conditional expression in the AST.
 /// </summary>
-public class ConditionalNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
+public class ConditionalNode : IMultiExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// The condition of the conditional expression.
@@ -44,15 +44,15 @@ public class ConditionalNode : IExpressionNode, IMacroResolvableNode, ICondition
         False = False.Clean(cleaner);
 
         // Ensure proper precedence
-        if (Condition is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        if (Condition is IMultiExpressionNode)
         {
             Condition.Group = true;
         }
-        if (True is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        if (True is IMultiExpressionNode)
         {
             True.Group = true;
         }
-        if (False is BinaryNode or ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        if (False is IMultiExpressionNode)
         {
             False.Group = true;
         }

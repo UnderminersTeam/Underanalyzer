@@ -5,7 +5,7 @@
 */
 
 using System;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a binary expression, such as basic two-operand arithmetic operations.
 /// </summary>
-public class BinaryNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
+public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// Left side of the binary operation.
@@ -82,7 +82,7 @@ public class BinaryNode : IExpressionNode, IMacroResolvableNode, IConditionalVal
                 binary.Group = true;
             }
         }
-        else if (node is ShortCircuitNode or ConditionalNode or NullishCoalesceNode)
+        else if (node is IMultiExpressionNode)
         {
             node.Group = true;
         }

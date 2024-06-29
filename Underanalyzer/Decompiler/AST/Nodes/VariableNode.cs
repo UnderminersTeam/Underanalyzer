@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Underanalyzer.Decompiler.Macros;
+﻿using System;
+using System.Collections.Generic;
+using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -179,13 +180,19 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             }
         }
 
-        // TODO: determine if Left needs to be grouped
+        // Determine if Left needs to be grouped
+        if (Left is IMultiExpressionNode)
+        {
+            Left.Group = true;
+        }
+        
+        // Get basic instance type, or 0 if none
+        int instType = (Left as Int16Node)?.Value ?? (int?)((Left as InstanceTypeNode)?.InstanceType) ?? 0;
 
         // Check if we're a struct argument
         if (cleaner.StructArguments is not null)
         {
             // Verify this is an argument array access
-            int instType = (Left as Int16Node)?.Value ?? (int?)((Left as InstanceTypeNode)?.InstanceType) ?? 0;
             if (instType == (int)InstanceType.Argument && 
                 Variable is { Name.Content: "argument" } &&
                 ArrayIndices is [Int16Node arrayIndex])
@@ -199,6 +206,23 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
                     cleaner.PushFragmentContext(context);
                     return arg;
                 }
+            }
+        }
+
+        // Check if we're a regular argument, and set maximum referenced argument variable if so
+        if (instType == (int)InstanceType.Argument)
+        {
+            int num = GetArgumentIndex();
+            if (num != -1)
+            {
+                if (num > cleaner.TopFragmentContext.MaxReferencedArgument)
+                {
+                    // We have a new maximum!
+                    cleaner.TopFragmentContext.MaxReferencedArgument = num;
+                }
+
+                // Generate named argument for later, in case it hasn't already been generated
+                cleaner.TopFragmentContext.GetNamedArgumentName(cleaner.Context, num);
             }
         }
 
@@ -220,7 +244,8 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
                 switch (value)
                 {
                     case (int)InstanceType.Self:
-                        if (printer.LocalVariableNames.Contains(Variable.Name.Content))
+                        if (printer.LocalVariableNames.Contains(Variable.Name.Content) ||
+                            printer.TopFragmentContext.NamedArguments.Contains(Variable.Name.Content))
                         {
                             // Need an explicit self in order to not conflict with local
                             printer.Write("self.");
@@ -235,7 +260,6 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
                     case (int)InstanceType.Global:
                         printer.Write("global.");
                         break;
-                    // TODO: unsure if we need to handle static
                 }
             }
             else if (ReferenceType == VariableType.Instance)
@@ -273,8 +297,25 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             printer.Write('.');
         }
 
-        // Variable name
-        printer.Write(Variable.Name.Content);
+        int argIndex = GetArgumentIndex();
+        if (argIndex == -1)
+        {
+            // Variable name
+            printer.Write(Variable.Name.Content);
+        }
+        else
+        {
+            // Argument name
+            string namedArg = printer.TopFragmentContext.GetNamedArgumentName(printer.Context, argIndex);
+            if (namedArg is not null)
+            {
+                printer.Write(namedArg);
+            }
+            else
+            {
+                printer.Write(Variable.Name.Content);
+            }
+        }
 
         if (ArrayIndices is not null)
         {
@@ -316,5 +357,34 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             return conditional.Resolve(cleaner, this);
         }
         return null;
+    }
+
+    /// <summary>
+    /// Returns the argument index this variable represents, or -1 if this is not an argument variable.
+    /// </summary>
+    public int GetArgumentIndex()
+    {
+        string variableName = Variable.Name.Content;
+
+        if (variableName.StartsWith("argument") &&
+            variableName.Length >= "argument".Length + 1 &&
+            variableName.Length <= "argument".Length + 2)
+        {
+            if (int.TryParse(variableName["argument".Length..], out int num) && num >= 0 && num <= 15)
+            {
+                return num;
+            }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Returns true if this variable represents the constant <c>undefined</c>, or false otherwise.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsUndefinedVariable()
+    {
+        return Variable.Name.Content == "undefined";
     }
 }

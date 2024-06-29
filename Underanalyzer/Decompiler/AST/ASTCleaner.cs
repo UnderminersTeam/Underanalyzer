@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -36,7 +36,7 @@ public class ASTCleaner
     /// <summary>
     /// Helper to access the global macro resolver used for resolving macro types.
     /// </summary>
-    internal IMacroTypeResolver GlobalMacroResolver => Context.GameContext.MacroTypeRegistry.Resolver;
+    internal IMacroTypeResolver GlobalMacroResolver => Context.GameContext.GameSpecificRegistry.MacroResolver;
 
     /// <summary>
     /// Helper to access an ID instance and object type union, for resolving macro types.
@@ -47,12 +47,12 @@ public class ASTCleaner
         {
             if (_macroInstanceIdOrObjectAsset is null)
             {
-                if (!Context.GameContext.MacroTypeRegistry.TypeExists("Id.Instance") ||
-                    !Context.GameContext.MacroTypeRegistry.TypeExists("Asset.Object"))
+                if (!Context.GameContext.GameSpecificRegistry.TypeExists("Id.Instance") ||
+                    !Context.GameContext.GameSpecificRegistry.TypeExists("Asset.Object"))
                 {
                     return null;
                 }
-                _macroInstanceIdOrObjectAsset = Context.GameContext.MacroTypeRegistry.FindTypeUnion(["Id.Instance", "Asset.Object"]);
+                _macroInstanceIdOrObjectAsset = Context.GameContext.GameSpecificRegistry.FindTypeUnion(["Id.Instance", "Asset.Object"]);
             }
             return _macroInstanceIdOrObjectAsset;
         }

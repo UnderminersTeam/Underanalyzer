@@ -99,6 +99,11 @@ public interface IDecompileSettings
     public bool CleanupElseToContinue { get; }
 
     /// <summary>
+    /// Whether GMLv2 default argument values in functions should be detected and cleaned up.
+    /// </summary>
+    public bool CleanupDefaultArgumentValues { get; }
+
+    /// <summary>
     /// If true, enum values that are detected in a code entry (including any unknown ones) will 
     /// be given declarations at the top of the code.
     /// </summary>
@@ -115,6 +120,11 @@ public interface IDecompileSettings
     /// Should be a valid enum value name in GML.
     /// </summary>
     public string UnknownEnumValuePattern { get; }
+
+    /// <summary>
+    /// Format string for any arguments with an unknown name, in GMLv2 functions.
+    /// </summary>
+    public string UnknownArgumentNamePattern { get; }
 
     /// <summary>
     /// Whether leftover data on the simulated VM stack will be allowed in decompilation output. 
@@ -134,6 +144,8 @@ public class DecompileSettings : IDecompileSettings
     public bool UseCSSColors { get; set; } = true;
     public bool PrintWarnings { get; set; } = true;
     public bool MacroDeclarationsAtTop { get; set; } = false;
+    public bool EmptyLineAfterBlockLocals { get; set; } = true;
+    public bool EmptyLineAroundEnums { get; set; } = true;
     public bool EmptyLineAroundBranchStatements { get; set; } = false;
     public bool EmptyLineBeforeSwitchCases { get; set; } = false;
     public bool EmptyLineAfterSwitchCases { get; set; } = false;
@@ -142,10 +154,10 @@ public class DecompileSettings : IDecompileSettings
     public bool OpenBlockBraceOnSameLine { get; set; } = false;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
+    public bool CleanupDefaultArgumentValues { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
+    public string UnknownArgumentNamePattern { get; set; } = "arg{0}";
     public bool AllowLeftoverDataOnStack { get; set; } = false;
-    public bool EmptyLineAfterBlockLocals { get; set; } = true;
-    public bool EmptyLineAroundEnums { get; set; } = true;
 }

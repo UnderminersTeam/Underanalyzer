@@ -6,7 +6,7 @@
 
 using System.Collections.Generic;
 using Underanalyzer.Decompiler;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Mock;
 
@@ -32,7 +32,7 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public IGlobalFunctions GlobalFunctions { get; } = new GlobalFunctions();
     /// <inheritdoc/>
-    public MacroTypeRegistry MacroTypeRegistry { get; set; } = new();
+    public GameSpecificRegistry GameSpecificRegistry { get; set; } = new();
 
     /// <summary>
     /// A Dictionary that mocks asset chunks and their contents.

@@ -1,4 +1,4 @@
-﻿using Underanalyzer.Decompiler.Macros;
+﻿using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.AST;

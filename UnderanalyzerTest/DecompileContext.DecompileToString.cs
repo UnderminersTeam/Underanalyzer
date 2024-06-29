@@ -1673,4 +1673,151 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestDefaultArgumentValues()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [8]
+
+            > gml_Script_default_args (locals=0, args=3)
+            :[1]
+            push.v arg.argument1
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i arg.argument1
+
+            :[3]
+            push.v arg.argument2
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [5]
+
+            :[4]
+            pushglb.v global.test
+            pop.v.v arg.argument2
+
+            :[5]
+            push.v arg.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [7]
+
+            :[6]
+            pushi.e 123
+            pop.v.i arg.argument0
+
+            :[7]
+            exit.i
+
+            :[8]
+            push.i [function]gml_Script_default_args
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.default_args
+            popz.v
+            """,
+            """
+            function default_args(arg0, arg1 = 123, arg2 = global.test)
+            {
+                if (arg0 == undefined)
+                {
+                    arg0 = 123;
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestArgumentsConflict()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > gml_Script_args_conflict (locals=1, args=1)
+            :[1]
+            pushi.e 123
+            pop.v.i local.arg0
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_args_conflict
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.args_conflict
+            popz.v
+            """,
+            """
+            function args_conflict(arg0_)
+            {
+                var arg0;
+                
+                arg0 = 123;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestArgumentsLocal()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [4]
+
+            > gml_Script_default_args_locals (locals=1, args=1)
+            :[1]
+            push.v arg.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i arg.argument0
+
+            :[3]
+            pushi.e 123
+            pop.v.i local.local
+            exit.i
+
+            :[4]
+            push.i [function]gml_Script_default_args_locals
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.default_args_locals
+            popz.v
+            """,
+            """
+            function default_args_locals(arg0 = 123)
+            {
+                var local;
+                
+                local = 123;
+            }
+            """
+        );
+    }
 }

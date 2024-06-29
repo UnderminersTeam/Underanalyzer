@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Underanalyzer.Decompiler.Macros;
+using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -76,7 +76,8 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
                 // We have a "builtin" type on our variable, so use what's on the stack instead.
                 // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
                 if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self ||
-                    printer.LocalVariableNames.Contains(variable.Variable.Name.Content))
+                    printer.LocalVariableNames.Contains(variable.Variable.Name.Content) ||
+                    printer.TopFragmentContext.NamedArguments.Contains(variable.Variable.Name.Content))
                 {
                     Instance.Print(printer);
                     printer.Write('.');

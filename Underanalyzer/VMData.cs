@@ -512,7 +512,7 @@ public interface IGMInstruction
         /// <summary>
         /// String, represented as a 32-bit ID.
         /// </summary>
-        [DataTypeInfo('s', 4 /* TODO: unsure on this for the VM stack */)]
+        [DataTypeInfo('s', 4)]
         String = 6,
 
         /// <summary>
