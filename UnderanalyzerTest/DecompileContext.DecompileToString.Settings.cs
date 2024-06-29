@@ -927,4 +927,145 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestSingleLineBlocks3()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v builtin.head
+            conv.v.b
+            bf [end]
+
+            :[1]
+            push.v builtin.a
+            conv.v.b
+            bf [3]
+
+            :[2]
+            pushi.e 1
+            pop.v.i builtin.b
+            b [4]
+
+            :[3]
+            pushi.e 2
+            pop.v.i builtin.c
+
+            :[4]
+            push.v builtin.a
+            conv.v.b
+            bf [6]
+
+            :[5]
+            pushi.e 1
+            pop.v.i builtin.b
+            b [9]
+
+            :[6]
+            push.v builtin.b
+            conv.v.b
+            bf [8]
+
+            :[7]
+            pushi.e 2
+            pop.v.i builtin.c
+            b [9]
+
+            :[8]
+            pushi.e 3
+            pop.v.i builtin.d
+
+            :[9]
+            push.v builtin.a
+            conv.v.b
+            bf [11]
+
+            :[10]
+            pushi.e 1
+            pop.v.i builtin.b
+            b [12]
+
+            :[11]
+            pushi.e 2
+            pop.v.i builtin.c
+            pushi.e 3
+            pop.v.i builtin.d
+
+            :[12]
+            push.v builtin.a
+            conv.v.b
+            bf [14]
+
+            :[13]
+            pushi.e 1
+            pop.v.i builtin.b
+            b [end]
+
+            :[14]
+            push.v builtin.b
+            conv.v.b
+            bf [16]
+
+            :[15]
+            pushi.e 2
+            pop.v.i builtin.c
+            b [end]
+
+            :[16]
+            pushi.e 3
+            pop.v.i builtin.d
+            pushi.e 4
+            pop.v.i builtin.e
+
+            :[end]
+            """,
+            """
+            if (head)
+            {
+                if (a)
+                    b = 1;
+                else
+                    c = 2;
+                
+                if (a)
+                    b = 1;
+                else if (b)
+                    c = 2;
+                else
+                    d = 3;
+                
+                if (a)
+                {
+                    b = 1;
+                }
+                else
+                {
+                    c = 2;
+                    d = 3;
+                }
+                
+                if (a)
+                {
+                    b = 1;
+                }
+                else if (b)
+                {
+                    c = 2;
+                }
+                else
+                {
+                    d = 3;
+                    e = 4;
+                }
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                RemoveSingleLineBlockBraces = true,
+                EmptyLineAroundBranchStatements = true
+            }
+        );
+    }
 }

@@ -81,6 +81,8 @@ public class IfNode : IStatementNode
             TrueBlock.PrintSingleLine(printer);
             if (ElseBlock is not null)
             {
+                printer.EndLine();
+                printer.StartLine();
                 printer.Write("else");
                 if (ElseBlock is { Children: [IfNode elseIf] })
                 {
@@ -89,7 +91,7 @@ public class IfNode : IStatementNode
                 }
                 else
                 {
-                    ElseBlock.Print(printer);
+                    ElseBlock.PrintSingleLine(printer);
                 }
             }
         }
@@ -142,6 +144,8 @@ public class IfNode : IStatementNode
             TrueBlock.PrintSingleLine(printer);
             if (ElseBlock is not null)
             {
+                printer.EndLine();
+                printer.StartLine();
                 printer.Write("else");
                 if (ElseBlock is { Children: [IfNode elseIf] })
                 {
@@ -150,7 +154,7 @@ public class IfNode : IStatementNode
                 }
                 else
                 {
-                    ElseBlock.Print(printer);
+                    ElseBlock.PrintSingleLine(printer);
                 }
             }
         }
