@@ -136,8 +136,20 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
                 break;
             }
 
-            // Successfully found a default argument assignment - store expression and move on
-            ArgumentDefaultValues[argIndex] = assign.Value;
+            // Successfully found a default argument assignment - store expression and move on.
+            // Also, process macro resolution for the default value expression, based on the argument name.
+            IExpressionNode expr = assign.Value;
+            string argName = Body.FragmentContext.GetNamedArgumentName(cleaner.Context, argIndex);
+            cleaner.PushFragmentContext(Body.FragmentContext);
+            if (expr is IMacroResolvableNode valueResolvable &&
+                cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, argName) is IMacroType variableMacroType &&
+                valueResolvable.ResolveMacroType(cleaner, variableMacroType) is IExpressionNode valueResolved)
+            {
+                expr = valueResolved;
+            }
+            cleaner.PopFragmentContext();
+
+            ArgumentDefaultValues[argIndex] = expr;
             lastArgumentIndex = argIndex;
             childIndex++;
         }
