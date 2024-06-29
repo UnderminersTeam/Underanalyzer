@@ -25,6 +25,17 @@ public class DoubleNode : IConstantNode<double>, IConditionalValueNode
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
+        if (cleaner.Context.Settings.TryGetPredefinedDouble(Value, out string predefined, out bool isMultiPart))
+        {
+            if (isMultiPart)
+            {
+                return new PredefinedDoubleMultiNode(predefined, Value);
+            }
+            else
+            {
+                return new PredefinedDoubleSingleNode(predefined, Value);
+            }
+        }
         return this;
     }
 

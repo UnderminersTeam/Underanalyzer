@@ -1864,4 +1864,26 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestPredefinedDoubles()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.d 3.141592653589793
+            pop.v.d self.a
+            push.d 6.283185307179586
+            push.v self.c
+            add.v.d
+            pop.v.v self.b
+            push.d 6.283185307179586
+            pop.v.v self.d
+            """,
+            """
+            a = pi;
+            b = (2 * pi) + c;
+            d = 2 * pi;
+            """
+        );
+    }
 }

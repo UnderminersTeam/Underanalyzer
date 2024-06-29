@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer.Decompiler;
 
 /// <summary>
@@ -11,9 +13,6 @@ namespace Underanalyzer.Decompiler;
 /// </summary>
 public interface IDecompileSettings
 {
-    // TODO: more settings :)
-    
-    
     /// <summary>
     /// String used to indent, e.g. tabs or some amount of spaces generally.
     /// </summary>
@@ -132,6 +131,15 @@ public interface IDecompileSettings
     /// If true, a warning is added to the decompile context.
     /// </summary>
     public bool AllowLeftoverDataOnStack { get; }
+
+    /// <summary>
+    /// Attempts to retrieve a predefined double value (such as <c>pi</c>), given its double form.
+    /// </summary>
+    /// <param name="value">The double as stored in the GML code</param>
+    /// <param name="result">The resulting value to be printed</param>
+    /// <param name="isResultMultiPart">True if parentheses may be needed around the value when printed (due to spaces or operations)</param>
+    /// <returns>True if a predefined double value is found; false otherwise.</returns>
+    public bool TryGetPredefinedDouble(double value, out string result, out bool isResultMultiPart);
 }
 
 /// <summary>
@@ -160,4 +168,48 @@ public class DecompileSettings : IDecompileSettings
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
     public string UnknownArgumentNamePattern { get; set; } = "arg{0}";
     public bool AllowLeftoverDataOnStack { get; set; } = false;
+
+    // Some basic data populated from code seen in the wild
+    // TODO: populate this with more values by default?
+    public Dictionary<double, string> SinglePartPredefinedDoubles = new()
+    {
+        { 3.141592653589793, "pi" },
+    };
+    public Dictionary<double, string> MultiPartPredefinedDoubles = new()
+    {
+        { 6.283185307179586, "2 * pi" },
+        { 12.566370614359172, "4 * pi" },
+        { 31.41592653589793, "10 * pi" },
+        { 0.3333333333333333, "1/3" },
+        { 0.6666666666666666, "2/3" },
+        { 1.3333333333333333, "4/3" },
+        { 23.333333333333332, "70/3" },
+        { 73.33333333333333, "220/3" },
+        { 206.66666666666666, "620/3" },
+        { 51.42857142857143, "360/7" },
+        { 1.0909090909090908, "12/11" },
+        { 0.06666666666666667, "1/15" },
+        { 0.9523809523809523, "20/21" },
+        { 0.03333333333333333, "1/30" },
+        { 0.008333333333333333, "1/120" }
+    };
+
+    public bool TryGetPredefinedDouble(double value, out string result, out bool isResultMultiPart)
+    {
+        if (SinglePartPredefinedDoubles.TryGetValue(value, out result))
+        {
+            isResultMultiPart = false;
+            return true;
+        }
+
+        if (MultiPartPredefinedDoubles.TryGetValue(value, out result))
+        {
+            isResultMultiPart = true;
+            return true;
+        }
+
+        result = null;
+        isResultMultiPart = false;
+        return false;
+    }
 }
