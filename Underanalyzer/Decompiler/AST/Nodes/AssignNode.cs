@@ -269,6 +269,14 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
 
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
-        return Variable.RequiresMultipleLines(printer) || Value.RequiresMultipleLines(printer);
+        if (Variable.RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+        if (Value is not null && Value.RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+        return false;
     }
 }
