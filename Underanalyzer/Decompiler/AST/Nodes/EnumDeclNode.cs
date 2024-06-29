@@ -89,6 +89,11 @@ public class EnumDeclNode : IStatementNode
         printer.CloseBlock();
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
+    }
+
     /// <summary>
     /// Generates enum declarations for the given context, returning a modified AST.
     /// </summary>

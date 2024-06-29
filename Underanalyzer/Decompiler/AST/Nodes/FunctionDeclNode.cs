@@ -225,6 +225,11 @@ public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValu
         Body.Print(printer);
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

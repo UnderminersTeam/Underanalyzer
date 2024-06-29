@@ -62,6 +62,11 @@ public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditional
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt64 type64)

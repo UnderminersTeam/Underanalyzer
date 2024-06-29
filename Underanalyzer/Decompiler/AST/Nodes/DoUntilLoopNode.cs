@@ -40,20 +40,34 @@ public class DoUntilLoopNode : IStatementNode
     public void Print(ASTPrinter printer)
     {
         printer.Write("do");
-        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        if (printer.Context.Settings.RemoveSingleLineBlockBraces && !Body.RequiresMultipleLines(printer))
         {
-            printer.Write(' ');
-            Body.Print(printer);
-            printer.Write(' ');
+            Body.PrintSingleLine(printer);
+            printer.EndLine();
+            printer.StartLine();
         }
         else
         {
-            Body.Print(printer);
-            printer.EndLine();
-            printer.StartLine();
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+                Body.Print(printer);
+                printer.Write(' ');
+            }
+            else
+            {
+                Body.Print(printer);
+                printer.EndLine();
+                printer.StartLine();
+            }
         }
         printer.Write("until (");
         Condition.Print(printer);
         printer.Write(')');
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
     }
 }

@@ -46,10 +46,22 @@ public class WithLoopNode : IStatementNode
         printer.Write("with (");
         Target.Print(printer);
         printer.Write(')');
-        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        if (printer.Context.Settings.RemoveSingleLineBlockBraces && !Body.RequiresMultipleLines(printer))
         {
-            printer.Write(' ');
+            Body.PrintSingleLine(printer);
         }
-        Body.Print(printer);
+        else
+        {
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            Body.Print(printer);
+        }
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
     }
 }

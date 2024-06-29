@@ -39,4 +39,9 @@ public class ExitNode : IStatementNode, IBlockCleanupNode
         // TODO: check if we're inside of a function (or script in GMS2) and use "return" instead
         printer.Write("exit");
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
 }

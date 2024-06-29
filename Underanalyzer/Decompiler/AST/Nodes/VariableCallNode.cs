@@ -97,6 +97,30 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
         printer.Write(')');
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        if (Instance is not null)
+        {
+            // TODO: need to check this
+            if (Instance.RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        if (Function.RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+        foreach (IExpressionNode arg in Arguments)
+        {
+            if (arg.RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

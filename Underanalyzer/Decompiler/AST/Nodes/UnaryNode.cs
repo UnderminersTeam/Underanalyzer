@@ -69,6 +69,11 @@ public class UnaryNode : IExpressionNode, IConditionalValueNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Value.RequiresMultipleLines(printer);
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

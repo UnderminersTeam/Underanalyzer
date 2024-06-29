@@ -270,6 +270,45 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
         printer.PopFragmentContext();
     }
 
+    public void PrintSingleLine(ASTPrinter printer)
+    {
+        printer.PushFragmentContext(FragmentContext);
+
+        printer.EndLine();
+        printer.Indent();
+        printer.StartLine();
+        if (Children.Count != 1)
+        {
+            throw new DecompilerException("Expected only one child node when printing on single line");
+        }
+        Children[0].Print(printer);
+        if (Children[0].SemicolonAfter)
+        {
+            printer.Semicolon();
+        }
+        printer.Dedent();
+
+        printer.PopFragmentContext();
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        // If we have more than one child node, or zero child nodes, we need multiple lines
+        if (Children.Count > 1 || Children.Count == 0)
+        {
+            return true;
+        }
+
+        // If our single child needs multiple lines, so do we
+        if (Children[0].RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+
+        // Other basic cases: all switch statements, and all struct initializations
+        return PartOfSwitch || printer.StructArguments is not null;
+    }
+
     /// <summary>
     /// Adds a block-level local variable declaration node to the top of this block.
     /// </summary>

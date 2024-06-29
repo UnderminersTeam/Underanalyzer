@@ -156,6 +156,11 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Left.RequiresMultipleLines(printer) || Right.RequiresMultipleLines(printer);
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         bool didAnything = false;

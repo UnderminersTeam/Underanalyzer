@@ -66,4 +66,9 @@ public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
             printer.Write(')');
         }
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Value.RequiresMultipleLines(printer);
+    }
 }

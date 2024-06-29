@@ -138,6 +138,18 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
         printer.Write(')');
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        foreach (IExpressionNode arg in Arguments)
+        {
+            if (arg.RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, Function.Name.Content);

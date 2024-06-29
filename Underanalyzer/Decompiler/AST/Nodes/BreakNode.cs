@@ -15,4 +15,9 @@ public class BreakNode : IStatementNode
     {
         printer.Write("break");
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
 }

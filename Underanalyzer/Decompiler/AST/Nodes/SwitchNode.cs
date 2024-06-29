@@ -61,4 +61,9 @@ public class SwitchNode : IStatementNode
         }
         Body.Print(printer);
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
+    }
 }

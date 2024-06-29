@@ -175,6 +175,11 @@ public class TryCatchNode : IStatementNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
+    }
+
     /// <summary>
     /// Represents the location where the finally block of a try statement ends.
     /// Never appears after AST cleaning, and cannot be printed.
@@ -228,6 +233,11 @@ public class TryCatchNode : IStatementNode
         public void Print(ASTPrinter printer)
         {
             throw new InvalidOperationException();
+        }
+
+        public bool RequiresMultipleLines(ASTPrinter printer)
+        {
+            return false;
         }
     }
 }

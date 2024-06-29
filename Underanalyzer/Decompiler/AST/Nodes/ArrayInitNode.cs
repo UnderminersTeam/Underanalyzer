@@ -49,6 +49,18 @@ public class ArrayInitNode : IExpressionNode, IMacroResolvableNode, IConditional
         printer.Write(']');
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        for (int i = 0; i < Elements.Count; i++)
+        {
+            if (Elements[i].RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeArrayInit typeArrayInit)

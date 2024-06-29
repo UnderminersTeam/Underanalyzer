@@ -91,6 +91,22 @@ public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueN
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        if (Function.RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+        foreach (IExpressionNode arg in Arguments)
+        {
+            if (arg.RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

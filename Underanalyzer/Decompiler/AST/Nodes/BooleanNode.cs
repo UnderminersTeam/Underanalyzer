@@ -32,6 +32,11 @@ public class BooleanNode : IConstantNode<bool>, IConditionalValueNode
         printer.Write(Value ? "true" : "false");
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

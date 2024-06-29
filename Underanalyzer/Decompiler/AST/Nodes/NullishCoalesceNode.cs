@@ -64,6 +64,11 @@ public class NullishCoalesceNode : IMultiExpressionNode, IConditionalValueNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Left.RequiresMultipleLines(printer) || Right.RequiresMultipleLines(printer);
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

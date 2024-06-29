@@ -43,6 +43,11 @@ public class InstanceTypeNode : IExpressionNode, IConditionalValueNode
         });
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

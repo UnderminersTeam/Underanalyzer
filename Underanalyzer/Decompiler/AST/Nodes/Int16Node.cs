@@ -40,6 +40,11 @@ public class Int16Node : IConstantNode<short>, IMacroResolvableNode, IConditiona
         printer.Write(Value);
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt32 type32)

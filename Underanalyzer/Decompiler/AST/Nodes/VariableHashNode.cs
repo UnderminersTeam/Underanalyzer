@@ -54,6 +54,11 @@ public class VariableHashNode : IExpressionNode, IStatementNode, IConditionalVal
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

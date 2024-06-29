@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Underanalyzer.Decompiler.AST;
+﻿namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an if statement in the AST.
@@ -45,41 +43,156 @@ public class IfNode : IStatementNode
         return this;
     }
 
+    private bool CanPrintWithoutBraces(ASTPrinter printer)
+    {
+        if (TrueBlock.RequiresMultipleLines(printer))
+        {
+            return false;
+        }
+        if (ElseBlock is not null)
+        {
+            if (ElseBlock is { Children: [IfNode elseIf] })
+            {
+                if (!elseIf.CanPrintWithoutBraces(printer))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (ElseBlock.RequiresMultipleLines(printer))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write("if (");
         Condition.Print(printer);
         printer.Write(')');
-        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+
+        if (printer.Context.Settings.RemoveSingleLineBlockBraces && CanPrintWithoutBraces(printer))
         {
-            printer.Write(' ');
+            // Print without braces
+            TrueBlock.PrintSingleLine(printer);
+            if (ElseBlock is not null)
+            {
+                printer.Write("else");
+                if (ElseBlock is { Children: [IfNode elseIf] })
+                {
+                    printer.Write(' ');
+                    elseIf.PrintElseIf(printer, true);
+                }
+                else
+                {
+                    ElseBlock.Print(printer);
+                }
+            }
         }
-        TrueBlock.Print(printer);
-        if (ElseBlock is not null)
+        else
         {
+            // Print with braces
             if (printer.Context.Settings.OpenBlockBraceOnSameLine)
             {
                 printer.Write(' ');
             }
-            else
-            {
-                printer.EndLine();
-                printer.StartLine();
-            }
-            printer.Write("else");
-            if (ElseBlock is { Children: [IfNode elseIf] })
-            {
-                printer.Write(' ');
-                elseIf.Print(printer);
-            }
-            else
+            TrueBlock.Print(printer);
+            if (ElseBlock is not null)
             {
                 if (printer.Context.Settings.OpenBlockBraceOnSameLine)
                 {
                     printer.Write(' ');
                 }
-                ElseBlock.Print(printer);
+                else
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                }
+                printer.Write("else");
+                if (ElseBlock is { Children: [IfNode elseIf] })
+                {
+                    printer.Write(' ');
+                    elseIf.PrintElseIf(printer, false);
+                }
+                else
+                {
+                    if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+                    {
+                        printer.Write(' ');
+                    }
+                    ElseBlock.Print(printer);
+                }
             }
         }
+    }
+
+    public void PrintElseIf(ASTPrinter printer, bool shouldRemoveBraces)
+    {
+        printer.Write("if (");
+        Condition.Print(printer);
+        printer.Write(')');
+
+        if (shouldRemoveBraces)
+        {
+            // Print without braces
+            TrueBlock.PrintSingleLine(printer);
+            if (ElseBlock is not null)
+            {
+                printer.Write("else");
+                if (ElseBlock is { Children: [IfNode elseIf] })
+                {
+                    printer.Write(' ');
+                    elseIf.PrintElseIf(printer, true);
+                }
+                else
+                {
+                    ElseBlock.Print(printer);
+                }
+            }
+        }
+        else
+        {
+            // Print with braces
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            TrueBlock.Print(printer);
+            if (ElseBlock is not null)
+            {
+                if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+                {
+                    printer.Write(' ');
+                }
+                else
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                }
+                printer.Write("else");
+                if (ElseBlock is { Children: [IfNode elseIf] })
+                {
+                    printer.Write(' ');
+                    elseIf.PrintElseIf(printer, false);
+                }
+                else
+                {
+                    if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+                    {
+                        printer.Write(' ');
+                    }
+                    ElseBlock.Print(printer);
+                }
+            }
+        }
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
     }
 }

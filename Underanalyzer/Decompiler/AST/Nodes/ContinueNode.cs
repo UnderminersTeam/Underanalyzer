@@ -15,4 +15,9 @@ public class ContinueNode : IStatementNode
     {
         printer.Write("continue");
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
 }

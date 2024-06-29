@@ -115,6 +115,11 @@ public class DoubleNode : IConstantNode<double>, IConditionalValueNode
         printer.Write(resultStr);
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

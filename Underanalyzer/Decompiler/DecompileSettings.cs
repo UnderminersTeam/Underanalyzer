@@ -87,6 +87,12 @@ public interface IDecompileSettings
     public bool OpenBlockBraceOnSameLine { get; }
 
     /// <summary>
+    /// If true, blocks with single-line contents in certain statements (e.g. if and loops) will have their braces removed.
+    /// For if statements specifically, both the if and else branches must take a single line.
+    /// </summary>
+    public bool RemoveSingleLineBlockBraces { get; }
+
+    /// <summary>
     /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
@@ -160,6 +166,7 @@ public class DecompileSettings : IDecompileSettings
     public bool EmptyLineAroundFunctionDeclarations { get; set; } = true;
     public bool EmptyLineAroundStaticInitialization { get; set; } = true;
     public bool OpenBlockBraceOnSameLine { get; set; } = false;
+    public bool RemoveSingleLineBlockBraces { get; set; } = false;
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CleanupDefaultArgumentValues { get; set; } = true;

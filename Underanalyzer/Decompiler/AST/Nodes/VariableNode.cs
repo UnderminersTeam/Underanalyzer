@@ -346,6 +346,25 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        if (Left.RequiresMultipleLines(printer))
+        {
+            return true;
+        }
+        if (ArrayIndices is not null)
+        {
+            foreach (IExpressionNode index in ArrayIndices)
+            {
+                if (index.RequiresMultipleLines(printer))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, Variable.Name.Content);

@@ -1,4 +1,6 @@
-﻿namespace Underanalyzer.Decompiler.AST;
+﻿using System.Xml.Linq;
+
+namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an asset reference in the AST.
@@ -31,6 +33,11 @@ public class AssetReferenceNode : IExpressionNode
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         return this;
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
     }
 
     public void Print(ASTPrinter printer)

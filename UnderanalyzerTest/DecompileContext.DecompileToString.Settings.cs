@@ -581,4 +581,350 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestSingleLineBlocks()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[head]
+            push.v builtin.head
+            conv.v.b
+            bf [tail]
+
+            :[0]
+            push.v builtin.a
+            conv.v.b
+            bf [1]
+
+            :[1]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [3]
+
+            :[2]
+            b [1]
+
+            :[3]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [3]
+
+            :[4]
+            push.v builtin.a
+            conv.v.b
+            bf [6]
+
+            :[5]
+            pushi.e 1
+            pop.v.i builtin.b
+
+            :[6]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [8]
+
+            :[7]
+            pushi.e 1
+            pop.v.i builtin.c
+            b [6]
+
+            :[8]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [12]
+
+            :[9]
+            b [11]
+
+            > gml_Script_anon@136@TestSingleLineBlocks (locals=0, args=0)
+            :[10]
+            exit.i
+
+            :[11]
+            push.i [function]gml_Script_anon@136@TestSingleLineBlocks
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            pop.v.v builtin.c
+            b [8]
+
+            :[12]
+            push.v builtin.a
+            conv.v.b
+            bf [14]
+
+            :[13]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 2
+            pop.v.i builtin.c
+
+            :[14]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [16]
+
+            :[15]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 2
+            pop.v.i builtin.c
+            b [14]
+
+            :[16]
+            pushi.e 1
+            pop.v.i builtin.b
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [16]
+
+            :[17]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 1
+            pop.v.i builtin.c
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [17]
+
+            :[tail]
+            """,
+            """
+            if (head)
+            {
+                if (a)
+                {
+                }
+                
+                while (a < b)
+                {
+                }
+                
+                do
+                {
+                }
+                until (a < b);
+                
+                if (a)
+                    b = 1;
+                
+                while (a < b)
+                    c = 1;
+                
+                while (a < b)
+                {
+                    c = function()
+                    {
+                    };
+                }
+                
+                if (a)
+                {
+                    b = 1;
+                    c = 2;
+                }
+                
+                while (a < b)
+                {
+                    b = 1;
+                    c = 2;
+                }
+                
+                do
+                    b = 1;
+                until (a < b);
+                
+                do
+                {
+                    b = 1;
+                    c = 1;
+                }
+                until (a < b);
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                RemoveSingleLineBlockBraces = true,
+                EmptyLineAroundBranchStatements = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestSingleLineBlocks2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[head]
+            push.v builtin.head
+            conv.v.b
+            bf [tail]
+
+            :[0]
+            push.v builtin.a
+            conv.v.b
+            bf [1]
+
+            :[1]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [3]
+
+            :[2]
+            b [1]
+
+            :[3]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [3]
+
+            :[4]
+            push.v builtin.a
+            conv.v.b
+            bf [6]
+
+            :[5]
+            pushi.e 1
+            pop.v.i builtin.b
+
+            :[6]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [8]
+
+            :[7]
+            pushi.e 1
+            pop.v.i builtin.c
+            b [6]
+
+            :[8]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [12]
+
+            :[9]
+            b [11]
+
+            > gml_Script_anon@136@TestSingleLineBlocks (locals=0, args=0)
+            :[10]
+            exit.i
+
+            :[11]
+            push.i [function]gml_Script_anon@136@TestSingleLineBlocks
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            pop.v.v builtin.c
+            b [8]
+
+            :[12]
+            push.v builtin.a
+            conv.v.b
+            bf [14]
+
+            :[13]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 2
+            pop.v.i builtin.c
+
+            :[14]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [16]
+
+            :[15]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 2
+            pop.v.i builtin.c
+            b [14]
+
+            :[16]
+            pushi.e 1
+            pop.v.i builtin.b
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [16]
+
+            :[17]
+            pushi.e 1
+            pop.v.i builtin.b
+            pushi.e 1
+            pop.v.i builtin.c
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            bf [17]
+
+            :[tail]
+            """,
+            """
+            if (head)
+            {
+                if (a)
+                {
+                }
+                while (a < b)
+                {
+                }
+                do
+                {
+                }
+                until (a < b);
+                if (a)
+                    b = 1;
+                while (a < b)
+                    c = 1;
+                while (a < b)
+                {
+                    c = function()
+                    {
+                    };
+                }
+                if (a)
+                {
+                    b = 1;
+                    c = 2;
+                }
+                while (a < b)
+                {
+                    b = 1;
+                    c = 2;
+                }
+                do
+                    b = 1;
+                until (a < b);
+                do
+                {
+                    b = 1;
+                    c = 1;
+                }
+                until (a < b);
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                RemoveSingleLineBlockBraces = true
+            }
+        );
+    }
 }

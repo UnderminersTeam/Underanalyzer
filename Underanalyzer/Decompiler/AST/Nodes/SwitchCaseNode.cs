@@ -59,4 +59,8 @@ public class SwitchCaseNode : IStatementNode, IBlockCleanupNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Expression?.RequiresMultipleLines(printer) ?? false;
+    }
 }

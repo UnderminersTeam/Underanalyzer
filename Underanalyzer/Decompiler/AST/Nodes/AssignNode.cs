@@ -266,4 +266,9 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                 break;
         }
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Variable.RequiresMultipleLines(printer) || Value.RequiresMultipleLines(printer);
+    }
 }

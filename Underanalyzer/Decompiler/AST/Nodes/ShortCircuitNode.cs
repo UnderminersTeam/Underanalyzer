@@ -66,4 +66,16 @@ public class ShortCircuitNode : IMultiExpressionNode
             printer.Write(')');
         }
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        foreach (IExpressionNode condition in Conditions)
+        {
+            if (condition.RequiresMultipleLines(printer))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -32,4 +32,9 @@ public class BlockLocalVarDeclNode : IStatementNode
             }
         }
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return false;
+    }
 }

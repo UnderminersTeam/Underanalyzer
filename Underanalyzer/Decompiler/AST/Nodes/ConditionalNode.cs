@@ -79,6 +79,13 @@ public class ConditionalNode : IMultiExpressionNode, IMacroResolvableNode, ICond
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Condition.RequiresMultipleLines(printer) || 
+               True.RequiresMultipleLines(printer) || 
+               False.RequiresMultipleLines(printer);
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

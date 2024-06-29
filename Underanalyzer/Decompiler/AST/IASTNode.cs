@@ -15,4 +15,9 @@ public interface IASTNode<T>
     /// Prints this node using the provided printer.
     /// </summary>
     public void Print(ASTPrinter printer);
+
+    /// <summary>
+    /// Calculates and returns whether the node will require multiple lines when printed.
+    /// </summary>
+    public bool RequiresMultipleLines(ASTPrinter printer);
 }

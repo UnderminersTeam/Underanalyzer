@@ -54,6 +54,11 @@ public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Body.Children.Count != 0;
+    }
+
     public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

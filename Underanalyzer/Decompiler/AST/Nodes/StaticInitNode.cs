@@ -38,4 +38,9 @@ public class StaticInitNode : IStatementNode
 
         printer.TopFragmentContext.InStaticInitialization = prevStaticInitState;
     }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Body.RequiresMultipleLines(printer);
+    }
 }

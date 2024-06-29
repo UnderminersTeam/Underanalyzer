@@ -48,6 +48,11 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
         }
     }
 
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return Value.RequiresMultipleLines(printer);
+    }
+
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Check for return temp variable (done on first pass)
