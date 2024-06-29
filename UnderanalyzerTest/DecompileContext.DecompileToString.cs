@@ -1886,4 +1886,29 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestComparisonPrecedence()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.v self.b
+            push.v self.c
+            cmp.v.v LT
+            push.v self.d
+            cmp.v.b LT
+            pop.v.b self.a
+            push.v self.b
+            push.v self.c
+            push.v self.d
+            cmp.v.v LT
+            cmp.b.v LT
+            pop.v.b self.a
+            """,
+            """
+            a = (b < c) < d;
+            a = b < (c < d);
+            """
+        );
+    }
 }

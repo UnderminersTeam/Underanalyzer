@@ -77,7 +77,7 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
             {
                 binary.Group = true;
             }
-            if (binary.Instruction.Kind == Opcode.Compare && binary.Instruction.ComparisonKind != Instruction.ComparisonKind)
+            if (binary.Instruction.Kind == Opcode.Compare)
             {
                 binary.Group = true;
             }
