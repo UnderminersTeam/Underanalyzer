@@ -75,7 +75,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
             {
                 // We have a "builtin" type on our variable, so use what's on the stack instead.
                 // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
-                if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self ||
+                if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self || // TODO: for later investigation: does Builtin also need to be checked in 2024 versions?
                     printer.LocalVariableNames.Contains(variable.Variable.Name.Content) ||
                     printer.TopFragmentContext.NamedArguments.Contains(variable.Variable.Name.Content))
                 {

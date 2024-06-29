@@ -244,6 +244,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
                 switch (value)
                 {
                     case (int)InstanceType.Self:
+                    case (int)InstanceType.Builtin:
                         if (printer.LocalVariableNames.Contains(Variable.Name.Content) ||
                             printer.TopFragmentContext.NamedArguments.Contains(Variable.Name.Content))
                         {

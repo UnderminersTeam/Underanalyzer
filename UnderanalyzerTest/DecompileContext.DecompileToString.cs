@@ -1820,4 +1820,48 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestArgumentsSelf()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [4]
+
+            > gml_Script_default_arg_color (locals=0, args=1)
+            :[1]
+            push.v arg.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            push.i 1
+            pop.v.i arg.argument0
+
+            :[3]
+            pushi.e 123
+            pop.v.i builtin.arg0
+            exit.i
+
+            :[4]
+            push.i [function]gml_Script_default_arg_color
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.default_arg_color
+            popz.v
+            """,
+            """
+            function default_arg_color(arg0 = 1)
+            {
+                self.arg0 = 123;
+            }
+            """
+        );
+    }
 }
