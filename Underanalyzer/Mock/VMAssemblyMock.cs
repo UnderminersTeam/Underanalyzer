@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -65,7 +66,7 @@ public static class VMAssembly
     /// <summary>
     /// Parses VM assembly into mock instruction data.
     /// </summary>
-    public static GMCode ParseAssemblyFromLines(IEnumerable<string> lines, string name = "root")
+    public static GMCode ParseAssemblyFromLines(IEnumerable<string> lines, IGameContext context, string name = "root")
     {
         List<GMInstruction> instructions = new();
         GMCode root = new(name, instructions);
@@ -75,6 +76,13 @@ public static class VMAssembly
 
         HashSet<GMVariable> variables = new(new GMVariableComparer());
         HashSet<GMFunction> functions = new(new GMFunctionComparer());
+        if (context is not null)
+        {
+            foreach (GMFunction func in context.GlobalFunctions.FunctionToName.Keys.Cast<GMFunction>())
+            {
+                functions.Add(func);
+            }
+        }
 
         int address = 0;
         foreach (string line in lines)
@@ -303,7 +311,16 @@ public static class VMAssembly
                                     if (data.StartsWith("[function]"))
                                     {
                                         // We're pushing a function index instead
-                                        instr.Function = new GMFunction(data["[function]".Length..]);
+                                        GMFunction function = new(data["[function]".Length..]);
+                                        if (functions.TryGetValue(function, out GMFunction existingFunction))
+                                        {
+                                            // We found a function that was already created
+                                            instr.Function = existingFunction;
+                                        }
+                                        else
+                                        {
+                                            instr.Function = function;
+                                        }
                                         break;
                                     }
                                     if (data.StartsWith("[variable]"))
@@ -350,7 +367,7 @@ public static class VMAssembly
                         if (parts.Length < 3)
                             throw new Exception("Call needs function and argument count");
 
-                        var function = new GMFunction(parts[1]);
+                        GMFunction function = new(parts[1]);
                         if (functions.TryGetValue(function, out GMFunction existingFunction))
                         {
                             // We found a function that was already created

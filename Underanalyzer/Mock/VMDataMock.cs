@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 
 namespace Underanalyzer.Mock;
@@ -249,6 +250,20 @@ public class GMFunction : IGMFunction
     public override string ToString()
     {
         return $"{nameof(GMFunction)}: {Name.Content}";
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is not GMFunction func)
+        {
+            return false;
+        }
+        return Name.Content == func.Name.Content;
+    }
+
+    public override int GetHashCode()
+    {
+        return Name.Content.GetHashCode();
     }
 }
 

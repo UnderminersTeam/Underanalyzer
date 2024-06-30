@@ -119,7 +119,7 @@ public class VMAssembly_ParseInstructions
         """;
         string[] lines = text.Split('\n');
 
-        GMCode code = VMAssembly.ParseAssemblyFromLines(lines);
+        GMCode code = VMAssembly.ParseAssemblyFromLines(lines, null);
         List<GMInstruction> list = code.Instructions;
 
         Assert.Equal(75, list.Count);
@@ -199,7 +199,7 @@ public class VMAssembly_ParseInstructions
         """;
         string[] lines = text.Split('\n');
 
-        GMCode code = VMAssembly.ParseAssemblyFromLines(lines, "test_root");
+        GMCode code = VMAssembly.ParseAssemblyFromLines(lines, null, "test_root");
         List<GMInstruction> list = code.Instructions;
 
         Assert.Equal("test_root", code.Name.Content);

@@ -1911,4 +1911,72 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestInheritance()
+    {
+        var context = new Underanalyzer.Mock.GameContextMock();
+        var func = new Underanalyzer.Mock.GMFunction("gml_Script_TestA");
+        context.GlobalFunctions.FunctionToName[func] = "TestA";
+        context.GlobalFunctions.NameToFunction["TestA"] = func;
+
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > gml_Script_TestA (locals=0, args=1)
+            :[1]
+            push.v arg.argument0
+            pop.v.v builtin.test
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_TestA
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.TestA
+            popz.v
+            b [4]
+
+            > gml_Script_TestB (locals=0, args=2)
+            :[3]
+            push.v arg.argument0
+            pushi.e 2
+            mul.i.v
+            call.i gml_Script_TestA 1
+            push.i [function]gml_Script_TestA
+            conv.i.v
+            call.i @@CopyStatic@@ 1
+            push.v arg.argument1
+            pop.v.v builtin.test2
+            exit.i
+
+            :[4]
+            push.i [function]gml_Script_TestB
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.TestB
+            popz.v
+            """,
+            """
+            function TestA(arg0) constructor
+            {
+                test = arg0;
+            }
+
+            function TestB(arg0, arg1) : TestA(arg0 * 2) constructor
+            {
+                test2 = arg1;
+            }
+            """,
+            context
+        );
+    }
 }
