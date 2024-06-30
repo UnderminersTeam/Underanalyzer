@@ -555,6 +555,17 @@ internal class BlockSimulator
     {
         IExpressionNode right = builder.ExpressionStack.Pop();
         IExpressionNode left = builder.ExpressionStack.Pop();
+
+        // If either type is a boolean, check if our value is a 16-bit int (0 or 1), and make it a boolean if so
+        if (instr.Type1 == DataType.Boolean && right is Int16Node valueRI16 && valueRI16.Value is 0 or 1)
+        {
+            right = new BooleanNode(valueRI16.Value == 1);
+        }
+        if (instr.Type2 == DataType.Boolean && left is Int16Node valueLI16 && valueLI16.Value is 0 or 1)
+        {
+            left = new BooleanNode(valueLI16.Value == 1);
+        }
+
         builder.ExpressionStack.Push(new BinaryNode(left, right, instr));
     }
 

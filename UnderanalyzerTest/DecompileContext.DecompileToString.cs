@@ -1979,4 +1979,95 @@ public class DecompileContext_DecompileToString
             context
         );
     }
+
+    [Fact]
+    public void TestBooleans()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v builtin.a
+            pushi.e 1
+            cmp.b.v EQ
+            bf [2]
+
+            :[1]
+            push.v builtin.a
+            pushi.e 0
+            cmp.b.v EQ
+            b [3]
+
+            :[2]
+            push.e 0
+
+            :[3]
+            bf [5]
+
+            :[4]
+            pushi.e 0
+            pop.v.b builtin.a
+            pushi.e 1
+            pop.v.b builtin.a
+
+            :[5]
+            push.v builtin.a
+            pushi.e 1
+            cmp.i.v EQ
+            bf [7]
+
+            :[6]
+            push.v builtin.a
+            pushi.e 0
+            cmp.i.v EQ
+            b [8]
+
+            :[7]
+            push.e 0
+
+            :[8]
+            bf [10]
+
+            :[9]
+            pushi.e 0
+            pop.v.i builtin.a
+            pushi.e 1
+            pop.v.i builtin.a
+
+            :[10]
+            pushi.e 1
+            push.v builtin.a
+            cmp.v.b EQ
+            bf [12]
+
+            :[11]
+            pushi.e 0
+            push.v builtin.a
+            cmp.v.b EQ
+            b [13]
+
+            :[12]
+            push.e 0
+
+            :[13]
+            bf [end]
+
+            :[end]
+            """,
+            """
+            if (a == true && a == false)
+            {
+                a = false;
+                a = true;
+            }
+            if (a == 1 && a == 0)
+            {
+                a = 0;
+                a = 1;
+            }
+            if (true == a && false == a)
+            {
+            }
+            """
+        );
+    }
 }
