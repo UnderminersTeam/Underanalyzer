@@ -43,17 +43,25 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         Right = right;  
         Instruction = instruction;
 
-        // Type1 and Type2 on the instruction represent the data types of Left and Right on the stack.
-        // Choose whichever type has a higher bias, or if equal, the smaller numerical data type value.
-        int bias1 = StackTypeBias(instruction.Type1);
-        int bias2 = StackTypeBias(instruction.Type2);
-        if (bias1 == bias2)
+        if (Instruction.Kind == Opcode.Compare)
         {
-            StackType = (DataType)Math.Min((byte)instruction.Type1, (byte)instruction.Type2);
+            // For comparison operations, the result is always a boolean.
+            StackType = DataType.Boolean;
         }
         else
         {
-            StackType = (bias1 > bias2) ? instruction.Type1 : instruction.Type2;
+            // Type1 and Type2 on the instruction represent the data types of Left and Right on the stack.
+            // Choose whichever type has a higher bias, or if equal, the smaller numerical data type value.
+            int bias1 = StackTypeBias(instruction.Type1);
+            int bias2 = StackTypeBias(instruction.Type2);
+            if (bias1 == bias2)
+            {
+                StackType = (DataType)Math.Min((byte)instruction.Type1, (byte)instruction.Type2);
+            }
+            else
+            {
+                StackType = (bias1 > bias2) ? instruction.Type1 : instruction.Type2;
+            }
         }
     }
 

@@ -2070,4 +2070,37 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestBooleanSwitch()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v builtin.a
+            push.v builtin.b
+            cmp.v.v LT
+            dup.b 0
+            pushi.e 0
+            cmp.i.b EQ
+            bt [2]
+
+            :[1]
+            b [3]
+
+            :[2]
+            b [3]
+
+            :[3]
+            popz.b
+            """,
+            """
+            switch (a < b)
+            {
+                case 0:
+                    break;
+            }
+            """
+        );
+    }
 }
