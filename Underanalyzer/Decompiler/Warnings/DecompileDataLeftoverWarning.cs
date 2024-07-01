@@ -1,4 +1,10 @@
-﻿namespace Underanalyzer.Decompiler;
+﻿/*
+  This Source Code Form is subject to the terms of the Mozilla Public
+  License, v. 2.0. If a copy of the MPL was not distributed with this
+  file, You can obtain one at https://mozilla.org/MPL/2.0/.
+*/
+
+namespace Underanalyzer.Decompiler;
 
 /// <summary>
 /// Represents a warning that occurs when data is left over on the VM stack at the end of a fragment.
