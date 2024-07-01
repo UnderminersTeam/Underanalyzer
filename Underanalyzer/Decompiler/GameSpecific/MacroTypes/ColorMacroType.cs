@@ -40,8 +40,14 @@ public class ColorMacroType : IMacroTypeInt32
             return new MacroValueNode(name);
         }
 
+        if (data < 0)
+        {
+            // If negative, we can't safely guarantee accurate decompilation, so maintain same value.
+            return node;
+        }
+
         // Return hex literal
-        if (data >= 0 && data <= 0xffffff && cleaner.Context.Settings.UseCSSColors)
+        if (data <= 0xffffff && cleaner.Context.Settings.UseCSSColors)
         {
             // Return RGB hex literal (reverse byte order). Swap R and B.
             int rgb = ((data & 0xff) << 16) | ((data & 0xff0000) >> 16) | (data & 0xff00);
