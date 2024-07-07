@@ -92,8 +92,8 @@ internal class WithLoop : Loop
             {
                 IControlFlowNode pred = BreakBlock.Predecessors[i];
                 newAfter.Predecessors.Add(pred);
-                pred.Successors.Add(newAfter);
-                IControlFlowNode.DisconnectPredecessor(BreakBlock, i);
+                IControlFlowNode.ReplaceConnections(pred.Successors, BreakBlock, newAfter);
+                BreakBlock.Predecessors.RemoveAt(i);
                 i--;
             }
 
