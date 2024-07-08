@@ -21,9 +21,9 @@ Features a highly accurate GML decompiler, designed around the GML VM compiler's
 At the time of writing, there are no concrete plans for a GML VM compiler as part of this project, however there may well be one in the future.
 
 ## How can I help?
-If you believe you have found incorrect decompilation output, please make an issue describing the problem. Generally, this means supplying the expected decompiled output, and what the decompiler produced. VM assembly is also appreciated (e.g. from UndertaleModTool or in this project's mock assembly format). If you do not know what the expected output should be, that is okay, but the VM assembly is then required.
+If you believe you have found incorrect decompilation output, please [make an issue](https://github.com/UnderminersTeam/Underanalyzer/issues/new/choose) describing the problem. Generally, this means supplying the expected decompiled output, and what the decompiler produced. VM assembly is also appreciated (e.g. from UndertaleModTool or in this project's mock assembly format). If you do not know what the expected output should be, that is okay, but the VM assembly is then required.
 
-If you have a feature you would like to suggest (e.g. a new setting or better cleanup), feel free to make an issue describing the feature request. Note that support is very limited on this project, so not many features will be able to be added on top of the main support. Feel free to make pull requests, though!
+If you have a feature you would like to suggest (e.g. a new setting or better cleanup), feel free to [make an issue](https://github.com/UnderminersTeam/Underanalyzer/issues/new/choose) describing the feature request. Note that support is very limited on this project, so not many features will be able to be added on top of the main support. Feel free to make pull requests, though!
 
 If you have features or bug fixes of your own you would like to contribute to the project, please submit a pull request and we can review it. These should never result in any test regressions, and ideally new tests should be added to confirm the new behavior works as intended.
 
