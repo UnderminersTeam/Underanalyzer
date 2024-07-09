@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// A function declaration within the AST.
 /// </summary>
-public class FunctionDeclNode : IFragmentNode, IExpressionNode, IConditionalValueNode
+public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// Name of the function, or null if anonymous.

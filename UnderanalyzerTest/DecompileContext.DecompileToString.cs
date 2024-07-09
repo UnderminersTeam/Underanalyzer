@@ -2164,4 +2164,65 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestFunctionDeclCall()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            call.i @@This@@ 0
+            b [2]
+
+            > gml_Script_anon@1@A (locals=0, args=0)
+            :[1]
+            pushi.e 1
+            pop.v.i builtin.a
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_anon@1@A
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            callv.v 0
+            popz.v
+            push.v builtin.a
+            push.v builtin.c
+            pushi.e -9
+            push.v [stacktop]self.d
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            pushi.e 123
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            conv.v.b
+            bf [4]
+
+            :[3]
+            push.v builtin.b
+            b [5]
+
+            :[4]
+            push.v builtin.c
+
+            :[5]
+            callv.v 1
+            popz.v
+            """,
+            """
+            (function()
+            {
+                a = 1;
+            })();
+            a.b(c.d);
+            (a ? b : c)(123);
+            """
+        );
+    }
 }

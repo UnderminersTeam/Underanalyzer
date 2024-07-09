@@ -73,6 +73,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
 
     public void Print(ASTPrinter printer)
     {
+        bool canGenerateParentheses = true;
         if (Instance is not null)
         {
             if (Function is VariableNode variable && variable is { Left: InstanceTypeNode instType } &&
@@ -86,10 +87,20 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
                 {
                     Instance.Print(printer);
                     printer.Write('.');
+                    canGenerateParentheses = false;
                 }
             }
         }
-        Function.Print(printer);
+        if (canGenerateParentheses && Function is IMultiExpressionNode)
+        {
+            printer.Write('(');
+            Function.Print(printer);
+            printer.Write(')');
+        }
+        else
+        {
+            Function.Print(printer);
+        }
         printer.Write('(');
         for (int i = 0; i < Arguments.Count; i++)
         {
