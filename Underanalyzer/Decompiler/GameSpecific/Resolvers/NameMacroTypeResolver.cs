@@ -14,9 +14,9 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// </summary>
 public class NameMacroTypeResolver : IMacroTypeResolver
 {
-    private Dictionary<string, IMacroType> Variables { get; }
-    private Dictionary<string, IMacroType> FunctionArguments { get; }
-    private Dictionary<string, IMacroType> FunctionReturn { get; }
+    private Dictionary<string, IMacroType?> Variables { get; }
+    private Dictionary<string, IMacroType?> FunctionArguments { get; }
+    private Dictionary<string, IMacroType?> FunctionReturn { get; }
 
     /// <summary>
     /// Initializes an empty name resolver.
@@ -31,9 +31,9 @@ public class NameMacroTypeResolver : IMacroTypeResolver
     /// <summary>
     /// Initializes a name resolver with pre-populated data.
     /// </summary>
-    public NameMacroTypeResolver(Dictionary<string, IMacroType> variables, 
-                                 Dictionary<string, IMacroType> functionArguments, 
-                                 Dictionary<string, IMacroType> functionReturn)
+    public NameMacroTypeResolver(Dictionary<string, IMacroType?> variables, 
+                                 Dictionary<string, IMacroType?> functionArguments, 
+                                 Dictionary<string, IMacroType?> functionReturn)
     {
         Variables = new(variables);
         FunctionArguments = new(functionArguments);
@@ -43,7 +43,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
     /// <summary>
     /// Defines a variable's macro type for this resolver.
     /// </summary>
-    public void DefineVariableType(string name, IMacroType type)
+    public void DefineVariableType(string name, IMacroType? type)
     {
         Variables[name] = type;
     }
@@ -51,7 +51,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
     /// <summary>
     /// Defines a function's arguments macro type for this resolver.
     /// </summary>
-    public void DefineFunctionArgumentsType(string name, IMacroType type)
+    public void DefineFunctionArgumentsType(string name, IMacroType? type)
     {
         FunctionArguments[name] = type;
     }
@@ -59,7 +59,7 @@ public class NameMacroTypeResolver : IMacroTypeResolver
     /// <summary>
     /// Defines a function's return macro type for this resolver.
     /// </summary>
-    public void DefineFunctionReturnType(string name, IMacroType type)
+    public void DefineFunctionReturnType(string name, IMacroType? type)
     {
         FunctionReturn[name] = type;
     }
