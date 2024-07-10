@@ -9,12 +9,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents the "throw" keyword being used to throw an object/exception in the AST.
 /// </summary>
-public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
+public class ThrowNode(IExpressionNode value) : IExpressionNode, IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// The value being thrown.
     /// </summary>
-    public IExpressionNode Value { get; private set; }
+    public IExpressionNode Value { get; private set; } = value;
 
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
@@ -22,11 +22,6 @@ public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
     public bool SemicolonAfter => true;
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-
-    public ThrowNode(IExpressionNode value)
-    {
-        Value = value;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -43,7 +38,7 @@ public class ThrowNode : IExpressionNode, IStatementNode, IBlockCleanupNode
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Remove duplicated finally statements
-        if (cleaner.TopFragmentContext.FinallyStatementCount.Count > 0 &&
+        if (cleaner.TopFragmentContext!.FinallyStatementCount.Count > 0 &&
             cleaner.Context.GameContext.UsingFinallyBeforeThrow)
         {
             int count = cleaner.TopFragmentContext.FinallyStatementCount.Peek();

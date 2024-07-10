@@ -22,17 +22,17 @@ public class ASTFragmentContext
     /// <summary>
     /// The name of the code entry this fragment belongs to.
     /// </summary>
-    public string CodeEntryName { get => Fragment.CodeEntry.Name?.Content; }
+    public string? CodeEntryName { get => Fragment.CodeEntry.Name?.Content; }
 
     /// <summary>
-    /// The name of the function this fragment belongs to, or null if none.
+    /// The name of the function this fragment belongs to, or <see langword="null"/> if none.
     /// </summary>
-    public string FunctionName { get; internal set; } = null;
+    public string? FunctionName { get; internal set; } = null;
 
     /// <summary>
     /// Children of this fragment, e.g. sub-functions.
     /// </summary>
-    internal List<ASTFragmentContext> Children { get; } = new();
+    internal List<ASTFragmentContext> Children { get; } = [];
     
     /// <summary>
     /// Current working VM expression stack.
@@ -47,39 +47,39 @@ public class ASTFragmentContext
     /// <summary>
     /// If not null, represents the list of arguments getting passed into this fragment (which is a struct).
     /// </summary>
-    public List<IExpressionNode> StructArguments { get; internal set; } = null;
+    public List<IExpressionNode>? StructArguments { get; internal set; } = null;
 
     /// <summary>
     /// Function call to the parent constructor function, if this is a constructor function that inherits
-    /// another constructor function, or null otherwise.
+    /// another constructor function, or <see langword="null"/> otherwise.
     /// </summary>
-    internal IExpressionNode BaseParentCall { get; set; } = null;
+    internal IExpressionNode? BaseParentCall { get; set; } = null;
 
     /// <summary>
     /// Contains all local variables referenced from within this fragment.
     /// </summary>
-    public HashSet<string> LocalVariableNames { get; } = new();
+    public HashSet<string> LocalVariableNames { get; } = [];
 
     /// <summary>
     /// Contains all local variables referenced from within this fragment, in order of occurrence.
     /// </summary>
-    public List<string> LocalVariableNamesList { get; } = new();
+    public List<string> LocalVariableNamesList { get; } = [];
 
     /// <summary>
     /// Map of code entry names to function names, for all children fragments/sub-functions of this context.
     /// </summary>
-    public Dictionary<string, string> SubFunctionNames { get; } = new();
+    public Dictionary<string, string> SubFunctionNames { get; } = [];
 
     /// <summary>
     /// The loop surrounding the currently-building position in the AST.
     /// </summary>
-    internal Loop SurroundingLoop { get; set; } = null;
+    internal Loop? SurroundingLoop { get; set; } = null;
 
     /// <summary>
     /// Contains local variable names that should be entirely removed from the fragment. 
     /// (For removing compiler-generated code.)
     /// </summary>
-    internal HashSet<string> LocalVariablesToPurge { get; } = new();
+    internal HashSet<string> LocalVariablesToPurge { get; } = [];
 
     /// <summary>
     /// Stack of the number of statements contained in all enveloping try finally blocks.
@@ -94,12 +94,12 @@ public class ASTFragmentContext
     /// <summary>
     /// Contains all named argument variables referenced from within this fragment.
     /// </summary>
-    internal HashSet<string> NamedArguments { get; set; } = new();
+    internal HashSet<string> NamedArguments { get; set; } = [];
 
     /// <summary>
     /// Lookup of argument index to argument name, for GMLv2 named arguments.
     /// </summary>
-    private Dictionary<int, string> NamedArgumentByIndex { get; set; } = new();
+    private Dictionary<int, string> NamedArgumentByIndex { get; set; } = [];
 
     internal ASTFragmentContext(Fragment fragment)
     {
@@ -127,9 +127,9 @@ public class ASTFragmentContext
     /// <summary>
     /// Generates and returns the named argument name that the given index should have.
     /// By default, resorts to formatting string from settings.
-    /// Returns null if prior to GMLv2 (and no named argument should be used).
+    /// Returns <see langword="null"/> if prior to GMLv2 (and no named argument should be used).
     /// </summary>
-    internal string GetNamedArgumentName(DecompileContext context, int index)
+    internal string? GetNamedArgumentName(DecompileContext context, int index)
     {
         // GMLv2 introduced named arguments
         if (!context.GMLv2)
@@ -138,13 +138,19 @@ public class ASTFragmentContext
         }
 
         // Look up existing name, and use that, if it exists already
-        if (NamedArgumentByIndex.TryGetValue(index, out string existingName))
+        if (NamedArgumentByIndex.TryGetValue(index, out string? existingName))
         {
             return existingName;
         }
 
+        string? name = null;
+
         // Resolve name from registry
-        string name = context.GameContext.GameSpecificRegistry.NamedArgumentResolver.ResolveArgument(CodeEntryName, index);
+        string? codeEntryName = CodeEntryName;
+        if (codeEntryName is not null)
+        {
+            name = context.GameContext.GameSpecificRegistry.NamedArgumentResolver.ResolveArgument(codeEntryName, index);
+        }
 
         // If no name exists in the registry, auto-generate one from settings
         name ??= string.Format(context.Settings.UnknownArgumentNamePattern, index);

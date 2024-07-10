@@ -14,9 +14,9 @@ namespace Underanalyzer.Decompiler.AST;
 public interface IFunctionCallNode : IConditionalValueNode, IStatementNode, IExpressionNode
 {
     /// <summary>
-    /// Name of the function being called, or null if none.
+    /// Name of the function being called, or <see langword="null"/> if none.
     /// </summary>
-    public string FunctionName { get; }
+    public string? FunctionName { get; }
 
     /// <summary>
     /// List of arguments used to call the function with.

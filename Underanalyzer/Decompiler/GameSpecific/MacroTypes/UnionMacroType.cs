@@ -34,7 +34,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         }
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         foreach (IMacroType type in Types)
         {
@@ -42,7 +42,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            IExpressionNode result = type32.Resolve(cleaner, node, data);
+            IExpressionNode? result = type32.Resolve(cleaner, node, data);
             if (result is not null)
             {
                 return result;
@@ -51,7 +51,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         return null;
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
     {
         foreach (IMacroType type in Types)
         {
@@ -59,7 +59,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            IExpressionNode result = type64.Resolve(cleaner, node, data);
+            IExpressionNode? result = type64.Resolve(cleaner, node, data);
             if (result is not null)
             {
                 return result;
@@ -68,7 +68,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         return null;
     }
 
-    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
+    public IFunctionCallNode? Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
     {
         foreach (IMacroType type in Types)
         {
@@ -76,7 +76,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            IFunctionCallNode result = typeFuncArgs.Resolve(cleaner, functionCall);
+            IFunctionCallNode? result = typeFuncArgs.Resolve(cleaner, functionCall);
             if (result is not null)
             {
                 return result;
@@ -85,7 +85,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         return null;
     }
 
-    public ArrayInitNode Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
+    public ArrayInitNode? Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
     {
         foreach (IMacroType type in Types)
         {
@@ -93,7 +93,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            ArrayInitNode result = typeArrayInit.Resolve(cleaner, arrayInit);
+            ArrayInitNode? result = typeArrayInit.Resolve(cleaner, arrayInit);
             if (result is not null)
             {
                 return result;
@@ -102,7 +102,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
         return null;
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IConditionalValueNode node)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IConditionalValueNode node)
     {
         foreach (IMacroType type in Types)
         {
@@ -110,7 +110,7 @@ public class UnionMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFuncti
             {
                 continue;
             }
-            IExpressionNode result = typeConditional.Resolve(cleaner, node);
+            IExpressionNode? result = typeConditional.Resolve(cleaner, node);
             if (result is not null)
             {
                 return result;

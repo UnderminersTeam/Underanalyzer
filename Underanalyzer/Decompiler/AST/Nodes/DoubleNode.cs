@@ -13,9 +13,9 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a double constant in the AST.
 /// </summary>
-public class DoubleNode : IConstantNode<double>, IConditionalValueNode
+public class DoubleNode(double value) : IConstantNode<double>, IConditionalValueNode
 {
-    public double Value { get; }
+    public double Value { get; } = value;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -24,14 +24,9 @@ public class DoubleNode : IConstantNode<double>, IConditionalValueNode
     public string ConditionalTypeName => "Double";
     public string ConditionalValue => Value.ToString("R", CultureInfo.InvariantCulture); // TODO: maybe do full conversion here
 
-    public DoubleNode(double value)
-    {
-        Value = value;
-    }
-
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
-        if (cleaner.Context.Settings.TryGetPredefinedDouble(Value, out string predefined, out bool isMultiPart))
+        if (cleaner.Context.Settings.TryGetPredefinedDouble(Value, out string? predefined, out bool isMultiPart))
         {
             if (isMultiPart)
             {
@@ -126,7 +121,7 @@ public class DoubleNode : IConstantNode<double>, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

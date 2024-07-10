@@ -11,9 +11,9 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a 64-bit signed integer constant in the AST.
 /// </summary>
-public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditionalValueNode
+public class Int64Node(long value) : IConstantNode<long>, IMacroResolvableNode, IConditionalValueNode
 {
-    public long Value { get; }
+    public long Value { get; } = value;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -21,11 +21,6 @@ public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditional
 
     public string ConditionalTypeName => "Integer";
     public string ConditionalValue => Value.ToString();
-
-    public Int64Node(long value)
-    {
-        Value = value;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -78,7 +73,7 @@ public class Int64Node : IConstantNode<long>, IMacroResolvableNode, IConditional
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt64 type64)
         {

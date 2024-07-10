@@ -19,13 +19,13 @@ internal class StaticInit : IControlFlowNode
 
     public int EndAddress { get; private set; }
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = [null];
+    public List<IControlFlowNode?> Children { get; } = [null];
 
     public bool Unreachable { get; set; } = false;
 
@@ -35,7 +35,7 @@ internal class StaticInit : IControlFlowNode
     /// <remarks>
     /// Upon being processed, this has its predecessors disconnected.
     /// </remarks>
-    public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Head { get => Children[0]!; private set => Children[0] = value; }
 
     public StaticInit(int startAddress, int endAddress, IControlFlowNode head)
     {
@@ -49,9 +49,9 @@ internal class StaticInit : IControlFlowNode
     /// </summary>
     public static List<StaticInit> FindStaticInits(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
 
-        List<StaticInit> res = new();
+        List<StaticInit> res = [];
 
         foreach (var block in blocks)
         {

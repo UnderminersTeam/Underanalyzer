@@ -21,13 +21,13 @@ internal class Nullish : IControlFlowNode
 
     public int EndAddress { get; private set; }
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = [null];
+    public List<IControlFlowNode?> Children { get; } = [null];
 
     public bool Unreachable { get; set; } = false;
 
@@ -40,7 +40,7 @@ internal class Nullish : IControlFlowNode
     /// Upon being processed, this has its predecessors disconnected. 
     /// All paths exiting from it are also isolated from the external graph.
     /// </remarks>
-    public IControlFlowNode IfNullish { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode IfNullish { get => Children[0]!; private set => Children[0] = value; }
 
     public Nullish(int startAddress, int endAddress, NullishType nullishKind, IControlFlowNode ifNullishNode)
     {
@@ -55,9 +55,9 @@ internal class Nullish : IControlFlowNode
     /// </summary>
     public static List<Nullish> FindNullish(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
 
-        List<Nullish> res = new();
+        List<Nullish> res = [];
 
         for (int j = blocks.Count - 1; j >= 0; j--)
         {
@@ -69,8 +69,8 @@ internal class Nullish : IControlFlowNode
                 { Kind: IGMInstruction.Opcode.BranchFalse }
                 ])
             {
-                Block ifNullishBlock = block.Successors[0] as Block;
-                Block afterBlock = block.Successors[1] as Block;
+                Block ifNullishBlock = block.Successors[0] as Block ?? throw new DecompilerException("Expected first successor to be block");
+                Block afterBlock = block.Successors[1] as Block ?? throw new DecompilerException("Expected second successor to be block");
 
                 // Determine nullish type by using the block "after"
                 NullishType nullishKind = NullishType.Expression;
@@ -88,7 +88,7 @@ internal class Nullish : IControlFlowNode
                 // Remove pop instruction from "if nullish" block
                 ifNullishBlock.Instructions.RemoveAt(0);
 
-                Block endOfNullishBlock = null;
+                Block? endOfNullishBlock = null;
                 if (nullishKind == NullishType.Assignment)
                 {
                     // Remove pop instruction from "after" block

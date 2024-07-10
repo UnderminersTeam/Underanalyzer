@@ -11,22 +11,23 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a conditional expression in the AST.
 /// </summary>
-public class ConditionalNode : IMultiExpressionNode, IMacroResolvableNode, IConditionalValueNode
+public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr, IExpressionNode falseExpr) 
+    : IMultiExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// The condition of the conditional expression.
     /// </summary>
-    public IExpressionNode Condition { get; private set; }
+    public IExpressionNode Condition { get; private set; } = condition;
 
     /// <summary>
     /// The expression that is returned when the condition is true.
     /// </summary>
-    public IExpressionNode True { get; private set; }
+    public IExpressionNode True { get; private set; } = trueExpr;
 
     /// <summary>
     /// The expression that is returned when the condition is false.
     /// </summary>
-    public IExpressionNode False { get; private set; }
+    public IExpressionNode False { get; private set; } = falseExpr;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -34,13 +35,6 @@ public class ConditionalNode : IMultiExpressionNode, IMacroResolvableNode, ICond
 
     public string ConditionalTypeName => "Conditional";
     public string ConditionalValue => ""; // TODO?
-
-    public ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr, IExpressionNode falseExpr)
-    {
-        Condition = condition;
-        True = trueExpr;
-        False = falseExpr;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -91,7 +85,7 @@ public class ConditionalNode : IMultiExpressionNode, IMacroResolvableNode, ICond
                False.RequiresMultipleLines(printer);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -23,7 +23,7 @@ internal class ArrayInitMacroTypeConverter
         }
 
         reader.Read();
-        ArrayInitMacroType res = new(macroTypeConverter.Read(ref reader, null, options));
+        ArrayInitMacroType res = new(macroTypeConverter.Read(ref reader, typeof(IMacroType), options) ?? throw new JsonException());
 
         reader.Read();
         if (reader.TokenType != JsonTokenType.EndObject)

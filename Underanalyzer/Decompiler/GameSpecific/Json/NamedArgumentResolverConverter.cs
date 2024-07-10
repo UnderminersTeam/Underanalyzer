@@ -11,7 +11,7 @@ namespace Underanalyzer.Decompiler.GameSpecific.Json;
 
 internal class NamedArgumentResolverConverter
 {
-    public static void ReadContents(ref Utf8JsonReader reader, JsonSerializerOptions options, NamedArgumentResolver existing)
+    public static void ReadContents(ref Utf8JsonReader reader, NamedArgumentResolver existing)
     {
         if (reader.TokenType != JsonTokenType.StartObject)
         {
@@ -29,10 +29,10 @@ internal class NamedArgumentResolverConverter
             {
                 throw new JsonException();
             }
-            string codeEntryName = reader.GetString();
+            string codeEntryName = reader.GetString() ?? throw new JsonException();
 
             // Read name array
-            List<string> names = new();
+            List<string> names = [];
             if (reader.TokenType != JsonTokenType.StartArray)
             {
                 throw new JsonException();
@@ -48,7 +48,7 @@ internal class NamedArgumentResolverConverter
                 {
                     throw new JsonException();
                 }
-                names.Add(reader.GetString());
+                names.Add(reader.GetString() ?? throw new JsonException());
             }
 
             // Define the code entry with these names

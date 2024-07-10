@@ -11,27 +11,21 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a switch statement in the AST.
 /// </summary>
-public class SwitchNode : IStatementNode
+public class SwitchNode(IExpressionNode expression, BlockNode body) : IStatementNode
 {
     /// <summary>
     /// The expression being switched upon.
     /// </summary>
-    public IExpressionNode Expression { get; private set; }
+    public IExpressionNode Expression { get; private set; } = expression;
 
     /// <summary>
     /// The main block of the switch statement.
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public SwitchNode(IExpressionNode expression, BlockNode body)
-    {
-        Expression = expression;
-        Body = body;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

@@ -12,12 +12,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// A struct declaration/instantiation within the AST.
 /// </summary>
-public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
+public class StructNode(BlockNode body, ASTFragmentContext fragmentContext) : IFragmentNode, IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The body of the struct (typically a block with assignments).
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -25,16 +25,10 @@ public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-    public ASTFragmentContext FragmentContext { get; }
+    public ASTFragmentContext FragmentContext { get; } = fragmentContext;
 
     public string ConditionalTypeName => "Struct";
     public string ConditionalValue => "";
-
-    public StructNode(BlockNode body, ASTFragmentContext fragmentContext)
-    {
-        Body = body;
-        FragmentContext = fragmentContext;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -65,7 +59,7 @@ public class StructNode : IFragmentNode, IExpressionNode, IConditionalValueNode
         return Body.Children.Count != 0;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

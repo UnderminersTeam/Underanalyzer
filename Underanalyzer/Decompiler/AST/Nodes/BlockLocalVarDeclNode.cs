@@ -24,7 +24,7 @@ public class BlockLocalVarDeclNode : IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        List<string> localNames = printer.TopFragmentContext.LocalVariableNamesList;
+        List<string> localNames = printer.TopFragmentContext!.LocalVariableNamesList;
         if (localNames.Count > 0)
         {
             printer.Write("var ");

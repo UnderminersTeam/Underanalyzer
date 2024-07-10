@@ -11,16 +11,11 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// <summary>
 /// Macro type for GameMaker asset references.
 /// </summary>
-public class AssetMacroType : IMacroTypeInt32
+public class AssetMacroType(AssetType type) : IMacroTypeInt32
 {
-    public AssetType Type { get; }
+    public AssetType Type { get; } = type;
 
-    public AssetMacroType(AssetType type)
-    {
-        Type = type;
-    }
-
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         // Ensure we don't resolve this on newer GameMaker versions where this is unnecessary
         if (cleaner.Context.GameContext.UsingAssetReferences)
@@ -32,7 +27,7 @@ public class AssetMacroType : IMacroTypeInt32
         }
 
         // Check for asset name with the given type
-        string assetName = cleaner.Context.GameContext.GetAssetName(Type, data);
+        string? assetName = cleaner.Context.GameContext.GetAssetName(Type, data);
         if (assetName is not null)
         {
             return new MacroValueNode(assetName);

@@ -72,7 +72,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Equal(blocks[3], b.Else);
         Assert.Empty(blocks[3].Successors);
         Assert.Empty(b.True.Predecessors);
-        Assert.Empty(b.Else.Predecessors);
+        Assert.Empty(b.Else!.Predecessors);
 
         Assert.Equal(2, blocks[2].Instructions.Count);
 
@@ -419,7 +419,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         c = (ContinueNode)blocks[4].Successors[0];
         Assert.Equal([blocks[4]], c.Predecessors);
         Assert.Equal([], c.Successors);
-        Assert.Empty(b.Else.Predecessors);
+        Assert.Empty(b.Else!.Predecessors);
         Assert.Empty(b.True.Predecessors);
 
         Assert.Empty(blocks[3].Instructions);
@@ -509,7 +509,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         c = (ContinueNode)blocks[4].Successors[0];
         Assert.Equal([blocks[4]], c.Predecessors);
         Assert.Equal([], c.Successors);
-        Assert.Empty(b.Else.Predecessors);
+        Assert.Empty(b.Else!.Predecessors);
         Assert.Empty(b.True.Predecessors);
 
         Assert.Empty(blocks[3].Instructions);
@@ -730,7 +730,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         c = (BreakNode)blocks[4].Successors[0];
         Assert.Equal([blocks[4]], c.Predecessors);
         Assert.Equal([], c.Successors);
-        Assert.Empty(b.Else.Predecessors);
+        Assert.Empty(b.Else!.Predecessors);
         Assert.Empty(b.True.Predecessors);
 
         Assert.Empty(blocks[3].Instructions);
@@ -819,7 +819,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         c = (BreakNode)blocks[4].Successors[0];
         Assert.Equal([blocks[4]], c.Predecessors);
         Assert.Equal([], c.Successors);
-        Assert.Empty(b.Else.Predecessors);
+        Assert.Empty(b.Else!.Predecessors);
         Assert.Empty(b.True.Predecessors);
 
         Assert.Empty(blocks[3].Instructions);
@@ -1286,7 +1286,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Equal([blocks[5]], c.Predecessors);
         Assert.Equal([], c.Successors);
         Assert.Empty(b1.True.Predecessors);
-        Assert.Empty(b1.Else.Predecessors);
+        Assert.Empty(b1.Else!.Predecessors);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -1433,7 +1433,7 @@ public class BinaryBranch_FindBinaryBranches_Loops
         Assert.Equal(blocks[4], b1.Else);
         Assert.Equal(blocks[4], b1.False);
         Assert.Empty(b1.True.Predecessors);
-        Assert.Empty(b1.Else.Predecessors);
+        Assert.Empty(b1.Else!.Predecessors);
         Assert.Empty(blocks[3].Instructions);
 
         Assert.Empty(blocks[4].Instructions);

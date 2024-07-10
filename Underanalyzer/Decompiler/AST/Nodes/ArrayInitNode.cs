@@ -12,12 +12,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an array literal in the AST.
 /// </summary>
-public class ArrayInitNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
+public class ArrayInitNode(List<IExpressionNode> elements) : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// List of elements in this array literal.
     /// </summary>
-    public List<IExpressionNode> Elements { get; }
+    public List<IExpressionNode> Elements { get; } = elements;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -25,11 +25,6 @@ public class ArrayInitNode : IExpressionNode, IMacroResolvableNode, IConditional
 
     public string ConditionalTypeName => "ArrayInit";
     public string ConditionalValue => "";
-
-    public ArrayInitNode(List<IExpressionNode> elements)
-    {
-        Elements = elements;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -66,7 +61,7 @@ public class ArrayInitNode : IExpressionNode, IMacroResolvableNode, IConditional
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeArrayInit typeArrayInit)
         {

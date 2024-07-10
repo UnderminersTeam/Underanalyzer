@@ -14,7 +14,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// </summary>
 internal class DoUntilLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [null, null, null];
+    public override List<IControlFlowNode?> Children { get; } = [null, null, null];
 
     /// <summary>
     /// The top loop point and start of the loop body, as written in the source code.
@@ -22,7 +22,7 @@ internal class DoUntilLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its predecessors.
     /// </remarks>
-    public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Head { get => Children[0]!; private set => Children[0] = value; }
 
     /// <summary>
     /// The bottom loop point of the loop. This is where the loop condition and branch to the loop head is located.
@@ -30,7 +30,7 @@ internal class DoUntilLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its successors.
     /// </remarks>
-    public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode Tail { get => Children[1]!; private set => Children[1] = value; }
 
     /// <summary>
     /// The "sink" location of the loop. The loop condition being false or "break" statements will lead to this location.
@@ -38,7 +38,7 @@ internal class DoUntilLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
     /// </remarks>
-    public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode After { get => Children[2]!; private set => Children[2] = value; }
 
     public DoUntilLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
         : base(startAddress, endAddress)
@@ -53,7 +53,7 @@ internal class DoUntilLoop : Loop
         // Get rid of jumps from tail
         IControlFlowNode.DisconnectSuccessor(Tail, 1);
         IControlFlowNode.DisconnectSuccessor(Tail, 0);
-        Block tailBlock = Tail as Block;
+        Block tailBlock = (Tail as Block)!;
         tailBlock.Instructions.RemoveAt(tailBlock.Instructions.Count - 1);
 
         // Add a new node that is branched to at the end, to keep control flow internal
@@ -79,7 +79,7 @@ internal class DoUntilLoop : Loop
     public override void BuildAST(ASTBuilder builder, List<IStatementNode> output)
     {
         // Push this loop context
-        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        Loop? prevLoop = builder.TopFragmentContext!.SurroundingLoop;
         builder.TopFragmentContext.SurroundingLoop = this;
 
         // Build body

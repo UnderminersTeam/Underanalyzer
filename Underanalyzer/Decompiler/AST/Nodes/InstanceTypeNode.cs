@@ -11,12 +11,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an instance type (<see cref="IGMInstruction.InstanceType"/>) in the AST.
 /// </summary>
-public class InstanceTypeNode : IExpressionNode, IConditionalValueNode
+public class InstanceTypeNode(IGMInstruction.InstanceType instType) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The instance type for this node.
     /// </summary>
-    public IGMInstruction.InstanceType InstanceType { get; }
+    public IGMInstruction.InstanceType InstanceType { get; } = instType;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -24,11 +24,6 @@ public class InstanceTypeNode : IExpressionNode, IConditionalValueNode
 
     public string ConditionalTypeName => "InstanceType";
     public string ConditionalValue => InstanceType.ToString();
-
-    public InstanceTypeNode(IGMInstruction.InstanceType instType)
-    {
-        InstanceType = instType;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -53,7 +48,7 @@ public class InstanceTypeNode : IExpressionNode, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -9,27 +9,21 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a do..until loop in the AST.
 /// </summary>
-public class DoUntilLoopNode : IStatementNode
+public class DoUntilLoopNode(BlockNode body, IExpressionNode condition) : IStatementNode
 {
     /// <summary>
     /// The main block of the loop.
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     /// <summary>
     /// The condition of the loop.
     /// </summary>
-    public IExpressionNode Condition { get; private set; }
+    public IExpressionNode Condition { get; private set; } = condition;
 
     public bool SemicolonAfter => true;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public DoUntilLoopNode(BlockNode body, IExpressionNode condition)
-    {
-        Condition = condition;
-        Body = body;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

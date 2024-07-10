@@ -7,23 +7,18 @@
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
-/// Represents a switch case in the AST.
+/// Represents a switch case (or default case) in the AST.
 /// </summary>
-public class SwitchCaseNode : IStatementNode, IBlockCleanupNode
+public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
-    /// The case expression, or null if default.
+    /// The case expression, or <see langword="null"/> if default.
     /// </summary>
-    public IExpressionNode Expression { get; internal set; }
+    public IExpressionNode? Expression { get; internal set; } = expression;
 
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public SwitchCaseNode(IExpressionNode expression)
-    {
-        Expression = expression;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

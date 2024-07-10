@@ -14,15 +14,15 @@ internal class Switch : IControlFlowNode
     /// <summary>
     /// Initial detection data for a switch statement, used to prevent calculations being done twice.
     /// </summary>
-    public class SwitchDetectionData
+    public class SwitchDetectionData(Block endBlock, IControlFlowNode endNode, bool mayBeMisdetected)
     {
-        public Block EndBlock { get; set; } = null;
-        public IControlFlowNode EndNode { get; set; } = null;
-        public Block ContinueBlock { get; set; } = null;
-        public Block ContinueSkipBlock { get; set; } = null;
-        public Block EndOfCaseBlock { get; set; } = null;
-        public Block DefaultBranchBlock { get; set; } = null;
-        public bool MayBeMisdetected { get; set; } = false;
+        public Block EndBlock { get; set; } = endBlock;
+        public IControlFlowNode EndNode { get; set; } = endNode;
+        public Block? ContinueBlock { get; set; } = null;
+        public Block? ContinueSkipBlock { get; set; } = null;
+        public Block? EndOfCaseBlock { get; set; } = null;
+        public Block? DefaultBranchBlock { get; set; } = null;
+        public bool MayBeMisdetected { get; set; } = mayBeMisdetected;
     }
 
     public class CaseJumpNode(int address) : IControlFlowNode
@@ -31,13 +31,13 @@ internal class Switch : IControlFlowNode
 
         public int EndAddress { get; private set; } = address;
 
-        public List<IControlFlowNode> Predecessors { get; } = new();
+        public List<IControlFlowNode> Predecessors { get; } = [];
 
-        public List<IControlFlowNode> Successors { get; } = new();
+        public List<IControlFlowNode> Successors { get; } = [];
 
-        public IControlFlowNode Parent { get; set; } = null;
+        public IControlFlowNode? Parent { get; set; } = null;
 
-        public List<IControlFlowNode> Children { get; } = new();
+        public List<IControlFlowNode?> Children { get; } = [];
 
         public bool Unreachable { get; set; } = false;
 
@@ -49,7 +49,7 @@ internal class Switch : IControlFlowNode
         public void BuildAST(ASTBuilder builder, List<IStatementNode> output)
         {
             // Queue our expression to be used later, when the case destination is processed
-            builder.SwitchCases.Enqueue(builder.ExpressionStack.Pop());
+            builder.SwitchCases!.Enqueue(builder.ExpressionStack.Pop());
 
             // Get rid of duplicated expression
             builder.ExpressionStack.Pop();
@@ -62,13 +62,13 @@ internal class Switch : IControlFlowNode
 
         public int EndAddress { get; private set; } = address;
 
-        public List<IControlFlowNode> Predecessors { get; } = new();
+        public List<IControlFlowNode> Predecessors { get; } = [];
 
-        public List<IControlFlowNode> Successors { get; } = new();
+        public List<IControlFlowNode> Successors { get; } = [];
 
-        public IControlFlowNode Parent { get; set; } = null;
+        public IControlFlowNode? Parent { get; set; } = null;
 
-        public List<IControlFlowNode> Children { get; } = new();
+        public List<IControlFlowNode?> Children { get; } = [];
 
         public bool Unreachable { get; set; } = false;
 
@@ -89,7 +89,7 @@ internal class Switch : IControlFlowNode
             else
             {
                 // Retrieve expression from earlier evaluation
-                output.Add(new SwitchCaseNode(builder.SwitchCases.Dequeue()));
+                output.Add(new SwitchCaseNode(builder.SwitchCases!.Dequeue()));
             }
         }
     }
@@ -98,31 +98,31 @@ internal class Switch : IControlFlowNode
 
     public int EndAddress { get; private set; }
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = [null, null, null];
+    public List<IControlFlowNode?> Children { get; } = [null, null, null];
 
     public bool Unreachable { get; set; } = false;
 
     /// <summary>
     /// The first block that begins the chain of case conditions. Should always be a Block.
     /// </summary>
-    public IControlFlowNode Cases { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Cases { get => Children[0] ?? throw new System.NullReferenceException(); private set => Children[0] = value; }
 
     /// <summary>
-    /// The first node of the switch statement body. Should always be a CaseDestinationNode, or null.
+    /// The first node of the switch statement body. Should always be a CaseDestinationNode, or <see langword="null"/>.
     /// </summary>
-    public IControlFlowNode Body { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode? Body { get => Children[1]; private set => Children[1] = value; }
 
     /// <summary>
-    /// An optional successor chain of case destinations (null if none was necessary).
+    /// An optional successor chain of case destinations (<see langword="null"/> if none was necessary).
     /// Specifically, those that appear at the very end of the switch statement and have no code.
     /// </summary>
-    public IControlFlowNode EndCaseDestinations { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode? EndCaseDestinations { get => Children[2]; private set => Children[2] = value; }
 
     /// <summary>
     /// The data used to detect this switch statement, used for later verification.
@@ -130,7 +130,7 @@ internal class Switch : IControlFlowNode
     internal SwitchDetectionData DetectionData { get; }
 
     public Switch(int startAddress, int endAddress, 
-        IControlFlowNode cases, IControlFlowNode body, IControlFlowNode endCaseDestinations, SwitchDetectionData data)
+        IControlFlowNode cases, IControlFlowNode? body, IControlFlowNode? endCaseDestinations, SwitchDetectionData data)
     {
         StartAddress = startAddress;
         EndAddress = endAddress;
@@ -144,17 +144,21 @@ internal class Switch : IControlFlowNode
     {
         public static BlockIndexComparer Instance { get; } = new();
 
-        public int Compare(Block x, Block y)
+        public int Compare(Block? x, Block? y)
         {
+            if (x is null || y is null)
+            {
+                throw new System.NullReferenceException();
+            }
             return x.BlockIndex - y.BlockIndex;
         }
     }
 
     private static void DetectionPass(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
-        List<Fragment> fragments = ctx.FragmentNodes;
-        ctx.BlockSurroundingLoops ??= Branches.FindSurroundingLoops(blocks, ctx.BlocksByAddress, ctx.LoopNodes);
+        List<Block> blocks = ctx.Blocks!;
+        List<Fragment> fragments = ctx.FragmentNodes!;
+        ctx.BlockSurroundingLoops ??= Branches.FindSurroundingLoops(blocks, ctx.BlocksByAddress!, ctx.LoopNodes!);
         ctx.BlockAfterLimits ??= Branches.ComputeBlockAfterLimits(blocks, ctx.BlockSurroundingLoops);
 
         foreach (Fragment fragment in fragments)
@@ -162,9 +166,9 @@ internal class Switch : IControlFlowNode
             for (int i = 0; i < fragment.Blocks.Count - 1; i++)
             {
                 Block block = fragment.Blocks[i];
-                Block endCaseBlock = null;
-                IControlFlowNode endNode = null;
-                Block endBlock = null;
+                Block? endCaseBlock = null;
+                IControlFlowNode? endNode = null;
+                Block? endBlock = null;
                 bool mayBeMisdetected = false;
                 if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchTrue }])
                 {
@@ -197,7 +201,7 @@ internal class Switch : IControlFlowNode
                     // If there exists a default case branch in this switch statement, it would be this one.
                     // To check, we look at the next block (at least one more *should* exist) to see if it's an unreachable Branch block.
                     // We use this to determine endNode.
-                    Block firstBranchBlock = node as Block;
+                    Block firstBranchBlock = node as Block ?? throw new System.NullReferenceException();
                     Block nextBlock = blocks[firstBranchBlock.BlockIndex + 1];
                     if (nextBlock is { Unreachable: true, Instructions: [{ Kind: IGMInstruction.Opcode.Branch }] })
                     {
@@ -210,7 +214,7 @@ internal class Switch : IControlFlowNode
                         endCaseBlock = firstBranchBlock;
                     }
                     endNode = endCaseBlock.Successors[0];
-                    endBlock = ctx.BlocksByAddress[endNode.StartAddress];
+                    endBlock = ctx.BlocksByAddress![endNode.StartAddress];
                 }
                 else if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
                 {
@@ -221,7 +225,7 @@ internal class Switch : IControlFlowNode
                         // nextBlock is the end of case block
                         endCaseBlock = nextBlock;
                         endNode = nextBlock.Successors[0];
-                        endBlock = ctx.BlocksByAddress[endNode.StartAddress];
+                        endBlock = ctx.BlocksByAddress![endNode.StartAddress];
 
                         // Ensure both branches are forward branches (past these two blocks)
                         if (block.Successors[0].StartAddress < nextBlock.EndAddress ||
@@ -313,12 +317,17 @@ internal class Switch : IControlFlowNode
 
                 if (endNode is not null)
                 {
+                    if (endBlock is null || endCaseBlock is null)
+                    {
+                        throw new System.NullReferenceException();
+                    }
+
                     // Check that we're not detecting the same switch twice (e.g. due to a break/continue statement)
-                    if (ctx.SwitchEndNodes.Contains(endNode))
+                    if (ctx.SwitchEndNodes!.Contains(endNode))
                     {
                         continue;
                     }
-                    if (ctx.SwitchContinueBlocks.Contains(endBlock))
+                    if (ctx.SwitchContinueBlocks!.Contains(endBlock))
                     {
                         continue;
                     }
@@ -327,13 +336,8 @@ internal class Switch : IControlFlowNode
                     ctx.SwitchEndNodes.Add(endNode);
 
                     // Create detection data
-                    SwitchDetectionData data = new()
-                    {
-                        EndBlock = endBlock,
-                        EndNode = endNode,
-                        MayBeMisdetected = mayBeMisdetected
-                    };
-                    ctx.SwitchData.Add(data);
+                    SwitchDetectionData data = new(endBlock, endNode, mayBeMisdetected);
+                    ctx.SwitchData!.Add(data);
 
                     // Update index for next iteration (to be after the end case node's block index).
                     int endCaseBlockIndex =
@@ -369,7 +373,7 @@ internal class Switch : IControlFlowNode
 
                     // This is definitely a switch continue block
                     ctx.SwitchContinueBlocks.Add(previousBlock);
-                    ctx.SwitchIgnoreJumpBlocks.Add(previousPreviousBlock);
+                    ctx.SwitchIgnoreJumpBlocks!.Add(previousPreviousBlock);
                     data.ContinueBlock = previousBlock;
                     data.ContinueSkipBlock = previousPreviousBlock;
                 }
@@ -379,12 +383,12 @@ internal class Switch : IControlFlowNode
 
     private static void DetailPass(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
 
-        foreach (SwitchDetectionData data in ctx.SwitchData)
+        foreach (SwitchDetectionData data in ctx.SwitchData!)
         {
             // Find first predecessor that ends in Branch (should be the first one that *doesn't* end in BranchTrue)
-            Block firstBranchPredecessor = null;
+            Block? firstBranchPredecessor = null;
             foreach (IControlFlowNode pred in data.EndNode.Predecessors)
             {
                 if (pred is Block predBlock && predBlock.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }])
@@ -393,7 +397,7 @@ internal class Switch : IControlFlowNode
                     break;
                 }
             }
-            if (firstBranchPredecessor == null)
+            if (firstBranchPredecessor is null)
             {
                 throw new DecompilerException("Failed to find end of switch cases");
             }
@@ -409,7 +413,7 @@ internal class Switch : IControlFlowNode
             //  - Otherwise, there's no default branch
             data.EndOfCaseBlock = firstBranchPredecessor;
             bool prevBlockIsDefaultBranch;
-            if (firstBranchPredecessor.BlockIndex >= 1 && !ctx.SwitchEndNodes.Contains(firstBranchPredecessor))
+            if (firstBranchPredecessor.BlockIndex >= 1 && !ctx.SwitchEndNodes!.Contains(firstBranchPredecessor))
             {
                 Block prevBlock = blocks[firstBranchPredecessor.BlockIndex - 1];
                 if (prevBlock.Instructions is not [.., { Kind: IGMInstruction.Opcode.Branch }])
@@ -442,7 +446,7 @@ internal class Switch : IControlFlowNode
             }
 
             // Update list of blocks that we should ignore
-            ctx.SwitchIgnoreJumpBlocks.Add(data.EndOfCaseBlock);
+            ctx.SwitchIgnoreJumpBlocks!.Add(data.EndOfCaseBlock);
             if (data.DefaultBranchBlock is not null)
             {
                 ctx.SwitchIgnoreJumpBlocks.Add(data.DefaultBranchBlock);
@@ -457,10 +461,10 @@ internal class Switch : IControlFlowNode
     /// </summary>
     public static void FindSwitchStatements(DecompileContext ctx)
     {
-        ctx.SwitchEndNodes = new();
-        ctx.SwitchData = new();
-        ctx.SwitchContinueBlocks = new();
-        ctx.SwitchIgnoreJumpBlocks = new();
+        ctx.SwitchEndNodes = [];
+        ctx.SwitchData = [];
+        ctx.SwitchContinueBlocks = [];
+        ctx.SwitchIgnoreJumpBlocks = [];
 
         // First pass: simply detect the end blocks of switch statements, as well as continue blocks.
         // We do this first as this requires a special algorithm to prevent false positives/negatives.
@@ -477,15 +481,15 @@ internal class Switch : IControlFlowNode
     /// </summary>
     public static List<Switch> InsertSwitchStatements(DecompileContext ctx)
     {
-        List<Switch> res = new();
+        List<Switch> res = [];
 
-        for (int j = 0; j < ctx.SwitchData.Count; j++)
+        for (int j = 0; j < ctx.SwitchData!.Count; j++)
         {
             SwitchDetectionData data = ctx.SwitchData[j];
 
             // Find all cases
-            IControlFlowNode currentNode = data.EndOfCaseBlock;
-            List<Block> caseBranches = new();
+            IControlFlowNode? currentNode = data.EndOfCaseBlock;
+            List<Block> caseBranches = [];
             while (currentNode is not null)
             {
                 if (currentNode is Block currentBlock)
@@ -496,7 +500,7 @@ internal class Switch : IControlFlowNode
                         caseBranches.Add(currentBlock);
                     }
 
-                    if (ctx.SwitchEndNodes.Contains(currentBlock))
+                    if (ctx.SwitchEndNodes!.Contains(currentBlock))
                     {
                         // We're at the end of another switch statement - do not continue
                         break;
@@ -515,10 +519,10 @@ internal class Switch : IControlFlowNode
 
             // Update graph for all cases (in reverse; we found them backwards)
             // First pass: update chain of conditions
-            IControlFlowNode startOfBody = null;
-            IControlFlowNode endCaseDestinations = null;
-            IControlFlowNode endCaseDestinationsEnd = null;
-            List<IControlFlowNode> caseDestinationNodes = new();
+            IControlFlowNode? startOfBody = null;
+            IControlFlowNode? endCaseDestinations = null;
+            IControlFlowNode? endCaseDestinationsEnd = null;
+            List<IControlFlowNode> caseDestinationNodes = new(caseBranches.Count);
             for (int i = caseBranches.Count - 1; i >= 0; i--)
             {
                 Block currentBlock = caseBranches[i];
@@ -540,7 +544,7 @@ internal class Switch : IControlFlowNode
                 }
             }
             // First pass (part two): also update default case
-            IControlFlowNode defaultDestinationNode = null;
+            IControlFlowNode? defaultDestinationNode = null;
             if (data.DefaultBranchBlock is not null)
             {
                 Block defaultBlock = data.DefaultBranchBlock;
@@ -568,7 +572,7 @@ internal class Switch : IControlFlowNode
                     }
                     else
                     {
-                        endCaseDestinationsEnd.Successors.Add(caseDestNode);
+                        endCaseDestinationsEnd!.Successors.Add(caseDestNode);
                         caseDestNode.Predecessors.Add(endCaseDestinationsEnd);
                         endCaseDestinationsEnd = caseDestNode;
                     }
@@ -605,9 +609,8 @@ internal class Switch : IControlFlowNode
                     }
                     else
                     {
-                        endCaseDestinationsEnd.Successors.Add(caseDestNode);
+                        endCaseDestinationsEnd!.Successors.Add(caseDestNode);
                         caseDestNode.Predecessors.Add(endCaseDestinationsEnd);
-                        endCaseDestinationsEnd = caseDestNode;
                     }
                 }
                 else
@@ -650,7 +653,7 @@ internal class Switch : IControlFlowNode
                     IControlFlowNode.DisconnectSuccessor(continueBlock, i);
                 }
 
-                Block skipContinueBlock = data.ContinueSkipBlock;
+                Block skipContinueBlock = data.ContinueSkipBlock!;
                 skipContinueBlock.Instructions.RemoveAt(skipContinueBlock.Instructions.Count - 1);
                 for (int i = skipContinueBlock.Predecessors.Count - 1; i >= 0; i--)
                 {
@@ -675,7 +678,7 @@ internal class Switch : IControlFlowNode
             }
 
             // Construct actual switch node
-            Block startOfStatement = (caseBranches.Count > 0) ? caseBranches[^1] : (data.DefaultBranchBlock ?? data.EndOfCaseBlock);
+            Block startOfStatement = (caseBranches.Count > 0) ? caseBranches[^1] : (data.DefaultBranchBlock ?? data.EndOfCaseBlock)!;
             Switch switchNode = 
                 new(startOfStatement.StartAddress, endNode.StartAddress, startOfStatement, startOfBody, endCaseDestinations, data);
             IControlFlowNode.InsertStructure(startOfStatement, endNode, switchNode);
@@ -724,10 +727,10 @@ internal class Switch : IControlFlowNode
             {
                 endNode = endNode.Parent;
             }
-            bool forward = (endNode.StartAddress > DetectionData.EndOfCaseBlock.EndAddress - 4);
+            bool forward = (endNode.StartAddress > DetectionData.EndOfCaseBlock!.EndAddress - 4);
 
             // Now, we check our surrounding loop to see if it needs to be transformed between while/for.
-            Loop loop = builder.TopFragmentContext.SurroundingLoop;
+            Loop? loop = builder.TopFragmentContext!.SurroundingLoop;
             if (loop is WhileLoop whileLoop)
             {
                 if (forward)

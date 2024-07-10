@@ -13,46 +13,41 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a variable reference in the AST.
 /// </summary>
-public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNode
+public class VariableNode(IGMVariable variable, VariableType referenceType, IExpressionNode left, 
+                          List<IExpressionNode>? arrayIndices = null, bool regularPush = false) 
+    : IExpressionNode, IMacroTypeNode, IConditionalValueNode
 {
     /// <summary>
     /// The variable being referenced.
     /// </summary>
-    public IGMVariable Variable { get; }
+    public IGMVariable Variable { get; } = variable;
 
     /// <summary>
     /// The type of the variable reference.
     /// </summary>
-    public IGMInstruction.VariableType ReferenceType { get; }
+    public VariableType ReferenceType { get; } = referenceType;
 
     /// <summary>
     /// The left side of the variable (before a dot, usually).
     /// </summary>
-    public IExpressionNode Left { get; internal set; }
+    public IExpressionNode Left { get; internal set; } = left;
 
     /// <summary>
-    /// For array accesses, this is not null, and contains all array indexing operations on this variable.
+    /// For array accesses, this is not <see langword="null"/>, and contains all array indexing operations on this variable.
     /// </summary>
-    public List<IExpressionNode> ArrayIndices { get; internal set; }
+    public List<IExpressionNode>? ArrayIndices { get; internal set; } = arrayIndices;
 
     /// <summary>
-    /// If true, means that this variable was pushed with a normal <see cref="IGMInstruction.Opcode.Push"/> opcode.
+    /// If true, means that this variable was pushed with a normal <see cref="Opcode.Push"/> opcode.
     /// </summary>
-    public bool RegularPush { get; }
+    public bool RegularPush { get; } = regularPush;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
-    public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+    public DataType StackType { get; set; } = DataType.Variable;
 
     public string ConditionalTypeName => "Variable";
     public string ConditionalValue => Variable.Name.Content;
-
-    public VariableNode(IGMVariable variable, IGMInstruction.VariableType referenceType, bool regularPush = false)
-    {
-        Variable = variable;
-        ReferenceType = referenceType;
-        RegularPush = regularPush;
-    }
 
     /// <summary>
     /// Returns true if the other variable is referencing an identical variable, within the same expression/statement.
@@ -68,21 +63,33 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
         // Compare left side
         if (Left is VariableNode leftVariable)
         {
-            if (!leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+            if (other.Left is not VariableNode otherLeftVariable)
+            {
+                return false;
+            }
+            if (!leftVariable.IdenticalToInExpression(otherLeftVariable))
             {
                 return false;
             }
         }
         else if (Left is InstanceTypeNode leftInstType)
         {
-            if (leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+            if (other.Left is not InstanceTypeNode otherLeftInstType)
+            {
+                return false;
+            }
+            if (leftInstType.InstanceType != otherLeftInstType.InstanceType)
             {
                 return false;
             }
         }
         else if (Left is Int16Node leftI16)
         {
-            if (leftI16.Value != (other.Left as Int16Node).Value)
+            if (other.Left is not Int16Node otherLeftI16)
+            {
+                return false;
+            }
+            if (leftI16.Value != otherLeftI16.Value)
             {
                 return false;
             }
@@ -139,21 +146,33 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
         // Compare left side
         if (Left is VariableNode leftVariable)
         {
-            if (!leftVariable.IdenticalToInExpression(other.Left as VariableNode))
+            if (other.Left is not VariableNode otherLeftVariable)
+            {
+                return false;
+            }
+            if (!leftVariable.IdenticalToInExpression(otherLeftVariable))
             {
                 return false;
             }
         }
         else if (Left is InstanceTypeNode leftInstType)
         {
-            if (leftInstType.InstanceType != (other.Left as InstanceTypeNode).InstanceType)
+            if (other.Left is not InstanceTypeNode otherLeftInstType)
+            {
+                return false;
+            }
+            if (leftInstType.InstanceType != otherLeftInstType.InstanceType)
             {
                 return false;
             }
         }
         else if (Left is Int16Node leftI16)
         {
-            if (leftI16.Value != (other.Left as Int16Node).Value)
+            if (other.Left is not Int16Node otherLeftI16)
+            {
+                return false;
+            }
+            if (leftI16.Value != otherLeftI16.Value)
             {
                 return false;
             }
@@ -220,7 +239,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             int num = GetArgumentIndex();
             if (num != -1)
             {
-                if (num > cleaner.TopFragmentContext.MaxReferencedArgument)
+                if (num > cleaner.TopFragmentContext!.MaxReferencedArgument)
                 {
                     // We have a new maximum!
                     cleaner.TopFragmentContext.MaxReferencedArgument = num;
@@ -237,12 +256,12 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
     public void Print(ASTPrinter printer)
     {
         // Print out left side, if necessary
-        Int16Node leftI16 = Left as Int16Node;
-        InstanceTypeNode leftInstType = Left as InstanceTypeNode;
+        Int16Node? leftI16 = Left as Int16Node;
+        InstanceTypeNode? leftInstType = Left as InstanceTypeNode;
         if (leftI16 is not null || leftInstType is not null)
         {
             // Basic numerical instance type
-            int value = leftI16?.Value ?? (int)leftInstType.InstanceType;
+            int value = leftI16?.Value ?? (int)leftInstType!.InstanceType;
             if (value < 0)
             {
                 // GameMaker constant instance types
@@ -251,7 +270,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
                     case (int)InstanceType.Self:
                     case (int)InstanceType.Builtin:
                         if (printer.LocalVariableNames.Contains(Variable.Name.Content) ||
-                            printer.TopFragmentContext.NamedArguments.Contains(Variable.Name.Content))
+                            printer.TopFragmentContext!.NamedArguments.Contains(Variable.Name.Content))
                         {
                             // Need an explicit self in order to not conflict with local
                             printer.Write("self.");
@@ -279,8 +298,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
             else
             {
                 // Check if we have an object asset name to use
-                string objectName = printer.Context.GameContext.GetAssetName(AssetType.Object, value);
-
+                string? objectName = printer.Context.GameContext.GetAssetName(AssetType.Object, value);
                 if (objectName is not null)
                 {
                     // Object asset
@@ -312,7 +330,7 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
         else
         {
             // Argument name
-            string namedArg = printer.TopFragmentContext.GetNamedArgumentName(printer.Context, argIndex);
+            string? namedArg = printer.TopFragmentContext!.GetNamedArgumentName(printer.Context, argIndex);
             if (namedArg is not null)
             {
                 printer.Write(namedArg);
@@ -370,12 +388,12 @@ public class VariableNode : IExpressionNode, IMacroTypeNode, IConditionalValueNo
         return false;
     }
 
-    public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
+    public IMacroType? GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, Variable.Name.Content);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

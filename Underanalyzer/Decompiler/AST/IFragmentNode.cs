@@ -38,7 +38,7 @@ public interface IFragmentNode : IStatementNode
 
         // Ensure we have a block after this fragment, so we can determine what it is
         if (fragment.Successors.Count != 1 || 
-            !builder.Context.BlocksByAddress.TryGetValue(fragment.Successors[0].StartAddress, out Block followingBlock))
+            !builder.Context.BlocksByAddress!.TryGetValue(fragment.Successors[0].StartAddress, out Block? followingBlock))
         {
             throw new DecompilerException("Expected block after fragment");
         }
@@ -79,7 +79,7 @@ public interface IFragmentNode : IStatementNode
                     }
 
                     // Check if we have a name
-                    string funcName = null;
+                    string? funcName = null;
                     if (followingBlock.Instructions is
                         [
                             _, _, _, _, _, 
@@ -94,7 +94,7 @@ public interface IFragmentNode : IStatementNode
 
                     // Build body of the function
                     builder.PushFragmentContext(fragment);
-                    builder.TopFragmentContext.FunctionName = funcName;
+                    builder.TopFragmentContext!.FunctionName = funcName;
                     BlockNode block = builder.BuildBlock(fragment.Children[0]);
                     block.AddBlockLocalVarDecl(builder.Context);
                     builder.PopFragmentContext();
@@ -164,7 +164,7 @@ public interface IFragmentNode : IStatementNode
                             builder.PopFragmentContext();
 
                             builder.StartBlockInstructionIndex = 8;
-                            return new StructNode(block, builder.TopFragmentContext);
+                            return new StructNode(block, builder.TopFragmentContext!);
                         }
                         else
                         {
@@ -172,7 +172,7 @@ public interface IFragmentNode : IStatementNode
 
                             // Build body
                             builder.PushFragmentContext(fragment);
-                            builder.TopFragmentContext.FunctionName = funcName;
+                            builder.TopFragmentContext!.FunctionName = funcName;
                             BlockNode block = builder.BuildBlock(fragment.Children[0]);
                             block.AddBlockLocalVarDecl(builder.Context);
                             builder.PopFragmentContext();
@@ -192,7 +192,7 @@ public interface IFragmentNode : IStatementNode
                         builder.PopFragmentContext();
 
                         builder.StartBlockInstructionIndex = 4;
-                        return new FunctionDeclNode(null, true, block, builder.TopFragmentContext);
+                        return new FunctionDeclNode(null, true, block, builder.TopFragmentContext!);
                     }
                 }
         }

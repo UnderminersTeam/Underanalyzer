@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// </summary>
 public class BooleanMacroType : IMacroTypeInt32
 {
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         // Ensure we don't resolve this on newer GameMaker versions where this is unnecessary
         if (cleaner.Context.GameContext.UsingTypedBooleans)

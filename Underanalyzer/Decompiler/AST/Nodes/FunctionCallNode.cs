@@ -12,17 +12,18 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a function call in the AST.
 /// </summary>
-public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode, IMacroResolvableNode, IConditionalValueNode, IFunctionCallNode
+public class FunctionCallNode(IGMFunction function, List<IExpressionNode> arguments) 
+    : IExpressionNode, IStatementNode, IMacroTypeNode, IMacroResolvableNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function reference being called.
     /// </summary>
-    public IGMFunction Function { get; }
+    public IGMFunction Function { get; } = function;
 
     /// <summary>
     /// Arguments being passed into the function call.
     /// </summary>
-    public List<IExpressionNode> Arguments { get; }
+    public List<IExpressionNode> Arguments { get; } = arguments;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -34,12 +35,6 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
 
     public string ConditionalTypeName => "FunctionCall";
     public string ConditionalValue => Function.Name.Content;
-
-    public FunctionCallNode(IGMFunction function, List<IExpressionNode> arguments)
-    {
-        Function = function;
-        Arguments = arguments;
-    }
 
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
@@ -156,12 +151,12 @@ public class FunctionCallNode : IExpressionNode, IStatementNode, IMacroTypeNode,
         return false;
     }
 
-    public IMacroType GetExpressionMacroType(ASTCleaner cleaner)
+    public IMacroType? GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, Function.Name.Content);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -4,22 +4,24 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using Underanalyzer.Decompiler.GameSpecific;
+
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
 /// Represents an asset reference in the AST.
 /// </summary>
-public class AssetReferenceNode : IExpressionNode
+public class AssetReferenceNode(int assetId, AssetType assetType) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The ID of the asset being referenced.
     /// </summary>
-    public int AssetId { get; }
+    public int AssetId { get; } = assetId;
 
     /// <summary>
     /// The type of the asset being referenced.
     /// </summary>
-    public AssetType AssetType { get; }
+    public AssetType AssetType { get; } = assetType;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -27,12 +29,6 @@ public class AssetReferenceNode : IExpressionNode
 
     public string ConditionalTypeName => "AssetReference";
     public string ConditionalValue => $"{AssetType}:{AssetId}";
-
-    public AssetReferenceNode(int assetId, AssetType assetType)
-    {
-        AssetId = assetId;
-        AssetType = assetType;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -46,7 +42,7 @@ public class AssetReferenceNode : IExpressionNode
 
     public void Print(ASTPrinter printer)
     {
-        string assetName = printer.Context.GameContext.GetAssetName(AssetType, AssetId);
+        string? assetName = printer.Context.GameContext.GetAssetName(AssetType, AssetId);
         if (assetName is not null)
         {
             printer.Write(assetName);
@@ -64,5 +60,14 @@ public class AssetReferenceNode : IExpressionNode
                 printer.Write(')');
             }
         }
+    }
+
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    {
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }

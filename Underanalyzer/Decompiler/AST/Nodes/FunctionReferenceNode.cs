@@ -11,12 +11,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a function reference in the AST.
 /// </summary>
-public class FunctionReferenceNode : IExpressionNode, IConditionalValueNode
+public class FunctionReferenceNode(IGMFunction function) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The function being referenced.
     /// </summary>
-    public IGMFunction Function { get; }
+    public IGMFunction Function { get; } = function;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -24,11 +24,6 @@ public class FunctionReferenceNode : IExpressionNode, IConditionalValueNode
 
     public string ConditionalTypeName => "FunctionReference";
     public string ConditionalValue => Function.Name.Content;
-
-    public FunctionReferenceNode(IGMFunction function)
-    {
-        Function = function;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -45,7 +40,7 @@ public class FunctionReferenceNode : IExpressionNode, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

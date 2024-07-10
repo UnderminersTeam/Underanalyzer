@@ -12,9 +12,9 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a string constant in the AST.
 /// </summary>
-public class StringNode : IConstantNode<IGMString>, IConditionalValueNode
+public class StringNode(IGMString value) : IConstantNode<IGMString>, IConditionalValueNode
 {
-    public IGMString Value { get; }
+    public IGMString Value { get; } = value;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -22,11 +22,6 @@ public class StringNode : IConstantNode<IGMString>, IConditionalValueNode
 
     public string ConditionalTypeName => "String";
     public string ConditionalValue => Value.Content;
-
-    public StringNode(IGMString value)
-    {
-        Value = value;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -124,7 +119,7 @@ public class StringNode : IConstantNode<IGMString>, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

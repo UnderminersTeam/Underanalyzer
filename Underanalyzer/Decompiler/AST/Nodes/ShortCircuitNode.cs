@@ -12,27 +12,21 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents short circuit && and || in the AST.
 /// </summary>
-public class ShortCircuitNode : IMultiExpressionNode
+public class ShortCircuitNode(List<IExpressionNode> conditions, ShortCircuitType logicType) : IMultiExpressionNode
 {
     /// <summary>
     /// List of conditions in this short circuit chain.
     /// </summary>
-    public List<IExpressionNode> Conditions { get; private set; }
+    public List<IExpressionNode> Conditions { get; private set; } = conditions;
 
     /// <summary>
     /// Type of logic (And or Or) being used.
     /// </summary>
-    public ShortCircuitType LogicType { get; }
+    public ShortCircuitType LogicType { get; } = logicType;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Boolean;
-
-    public ShortCircuitNode(List<IExpressionNode> conditions, ShortCircuitType logicType)
-    {
-        Conditions = conditions;
-        LogicType = logicType;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {

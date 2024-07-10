@@ -24,7 +24,7 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
     public GlobalMacroTypeResolver()
     {
         GlobalNames = new NameMacroTypeResolver();
-        CodeEntryNames = new();
+        CodeEntryNames = [];
     }
 
     /// <summary>
@@ -35,16 +35,16 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
         CodeEntryNames[codeEntry] = resolver;
     }
 
-    public IMacroType ResolveVariableType(ASTCleaner cleaner, string variableName)
+    public IMacroType? ResolveVariableType(ASTCleaner cleaner, string? variableName)
     {
         if (variableName is null)
         {
             return null;
         }
 
-        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
+        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext!.CodeEntryName!, out NameMacroTypeResolver? resolver))
         {
-            IMacroType resolved = resolver.ResolveVariableType(cleaner, variableName);
+            IMacroType? resolved = resolver.ResolveVariableType(cleaner, variableName);
             if (resolved is not null)
             {
                 return resolved;
@@ -54,16 +54,16 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
         return GlobalNames.ResolveVariableType(cleaner, variableName);
     }
 
-    public IMacroType ResolveFunctionArgumentTypes(ASTCleaner cleaner, string functionName)
+    public IMacroType? ResolveFunctionArgumentTypes(ASTCleaner cleaner, string? functionName)
     {
         if (functionName is null)
         {
             return null;
         }
 
-        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
+        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext!.CodeEntryName!, out NameMacroTypeResolver? resolver))
         {
-            IMacroType resolved = resolver.ResolveFunctionArgumentTypes(cleaner, functionName);
+            IMacroType? resolved = resolver.ResolveFunctionArgumentTypes(cleaner, functionName);
             if (resolved is not null)
             {
                 return resolved;
@@ -73,16 +73,16 @@ public class GlobalMacroTypeResolver : IMacroTypeResolver
         return GlobalNames.ResolveFunctionArgumentTypes(cleaner, functionName);
     }
 
-    public IMacroType ResolveReturnValueType(ASTCleaner cleaner, string functionName)
+    public IMacroType? ResolveReturnValueType(ASTCleaner cleaner, string? functionName)
     {
         if (functionName is null)
         {
             return null;
         }
 
-        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext.CodeEntryName, out NameMacroTypeResolver resolver))
+        if (CodeEntryNames.TryGetValue(cleaner.TopFragmentContext!.CodeEntryName!, out NameMacroTypeResolver? resolver))
         {
-            IMacroType resolved = resolver.ResolveReturnValueType(cleaner, functionName);
+            IMacroType? resolved = resolver.ResolveReturnValueType(cleaner, functionName);
             if (resolved is not null)
             {
                 return resolved;

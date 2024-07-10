@@ -12,30 +12,24 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a loop (jump/branch backwards) node in a control flow graph.
 /// </summary>
-internal abstract class Loop : IControlFlowNode
+internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNode
 {
-    public int StartAddress { get; private set; }
+    public int StartAddress { get; private set; } = startAddress;
 
-    public int EndAddress { get; private set; }
+    public int EndAddress { get; private set; } = endAddress;
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
     /// <summary>
     /// The child nodes of this loop, those being the constituent parts (such as loop head, tail, and so on).
     /// </summary>
-    public abstract List<IControlFlowNode> Children { get; }
+    public abstract List<IControlFlowNode?> Children { get; }
 
     public bool Unreachable { get; set; } = false;
-
-    public Loop(int startAddress, int endAddress)
-    {
-        StartAddress = startAddress;
-        EndAddress = endAddress;
-    }
 
     /// <summary>
     /// Called to insert a given loop's node into the control flow graph.
@@ -47,10 +41,10 @@ internal abstract class Loop : IControlFlowNode
     /// </summary>
     public static List<Loop> FindLoops(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
 
-        List<Loop> loops = new();
-        HashSet<int> whileLoopsFound = new();
+        List<Loop> loops = [];
+        HashSet<int> whileLoopsFound = [];
 
         // Search for different loop types based on instruction patterns
         // Do this in reverse order, because we want to find the ends of loops first
@@ -60,7 +54,9 @@ internal abstract class Loop : IControlFlowNode
 
             // If empty, we don't care about the block
             if (block.Instructions.Count == 0)
+            {
                 continue;
+            }
 
             // Check last instruction (where branches are located)
             IGMInstruction instr = block.Instructions[^1];
@@ -98,8 +94,8 @@ internal abstract class Loop : IControlFlowNode
                 case IGMInstruction.Opcode.PushWithContext:
                     {
                         // With loop detected - need to additionally check for break block
-                        Block afterBlock = block.Successors[1].Successors[0] as Block;
-                        Block breakBlock = null;
+                        Block afterBlock = (block.Successors[1].Successors[0] as Block)!;
+                        Block? breakBlock = null;
                         if (afterBlock.Instructions is [{ Kind: IGMInstruction.Opcode.Branch }])
                         {
                             Block potentialBreakBlock = blocks[afterBlock.BlockIndex + 1];

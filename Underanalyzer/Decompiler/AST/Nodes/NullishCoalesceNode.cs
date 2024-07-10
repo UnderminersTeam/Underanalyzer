@@ -11,17 +11,17 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a nullish coalescing operator (??) in the AST.
 /// </summary>
-public class NullishCoalesceNode : IMultiExpressionNode, IConditionalValueNode
+public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : IMultiExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The left side of the operator.
     /// </summary>
-    public IExpressionNode Left { get; private set; }
+    public IExpressionNode Left { get; private set; } = left;
 
     /// <summary>
     /// The right side of the operator.
     /// </summary>
-    public IExpressionNode Right { get; private set; }
+    public IExpressionNode Right { get; private set; } = right;
 
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
@@ -29,12 +29,6 @@ public class NullishCoalesceNode : IMultiExpressionNode, IConditionalValueNode
 
     public string ConditionalTypeName => "NullishCoalesce";
     public string ConditionalValue => ""; // TODO?
-
-    public NullishCoalesceNode(IExpressionNode left, IExpressionNode right)
-    {
-        Left = left;
-        Right = right;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -75,7 +69,7 @@ public class NullishCoalesceNode : IMultiExpressionNode, IConditionalValueNode
         return Left.RequiresMultipleLines(printer) || Right.RequiresMultipleLines(printer);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -11,9 +11,9 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a boolean constant in the AST.
 /// </summary>
-public class BooleanNode : IConstantNode<bool>, IConditionalValueNode
+public class BooleanNode(bool value) : IConstantNode<bool>, IConditionalValueNode
 {
-    public bool Value { get; }
+    public bool Value { get; } = value;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -21,11 +21,6 @@ public class BooleanNode : IConstantNode<bool>, IConditionalValueNode
 
     public string ConditionalTypeName => "Boolean";
     public string ConditionalValue => Value ? "true" : "false";
-
-    public BooleanNode(bool value)
-    {
-        Value = value;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -42,7 +37,7 @@ public class BooleanNode : IConstantNode<bool>, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -187,7 +187,7 @@ public class Loop_FindLoops
         Assert.IsType<WhileLoop>(loops[1]);
         WhileLoop loop0 = (WhileLoop)loops[0];
         WhileLoop loop1 = (WhileLoop)loops[1];
-        Assert.Equal(loop0, fragments[0].Children[0].Successors[0]);
+        Assert.Equal(loop0, fragments[0].Children[0]!.Successors[0]);
         Assert.Equal(loop1, loop0.Body);
         Assert.Equal(loop0, loop1.Parent);
         Assert.Equal(blocks[3], loop1.Body);
@@ -582,7 +582,7 @@ public class Loop_FindLoops
         Assert.Empty(loop1.Tail.Successors);
         Assert.Empty(loop0.Head.Predecessors);
         Assert.Empty(loop0.Tail.Successors);
-        Assert.Empty(loop0.Body.Predecessors);
+        Assert.Empty(loop0.Body!.Predecessors);
 
         TestUtil.VerifyFlowDirections(blocks);
         TestUtil.VerifyFlowDirections(fragments);
@@ -636,7 +636,7 @@ public class Loop_FindLoops
         Assert.IsType<EmptyNode>(loop1.After);
         Assert.Empty(loop1.After.Successors);
         Assert.Empty(loop1.Head.Predecessors);
-        Assert.Empty(loop1.Body.Predecessors);
+        Assert.Empty(loop1.Body!.Predecessors);
         Assert.Empty(loop1.Tail.Successors);
         Assert.Empty(loop0.Head.Predecessors);
         Assert.Empty(loop0.Tail.Successors);
@@ -959,7 +959,7 @@ public class Loop_FindLoops
         Assert.Equal(blocks[6], loop0.Successors[0]);
         Assert.Empty(loop0.Head.Predecessors);
         Assert.Empty(loop0.Tail.Successors);
-        Assert.Empty(loop0.BreakBlock.Predecessors);
+        Assert.Empty(loop0.BreakBlock!.Predecessors);
         Assert.Empty(loop0.BreakBlock.Successors);
         Assert.Equal([loop0.After], blocks[2].Successors);
 
@@ -1022,7 +1022,7 @@ public class Loop_FindLoops
         Assert.Equal(blocks[8], loop0.Successors[0]);
         Assert.Empty(loop0.Head.Predecessors);
         Assert.Empty(loop0.Tail.Successors);
-        Assert.Empty(loop0.BreakBlock.Predecessors);
+        Assert.Empty(loop0.BreakBlock!.Predecessors);
         Assert.Empty(loop0.BreakBlock.Successors);
         Assert.Equal([loop0.After], blocks[2].Successors);
         Assert.Equal([loop0.Tail], blocks[4].Successors);
@@ -1147,14 +1147,14 @@ public class Loop_FindLoops
         Assert.IsType<EmptyNode>(loop0.After);
         Assert.Empty(loop0.After.Successors);
         Assert.Equal(blocks[9], loop0.BreakBlock);
-        Assert.Empty(loop0.BreakBlock.Predecessors);
+        Assert.Empty(loop0.BreakBlock!.Predecessors);
         Assert.Empty(loop0.BreakBlock.Successors);
         Assert.Equal(blocks[2], loop1.Head);
         Assert.Equal(blocks[3], loop1.Tail);
         Assert.IsType<EmptyNode>(loop1.After);
         Assert.Empty(loop1.After.Successors);
         Assert.Equal(blocks[5], loop1.BreakBlock);
-        Assert.Empty(loop1.BreakBlock.Predecessors);
+        Assert.Empty(loop1.BreakBlock!.Predecessors);
         Assert.Empty(loop1.BreakBlock.Successors);
         Assert.Equal([loop1.After], blocks[2].Successors);
         Assert.Equal([loop0.After], blocks[6].Successors);
@@ -1228,8 +1228,6 @@ public class Loop_FindLoops
         Assert.IsType<WithLoop>(loops[0]);
         Assert.IsType<WithLoop>(loops[1]);
         Assert.IsType<WithLoop>(loops[2]);
-        WithLoop loop0 = (WithLoop)loops[0];
-        WithLoop loop1 = (WithLoop)loops[1];
         WithLoop loop2 = (WithLoop)loops[2];
 
         Assert.Equal([loop2], blocks[10].Successors);

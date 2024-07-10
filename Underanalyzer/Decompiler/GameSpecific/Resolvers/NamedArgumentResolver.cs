@@ -17,7 +17,7 @@ public class NamedArgumentResolver
     /// </summary>
     public NamedArgumentResolver()
     {
-        FunctionArgumentNames = new();
+        FunctionArgumentNames = [];
     }
 
     /// <summary>
@@ -30,11 +30,11 @@ public class NamedArgumentResolver
 
     /// <summary>
     /// Resolves a named argument for a given code entry, with the given argument index.
-    /// Returns the name, or null if none is defined.
+    /// Returns the name, or <see langword="null"/> if none is defined.
     /// </summary>
-    public string ResolveArgument(string codeEntryName, int argumentIndex)
+    public string? ResolveArgument(string codeEntryName, int argumentIndex)
     {
-        if (FunctionArgumentNames.TryGetValue(codeEntryName, out List<string> names))
+        if (FunctionArgumentNames.TryGetValue(codeEntryName, out List<string>? names))
         {
             if (argumentIndex >= 0 && argumentIndex < names.Count)
             {

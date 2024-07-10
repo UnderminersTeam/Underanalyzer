@@ -41,7 +41,7 @@ public interface IGMCode
     /// <summary>
     /// Parent code entry, if this is a sub-function entry. Otherwise, if a root code entry, this is <see langword="null"/>.
     /// </summary>
-    public IGMCode Parent { get; }
+    public IGMCode? Parent { get; }
 
     /// <summary>
     /// Gets a child code entry at the specified index.
@@ -72,48 +72,33 @@ public interface IGMInstruction
     /// <summary>
     /// Mnemonic attribute used for opcodes.
     /// </summary>
-    public class OpcodeInfo : Attribute
+    /// <param name="mnemonic">A unique shorthand identifier.</param>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class OpcodeInfo(string mnemonic) : Attribute
     {
         /// <summary>
         /// Unique shorthand identifier used for this opcode.
         /// </summary>
-        public string Mnemonic { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Opcode"/> class.
-        /// </summary>
-        /// <param name="mnemonic">A unique shorthand identifier.</param>
-        public OpcodeInfo(string mnemonic)
-        {
-            Mnemonic = mnemonic;
-        }
+        public string Mnemonic { get; } = mnemonic;
     }
 
     /// <summary>
     /// Mnemonic attribute used for VM data types.
     /// </summary>
-    public class DataTypeInfo : Attribute
+    /// <param name="mnemonic">A unique character to represent this type.</param>
+    /// <param name="size">How many bytes the type takes on the VM stack.</param>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class DataTypeInfo(char mnemonic, int size) : Attribute
     {
         /// <summary>
         /// Unique character used to represent this data type.
         /// </summary>
-        public char Mnemonic { get; }
+        public char Mnemonic { get; } = mnemonic;
 
         /// <summary>
         /// Size in bytes taken on the VM stack.
         /// </summary>
-        public int Size { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DataTypeInfo"/> class.
-        /// </summary>
-        /// <param name="mnemonic">A unique character to represent this type.</param>
-        /// <param name="size">How many bytes the type takes on the VM stack.</param>
-        public DataTypeInfo(char mnemonic, int size)
-        {
-            Mnemonic = mnemonic;
-            Size = size;
-        }
+        public int Size { get; } = size;
     }
 
     /// <summary>
@@ -653,12 +638,12 @@ public interface IGMInstruction
     /// <summary>
     /// For instructions that reference a variable, represents the variable being referenced.
     /// </summary>
-    public IGMVariable Variable { get; }
+    public IGMVariable? Variable { get; }
 
     /// <summary>
     /// For instructions that reference a function, represents the function being referenced.
     /// </summary>
-    public IGMFunction Function { get; }
+    public IGMFunction? Function { get; }
 
     /// <summary>
     /// For instructions that reference a variable or function, this represents the variable type.
@@ -693,7 +678,7 @@ public interface IGMInstruction
     /// <summary>
     /// Represents a string value for instructions that push strings.
     /// </summary>
-    public IGMString ValueString { get; }
+    public IGMString? ValueString { get; }
 
     /// <summary>
     /// Represents a branch offset for branch instructions, in bytes.
@@ -729,13 +714,13 @@ public interface IGMInstruction
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this is the ID of the asset supplied with the instruction, if <see cref="Function"/> is null.
+    /// this is the ID of the asset supplied with the instruction, if <see cref="Function"/> is <see langword="null"/>.
     /// </summary>
     public int AssetReferenceId { get; }
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this returns the type of the asset supplied with the instruction, if <see cref="Function"/> is null.
+    /// this returns the type of the asset supplied with the instruction, if <see cref="Function"/> is <see langword="null"/>.
     /// </summary>
     public AssetType GetAssetReferenceType(IGameContext context);
 
@@ -745,7 +730,9 @@ public interface IGMInstruction
     internal static int GetSize(IGMInstruction instr)
     {
         if (instr.Variable is not null || instr.Function is not null)
+        {
             return 8;
+        }
         switch (instr.Kind)
         {
             case Opcode.Push or 
@@ -754,14 +741,20 @@ public interface IGMInstruction
                  Opcode.PushBuiltin or 
                  Opcode.PushImmediate:
                 if (instr.Type1 is (DataType.Double or DataType.Int64))
+                {
                     return 12;
+                }
                 if (instr.Type1 != DataType.Int16)
+                {
                     return 8;
+                }
                 break;
             
             case Opcode.Extended:
                 if (instr.Type1 == DataType.Int32)
+                {
                     return 8;
+                }
                 break;
         }
         return 4;

@@ -14,12 +14,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Manages the printing of all AST nodes.
 /// </summary>
-public class ASTPrinter
+public class ASTPrinter(DecompileContext context)
 {
     /// <summary>
     /// The decompilation context this is printing for.
     /// </summary>
-    public DecompileContext Context { get; private set; }
+    public DecompileContext Context { get; private set; } = context;
 
     /// <summary>
     /// The current string output of this printer. This should be used only when the result is needed.
@@ -29,12 +29,12 @@ public class ASTPrinter
     /// <summary>
     /// List of arguments passed into a struct fragment.
     /// </summary>
-    internal List<IExpressionNode> StructArguments { get => TopFragmentContext.StructArguments; set => TopFragmentContext.StructArguments = value; }
+    internal List<IExpressionNode>? StructArguments { get => TopFragmentContext!.StructArguments; set => TopFragmentContext!.StructArguments = value; }
 
     /// <summary>
     /// Set of all local variables present in the current fragment.
     /// </summary>
-    internal HashSet<string> LocalVariableNames { get => TopFragmentContext.LocalVariableNames; }
+    internal HashSet<string> LocalVariableNames { get => TopFragmentContext!.LocalVariableNames; }
 
     /// <summary>
     /// The stack used to manage fragment contexts.
@@ -44,7 +44,7 @@ public class ASTPrinter
     /// <summary>
     /// The current/top fragment context.
     /// </summary>
-    internal ASTFragmentContext TopFragmentContext { get; private set; }
+    internal ASTFragmentContext? TopFragmentContext { get; private set; }
 
     /// <summary>
     /// If true, semicolon output is manually disabled.
@@ -57,20 +57,15 @@ public class ASTPrinter
     internal int FirstUnprintedWarningIndex { get; private set; } = 0;
 
     // Builder used to store resulting code
-    private StringBuilder stringBuilder = new(128);
+    private readonly StringBuilder stringBuilder = new(128);
 
     // Management of indentation level
     private int indentLevel = 0;
-    private List<string> indentStrings = new(4) { "" };
+    private readonly List<string> indentStrings = new(4) { "" };
     private string indentString = "";
 
     // Management of newline placement
     private bool lineActive = false;
-        
-    public ASTPrinter(DecompileContext context)
-    {
-        Context = context;
-    }
 
     /// <summary>
     /// Pushes a context onto the fragment context stack.
@@ -260,14 +255,14 @@ public class ASTPrinter
     /// </summary>
     public string LookupFunction(IGMFunction function)
     {
-        if (Context.GameContext.GlobalFunctions.FunctionToName.TryGetValue(function, out string name))
+        if (Context.GameContext.GlobalFunctions.FunctionToName.TryGetValue(function, out string? name))
         {
             // We found a global function name!
             return name;
         }
 
         string funcName = function.Name.Content;
-        if (TopFragmentContext.SubFunctionNames.TryGetValue(funcName, out string realName))
+        if (TopFragmentContext!.SubFunctionNames.TryGetValue(funcName, out string? realName))
         {
             // We found a sub-function name within this fragment!
             return realName;

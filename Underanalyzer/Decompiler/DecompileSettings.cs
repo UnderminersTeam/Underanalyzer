@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Underanalyzer.Decompiler;
 
@@ -116,7 +117,7 @@ public interface IDecompileSettings
 
     /// <summary>
     /// Base type name for the enum representing all unknown enum values.
-    /// Should be a valid enum name in GML, or null if the unknown enum should not be generated/used at all.
+    /// Should be a valid enum name in GML, or <see langword="null"/> if the unknown enum should not be generated/used at all.
     /// </summary>
     public string UnknownEnumName { get; }
 
@@ -145,7 +146,7 @@ public interface IDecompileSettings
     /// <param name="result">The resulting value to be printed</param>
     /// <param name="isResultMultiPart">True if parentheses may be needed around the value when printed (due to spaces or operations)</param>
     /// <returns>True if a predefined double value is found; false otherwise.</returns>
-    public bool TryGetPredefinedDouble(double value, out string result, out bool isResultMultiPart);
+    public bool TryGetPredefinedDouble(double value, [MaybeNullWhen(false)] out string result, out bool isResultMultiPart);
 }
 
 /// <summary>
@@ -201,7 +202,7 @@ public class DecompileSettings : IDecompileSettings
         { 0.008333333333333333, "1/120" }
     };
 
-    public bool TryGetPredefinedDouble(double value, out string result, out bool isResultMultiPart)
+    public bool TryGetPredefinedDouble(double value, [MaybeNullWhen(false)] out string result, out bool isResultMultiPart)
     {
         if (SinglePartPredefinedDoubles.TryGetValue(value, out result))
         {

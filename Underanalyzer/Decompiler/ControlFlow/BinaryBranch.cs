@@ -18,47 +18,50 @@ internal class BinaryBranch : IControlFlowNode
 
     public int EndAddress { get; private set; }
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
     public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = [null, null, null, null];
+    public List<IControlFlowNode?> Children { get; } = [null, null, null, null];
 
     public bool Unreachable { get; set; } = false;
 
     /// <summary>
     /// The "condition" block of the if statement.
     /// </summary>
-    public IControlFlowNode Condition { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Condition { get => Children[0]!; private set => Children[0] = value; }
 
     /// <summary>
     /// The "true" block of the if statement.
     /// </summary>
-    public IControlFlowNode True { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode True { get => Children[1]!; private set => Children[1] = value; }
 
     /// <summary>
     /// The "false" block of the if statement.
     /// </summary>
-    public IControlFlowNode False { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode False { get => Children[2]!; private set => Children[2] = value; }
 
     /// <summary>
-    /// The "else" block of the if statement, or null if none exists.
+    /// The "else" block of the if statement, or <see langword="null"/> if none exists.
     /// </summary>
-    public IControlFlowNode Else { get => Children[3]; private set => Children[3] = value; }
+    public IControlFlowNode? Else { get => Children[3]; private set => Children[3] = value; }
 
-    public BinaryBranch(int startAddress, int endAddress)
+    public BinaryBranch(int startAddress, int endAddress, IControlFlowNode condition, IControlFlowNode initialTrue, IControlFlowNode initialFalse)
     {
         StartAddress = startAddress;
         EndAddress = endAddress;
+        Condition = condition;
+        True = initialTrue;
+        False = initialFalse;
     }
 
     /// <summary>
     /// Visits all nodes that are candidates for the meeting point of the if statement branch, along one path.
     /// Marks off in "visited" all such nodes.
     /// </summary>
-    private static void VisitAll(IControlFlowNode start, HashSet<IControlFlowNode> visited, List<Block> blocks)
+    private static void VisitAll(IControlFlowNode start, HashSet<IControlFlowNode> visited)
     {
         Stack<IControlFlowNode> work = new();
         work.Push(start);
@@ -87,7 +90,7 @@ internal class BinaryBranch : IControlFlowNode
     /// Visits all nodes that are candidates for the meeting point of the if statement branch, along a second path.
     /// Upon finding a node that was visited along the first path (through VisitAll), returns that node.
     /// </summary>
-    private static IControlFlowNode FindMeetpoint(IControlFlowNode start, IControlFlowNode mustBeAfter, HashSet<IControlFlowNode> visited, List<Block> blocks)
+    private static IControlFlowNode FindMeetpoint(IControlFlowNode start, IControlFlowNode mustBeAfter, HashSet<IControlFlowNode> visited)
     {
         Stack<IControlFlowNode> work = new();
         work.Push(start);
@@ -162,33 +165,30 @@ internal class BinaryBranch : IControlFlowNode
 
     public static List<BinaryBranch> FindBinaryBranches(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
-        List<Loop> loops = ctx.LoopNodes;
-        ctx.BlockSurroundingLoops ??= Branches.FindSurroundingLoops(blocks, ctx.BlocksByAddress, loops);
+        List<Block> blocks = ctx.Blocks!;
+        List<Loop> loops = ctx.LoopNodes!;
+        ctx.BlockSurroundingLoops ??= Branches.FindSurroundingLoops(blocks, ctx.BlocksByAddress!, loops);
         ctx.BlockAfterLimits ??= Branches.ComputeBlockAfterLimits(blocks, ctx.BlockSurroundingLoops);
 
         // Resolve all relevant continue/break statements
         Branches.ResolveExternalJumps(ctx);
 
         // Iterate over blocks in reverse, as the compiler generates them in the order we want
-        List<BinaryBranch> res = new();
-        HashSet<IControlFlowNode> visited = new();
+        List<BinaryBranch> res = [];
+        HashSet<IControlFlowNode> visited = [];
         for (int i = blocks.Count - 1; i >= 0; i--)
         {
             Block block = blocks[i];
             if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.BranchFalse }])
             {
                 // Follow "jump" path first, marking off all visited blocks
-                VisitAll(block.Successors[1], visited, blocks);
+                VisitAll(block.Successors[1], visited);
 
                 // Locate meetpoint, by following the non-jump path
-                IControlFlowNode after = FindMeetpoint(block.Successors[0], block.Successors[1], visited, blocks);
+                IControlFlowNode after = FindMeetpoint(block.Successors[0], block.Successors[1], visited);
 
                 // Insert new node!
-                BinaryBranch bb = new(block.StartAddress, after.StartAddress);
-                bb.Condition = block;
-                bb.True = block.Successors[0];
-                bb.False = block.Successors[1];
+                BinaryBranch bb = new(block.StartAddress, after.StartAddress, block, block.Successors[0], block.Successors[1]);
                 res.Add(bb);
 
                 // Assign else block if we can immediately detect it
@@ -243,7 +243,7 @@ internal class BinaryBranch : IControlFlowNode
                 }
                 if (block.Parent is not null)
                 {
-                    IControlFlowNode.ReplaceConnections(block.Parent.Children, block, bb);
+                    IControlFlowNode.ReplaceConnectionsNullable(block.Parent.Children, block, bb);
                     bb.Parent = block.Parent;
                 }
                 block.Predecessors.Clear();

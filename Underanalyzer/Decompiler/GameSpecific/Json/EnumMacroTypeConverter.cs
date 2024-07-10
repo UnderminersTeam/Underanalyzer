@@ -25,8 +25,8 @@ internal class EnumMacroTypeConverter : JsonConverter<EnumMacroType>
 
     public static EnumMacroType ReadContents(ref Utf8JsonReader reader)
     {
-        string name = null;
-        Dictionary<long, string> values = null;
+        string? name = null;
+        Dictionary<long, string>? values = null;
 
         while (reader.Read())
         {
@@ -44,7 +44,7 @@ internal class EnumMacroTypeConverter : JsonConverter<EnumMacroType>
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Read either name or values
             switch (propertyName)
@@ -72,7 +72,7 @@ internal class EnumMacroTypeConverter : JsonConverter<EnumMacroType>
             throw new JsonException();
         }
 
-        Dictionary<long, string> values = new();
+        Dictionary<long, string> values = [];
 
         while (reader.Read())
         {
@@ -86,11 +86,7 @@ internal class EnumMacroTypeConverter : JsonConverter<EnumMacroType>
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName is null)
-            {
-                throw new JsonException();
-            }
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Read value
             reader.Read();

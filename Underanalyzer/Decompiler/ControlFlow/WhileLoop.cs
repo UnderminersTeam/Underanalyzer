@@ -15,7 +15,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// </summary>
 internal class WhileLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [null, null, null, null, null];
+    public override List<IControlFlowNode?> Children { get; } = [null, null, null, null, null];
 
     /// <summary>
     /// The top loop point of the while loop. This is where the loop condition begins to be evaluated.
@@ -23,7 +23,7 @@ internal class WhileLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes disconnected from the rest of the graph.
     /// </remarks>
-    public IControlFlowNode Head { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Head { get => Children[0]!; private set => Children[0] = value; }
 
     /// <summary>
     /// The bottom loop point of the while loop. This is where the jump back to the loop head/condition is located.
@@ -31,7 +31,7 @@ internal class WhileLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes disconnected from the rest of the graph.
     /// </remarks>
-    public IControlFlowNode Tail { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode Tail { get => Children[1]!; private set => Children[1] = value; }
 
     /// <summary>
     /// The "sink" location of the loop. The loop condition being false or "break" statements will lead to this location.
@@ -39,7 +39,7 @@ internal class WhileLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
     /// </remarks>
-    public IControlFlowNode After { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode After { get => Children[2]!; private set => Children[2] = value; }
 
     /// <summary>
     /// The start of the body of the loop, as written in the source code. That is, this does not include the loop condition.
@@ -47,7 +47,7 @@ internal class WhileLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from the loop condition (which is otherwise a predecessor).
     /// </remarks>
-    public IControlFlowNode Body { get => Children[3]; private set => Children[3] = value; }
+    public IControlFlowNode? Body { get => Children[3]; private set => Children[3] = value; }
 
     /// <summary>
     /// If not null, then it was detected that this while loop must be written as a for loop.
@@ -55,7 +55,7 @@ internal class WhileLoop : Loop
     /// could not be written using normal if/else statements.
     /// This points to the start of the "incrementing" code of the for loop.
     /// </summary>
-    public IControlFlowNode ForLoopIncrementor { get => Children[4]; set => Children[4] = value; }
+    public IControlFlowNode? ForLoopIncrementor { get => Children[4]; set => Children[4] = value; }
 
     /// <summary>
     /// If true, this loop was detected to definitively be a while loop.
@@ -75,11 +75,11 @@ internal class WhileLoop : Loop
     {
         // Get rid of jump from tail
         IControlFlowNode.DisconnectSuccessor(Tail, 0);
-        Block tailBlock = Tail as Block;
+        Block tailBlock = Tail as Block ?? throw new DecompilerException("Expected tail to be block");
         tailBlock.Instructions.RemoveAt(tailBlock.Instructions.Count - 1);
 
         // Find first branch location after head
-        Block branchBlock = null;
+        Block? branchBlock = null;
         for (int i = 0; i < After.Predecessors.Count; i++)
         {
             if (After.Predecessors[i].StartAddress < Head.StartAddress ||
@@ -89,6 +89,10 @@ internal class WhileLoop : Loop
             }
             branchBlock = b;
             break;
+        }
+        if (branchBlock is null)
+        {
+            throw new DecompilerException("Failed to find first branch location after head");
         }
         if (branchBlock.Instructions[^1].Kind != IGMInstruction.Opcode.BranchFalse)
         {
@@ -130,7 +134,7 @@ internal class WhileLoop : Loop
         IExpressionNode condition = builder.BuildExpression(Head, output);
 
         // Push this loop context
-        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        Loop? prevLoop = builder.TopFragmentContext!.SurroundingLoop;
         builder.TopFragmentContext.SurroundingLoop = this;
 
         // Build body and create a for/while loop statement (defaults to while if unknown)

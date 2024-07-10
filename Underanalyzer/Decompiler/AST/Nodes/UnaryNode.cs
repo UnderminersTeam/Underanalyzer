@@ -12,31 +12,24 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a unary expression, such as not (!) and bitwise negation (~).
 /// </summary>
-public class UnaryNode : IExpressionNode, IConditionalValueNode
+public class UnaryNode(IExpressionNode value, IGMInstruction instruction) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The expression that this operation is being performed on.
     /// </summary>
-    public IExpressionNode Value { get; private set; }
+    public IExpressionNode Value { get; private set; } = value;
 
     /// <summary>
     /// The instruction that performs this operation, as in the code.
     /// </summary>
-    public IGMInstruction Instruction { get; }
+    public IGMInstruction Instruction { get; } = instruction;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
-    public IGMInstruction.DataType StackType { get; set; }
+    public DataType StackType { get; set; } = instruction.Type1;
 
     public string ConditionalTypeName => "Unary";
     public string ConditionalValue => ""; // TODO?
-
-    public UnaryNode(IExpressionNode value, IGMInstruction instruction)
-    {
-        Value = value;
-        Instruction = instruction;
-        StackType = instruction.Type1;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -80,7 +73,7 @@ public class UnaryNode : IExpressionNode, IConditionalValueNode
         return Value.RequiresMultipleLines(printer);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

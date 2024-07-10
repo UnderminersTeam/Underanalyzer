@@ -9,34 +9,27 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a while loop in the AST.
 /// </summary>
-public class WhileLoopNode : IStatementNode, IBlockCleanupNode
+public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustBeWhileLoop) : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// The condition of the loop.
     /// </summary>
-    public IExpressionNode Condition { get; private set; }
+    public IExpressionNode Condition { get; private set; } = condition;
 
     /// <summary>
     /// The main block of the loop.
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     /// <summary>
     /// True if this loop was specifically detected to be a while loop already.
     /// That is, if true, this cannot be rewritten as a for loop.
     /// </summary>
-    public bool MustBeWhileLoop { get; }
+    public bool MustBeWhileLoop { get; } = mustBeWhileLoop;
 
     public bool SemicolonAfter { get => false; }
     public bool EmptyLineBefore { get; internal set; }
     public bool EmptyLineAfter { get; internal set; }
-
-    public WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustBeWhileLoop)
-    {
-        Condition = condition;
-        Body = body;
-        MustBeWhileLoop = mustBeWhileLoop;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

@@ -30,7 +30,7 @@ internal class NameMacroTypeResolverConverter
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             switch (propertyName)
             {
@@ -74,11 +74,11 @@ internal class NameMacroTypeResolverConverter
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Read and define macro type
             reader.Read();
-            define(propertyName, converter.Read(ref reader, typeof(IMacroType), options));
+            define(propertyName, converter.Read(ref reader, typeof(IMacroType), options) ?? throw new JsonException());
         }
 
         throw new JsonException();

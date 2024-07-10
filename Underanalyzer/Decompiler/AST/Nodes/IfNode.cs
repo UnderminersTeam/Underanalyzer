@@ -9,33 +9,26 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an if statement in the AST.
 /// </summary>
-public class IfNode : IStatementNode
+public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? elseBlock = null) : IStatementNode
 {
     /// <summary>
     /// The condition of the if statement.
     /// </summary>
-    public IExpressionNode Condition { get; internal set; }
+    public IExpressionNode Condition { get; internal set; } = condition;
 
     /// <summary>
     /// The main (true) block of the if statement.
     /// </summary>
-    public BlockNode TrueBlock { get; internal set; }
+    public BlockNode TrueBlock { get; internal set; } = trueBlock;
 
     /// <summary>
-    /// The else (false) block of the if statement, or null if none exists.
+    /// The else (false) block of the if statement, or <see langword="null"/> if none exists.
     /// </summary>
-    public BlockNode ElseBlock { get; internal set; }
+    public BlockNode? ElseBlock { get; internal set; } = elseBlock;
 
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode elseBlock = null)
-    {
-        Condition = condition;
-        TrueBlock = trueBlock;
-        ElseBlock = elseBlock;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

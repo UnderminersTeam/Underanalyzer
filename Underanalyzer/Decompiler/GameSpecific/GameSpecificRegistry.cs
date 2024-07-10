@@ -26,7 +26,7 @@ public class GameSpecificRegistry
     /// </summary>
     public GameSpecificRegistry()
     {
-        MacroTypes = new();
+        MacroTypes = [];
         MacroResolver = new();
         NamedArgumentResolver = new();
     }
@@ -90,7 +90,7 @@ public class GameSpecificRegistry
 
     public IMacroType FindType(string name)
     {
-        if (MacroTypes.TryGetValue(name, out IMacroType type))
+        if (MacroTypes.TryGetValue(name, out IMacroType? type))
         {
             return type;
         }

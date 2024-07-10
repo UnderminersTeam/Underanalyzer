@@ -25,7 +25,7 @@ internal class ConstantsMacroTypeConverter : JsonConverter<ConstantsMacroType>
 
     public static ConstantsMacroType ReadContents(ref Utf8JsonReader reader)
     {
-        Dictionary<int, string> values = new();
+        Dictionary<int, string> values = [];
 
         while (reader.Read())
         {
@@ -39,11 +39,7 @@ internal class ConstantsMacroTypeConverter : JsonConverter<ConstantsMacroType>
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName is null)
-            {
-                throw new JsonException();
-            }
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Read value
             reader.Read();

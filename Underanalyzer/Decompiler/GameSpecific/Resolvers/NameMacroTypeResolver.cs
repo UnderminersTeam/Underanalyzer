@@ -23,9 +23,9 @@ public class NameMacroTypeResolver : IMacroTypeResolver
     /// </summary>
     public NameMacroTypeResolver()
     {
-        Variables = new();
-        FunctionArguments = new();
-        FunctionReturn = new();
+        Variables = [];
+        FunctionArguments = [];
+        FunctionReturn = [];
     }
 
     /// <summary>
@@ -64,27 +64,27 @@ public class NameMacroTypeResolver : IMacroTypeResolver
         FunctionReturn[name] = type;
     }
 
-    public IMacroType ResolveVariableType(ASTCleaner cleaner, string variableName)
+    public IMacroType? ResolveVariableType(ASTCleaner cleaner, string? variableName)
     {
-        if (variableName is not null && Variables.TryGetValue(variableName, out IMacroType macroType))
+        if (variableName is not null && Variables.TryGetValue(variableName, out IMacroType? macroType))
         {
             return macroType;
         }
         return null;
     }
 
-    public IMacroType ResolveFunctionArgumentTypes(ASTCleaner cleaner, string functionName)
+    public IMacroType? ResolveFunctionArgumentTypes(ASTCleaner cleaner, string? functionName)
     {
-        if (functionName is not null && FunctionArguments.TryGetValue(functionName, out IMacroType macroType))
+        if (functionName is not null && FunctionArguments.TryGetValue(functionName, out IMacroType? macroType))
         {
             return macroType;
         }
         return null;
     }
 
-    public IMacroType ResolveReturnValueType(ASTCleaner cleaner, string functionName)
+    public IMacroType? ResolveReturnValueType(ASTCleaner cleaner, string? functionName)
     {
-        if (functionName is not null && FunctionReturn.TryGetValue(functionName, out IMacroType macroType))
+        if (functionName is not null && FunctionReturn.TryGetValue(functionName, out IMacroType? macroType))
         {
             return macroType;
         }

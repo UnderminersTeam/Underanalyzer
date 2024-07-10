@@ -11,9 +11,9 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a 32-bit signed integer constant in the AST.
 /// </summary>
-public class Int32Node : IConstantNode<int>, IMacroResolvableNode, IConditionalValueNode
+public class Int32Node(int value) : IConstantNode<int>, IMacroResolvableNode, IConditionalValueNode
 {
-    public int Value { get; }
+    public int Value { get; } = value;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -22,14 +22,8 @@ public class Int32Node : IConstantNode<int>, IMacroResolvableNode, IConditionalV
     public string ConditionalTypeName => "Integer";
     public string ConditionalValue => Value.ToString();
 
-    public Int32Node(int value)
-    {
-        Value = value;
-    }
-
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
-        // TODO: macro (probably not asset) types
         return this;
     }
 
@@ -43,7 +37,7 @@ public class Int32Node : IConstantNode<int>, IMacroResolvableNode, IConditionalV
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt32 type32)
         {

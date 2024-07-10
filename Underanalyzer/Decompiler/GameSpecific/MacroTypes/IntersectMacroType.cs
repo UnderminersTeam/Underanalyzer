@@ -34,9 +34,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         }
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
-        IExpressionNode result = null;
+        IExpressionNode? result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeInt32 type32)
@@ -52,9 +52,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         return result;
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
     {
-        IExpressionNode result = null;
+        IExpressionNode? result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeInt64 type64)
@@ -70,9 +70,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         return result;
     }
 
-    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
+    public IFunctionCallNode? Resolve(ASTCleaner cleaner, IFunctionCallNode functionCall)
     {
-        IFunctionCallNode result = null;
+        IFunctionCallNode? result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeFunctionArgs typeFuncArgs)
@@ -88,9 +88,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         return result;
     }
 
-    public ArrayInitNode Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
+    public ArrayInitNode? Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
     {
-        ArrayInitNode result = null;
+        ArrayInitNode? result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeArrayInit typeArrayInit)
@@ -106,9 +106,9 @@ public class IntersectMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFu
         return result;
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IConditionalValueNode node)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IConditionalValueNode node)
     {
-        IExpressionNode result = null;
+        IExpressionNode? result = null;
         foreach (IMacroType type in Types)
         {
             if (type is not IMacroTypeConditional typeConditional)

@@ -13,39 +13,31 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a single VM code fragment, used for single function contexts.
 /// </summary>
-internal class Fragment : IControlFlowNode
+internal class Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks) : IControlFlowNode
 {
-    public int StartAddress { get; private set; }
+    public int StartAddress { get; private set; } = startAddr;
 
-    public int EndAddress { get; private set; }
+    public int EndAddress { get; private set; } = endAddr;
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; }
+    public List<IControlFlowNode?> Children { get; } = blocks!;
 
     public bool Unreachable { get; set; } = false;
 
     /// <summary>
     /// Code entry that this fragment belongs to.
     /// </summary>
-    public IGMCode CodeEntry { get; }
+    public IGMCode CodeEntry { get; } = codeEntry;
 
     /// <summary>
     /// The base blocks that this fragment is composed of.
     /// </summary>
-    public List<Block> Blocks { get; } = new();
-
-    public Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks)
-    {
-        StartAddress = startAddr;
-        EndAddress = endAddr;
-        CodeEntry = codeEntry;
-        Children = blocks;
-    }
+    public List<Block> Blocks { get; } = [];
 
     /// <summary>
     /// Finds code fragments from a decompile context.
@@ -53,7 +45,7 @@ internal class Fragment : IControlFlowNode
     /// </summary>
     public static List<Fragment> FindFragments(DecompileContext ctx)
     {
-        List<Fragment> fragments = FindFragments(ctx.Code, ctx.Blocks);
+        List<Fragment> fragments = FindFragments(ctx.Code, ctx.Blocks!);
         ctx.FragmentNodes = fragments;
         return fragments;
     }
@@ -68,7 +60,7 @@ internal class Fragment : IControlFlowNode
             throw new ArgumentException("Expected code entry to be root level.", nameof(code));
 
         // Map code entry addresses to code entries
-        Dictionary<int, IGMCode> codeEntries = new();
+        Dictionary<int, IGMCode> codeEntries = new(code.ChildCount);
         for (int i = 0; i < code.ChildCount; i++)
         {
             IGMCode child = code.GetChild(i);
@@ -76,7 +68,7 @@ internal class Fragment : IControlFlowNode
         }
 
         // Build fragments, using a stack to track hierarchy
-        List<Fragment> fragments = new();
+        List<Fragment> fragments = new(code.ChildCount);
         Stack<Fragment> stack = new();
         Fragment current = new(code.StartOffset, code.Length, code, []);
         fragments.Add(current);
@@ -91,10 +83,10 @@ internal class Fragment : IControlFlowNode
                 {
                     // We're an inner fragment - mark first block as no longer unreachable, if it is
                     // (normally always unreachable, unless there's a loop header at the first block)
-                    if (current.Children[0].Unreachable)
+                    if (current.Children[0]!.Unreachable)
                     {
-                        current.Children[0].Unreachable = false;
-                        IControlFlowNode.DisconnectPredecessor(current.Children[0], 0);
+                        current.Children[0]!.Unreachable = false;
+                        IControlFlowNode.DisconnectPredecessor(current.Children[0]!, 0);
                     }
 
                     // We're an inner fragment - remove "exit" instruction
@@ -124,7 +116,7 @@ internal class Fragment : IControlFlowNode
             }
 
             // Check for new fragment starting at this block
-            if (codeEntries.TryGetValue(block.StartAddress, out IGMCode newCode))
+            if (codeEntries.TryGetValue(block.StartAddress, out IGMCode? newCode))
             {
                 // Our "current" is now the next level up
                 stack.Push(current);

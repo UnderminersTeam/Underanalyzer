@@ -18,13 +18,13 @@ internal class ReturnNode(int address) : IControlFlowNode
 
     public int EndAddress { get; set; } = address;
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = new();
+    public List<IControlFlowNode?> Children { get; } = [];
 
     public bool Unreachable { get; set; } = false;
 

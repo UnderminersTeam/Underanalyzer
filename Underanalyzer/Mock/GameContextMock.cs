@@ -37,7 +37,7 @@ public class GameContextMock : IGameContext
     /// <summary>
     /// A Dictionary that mocks asset chunks and their contents.
     /// </summary>
-    public Dictionary<AssetType, Dictionary<int, string>> MockAssets { get; set; } = new();
+    public Dictionary<AssetType, Dictionary<int, string>> MockAssets { get; set; } = [];
 
     /// <summary>
     /// Define a new mock asset that gets added to <see cref="MockAssets"/>.
@@ -47,10 +47,9 @@ public class GameContextMock : IGameContext
     /// <param name="assetName">The name of the asset.</param>
     public void DefineMockAsset(AssetType assetType, int assetIndex, string assetName)
     {
-        Dictionary<int, string> assets;
-        if (!MockAssets.TryGetValue(assetType, out assets))
+        if (!MockAssets.TryGetValue(assetType, out Dictionary<int, string>? assets))
         {
-            assets = new();
+            assets = [];
             MockAssets.Add(assetType, assets);
         }
         assets[assetIndex] = assetName;
@@ -62,11 +61,14 @@ public class GameContextMock : IGameContext
     /// <param name="assetType">The asset type of the asset that should be fetched.</param>
     /// <param name="assetIndex">The index of the asset that should be fetched.</param>
     /// <returns>The name of the asset, or <see langword="null"/> if it does not exist.</returns>
-    public string GetMockAsset(AssetType assetType, int assetIndex)
+    public string? GetMockAsset(AssetType assetType, int assetIndex)
     {
-        if (!MockAssets.TryGetValue(assetType, out var dict)) return null;
+        if (!MockAssets.TryGetValue(assetType, out var dict))
+        {
+            return null;
+        }
 
-        if (dict.TryGetValue(assetIndex, out string name))
+        if (dict.TryGetValue(assetIndex, out string? name))
         {
             return name;
         }
@@ -74,7 +76,7 @@ public class GameContextMock : IGameContext
     }
     
     /// <inheritdoc/>
-    public string GetAssetName(AssetType assetType, int assetIndex)
+    public string? GetAssetName(AssetType assetType, int assetIndex)
     {
         return assetType switch
         {

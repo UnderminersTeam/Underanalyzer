@@ -91,5 +91,5 @@ public interface IGameContext
     /// <summary>
     /// Returns the string name of an asset, or <see langword="null"/> if no such asset exists.
     /// </summary>
-    public string GetAssetName(AssetType assetType, int assetIndex);
+    public string? GetAssetName(AssetType assetType, int assetIndex);
 }

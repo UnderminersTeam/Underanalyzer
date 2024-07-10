@@ -11,23 +11,17 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// <summary>
 /// Conditional for matching an AST node by *not* having a type name and/or value.
 /// </summary>
-public class MatchNotMacroType : ConditionalMacroType
+public class MatchNotMacroType(IMacroType? innerType, string? typeName, string? value = null) : ConditionalMacroType(innerType)
 {
     /// <summary>
-    /// Type name to *not* match.
+    /// Type name to *not* match, or <see langword="null"/> if none.
     /// </summary>
-    public string ConditionalTypeName { get; }
+    public string? ConditionalTypeName { get; } = typeName;
 
     /// <summary>
-    /// Value content to *not* match, or null if none.
+    /// Value content to *not* match, or <see langword="null"/> if none.
     /// </summary>
-    public string ConditionalValue { get; }
-
-    public MatchNotMacroType(IMacroType innerType, string typeName, string value = null) : base(innerType)
-    {
-        ConditionalTypeName = typeName;
-        ConditionalValue = value;
-    }
+    public string? ConditionalValue { get; } = value;
 
     public override bool EvaluateCondition(ASTCleaner cleaner, IConditionalValueNode node)
     {

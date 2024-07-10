@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// Represents a single block of code in the AST.
 /// Blocks can have an arbitrary number of child nodes.
 /// </summary>
-public class BlockNode : IFragmentNode, IBlockCleanupNode
+public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlockCleanupNode
 {
     /// <summary>
     /// Whether or not curly braces are required for this block.
@@ -27,17 +27,12 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
     /// <summary>
     /// All children contained within this block.
     /// </summary>
-    public List<IStatementNode> Children { get; internal set; } = new();
+    public List<IStatementNode> Children { get; internal set; } = [];
 
     public bool SemicolonAfter { get => false; }
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-    public ASTFragmentContext FragmentContext { get; }
-
-    public BlockNode(ASTFragmentContext fragmentContext)
-    {
-        FragmentContext = fragmentContext;
-    }
+    public ASTFragmentContext FragmentContext { get; } = fragmentContext;
 
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
@@ -67,7 +62,7 @@ public class BlockNode : IFragmentNode, IBlockCleanupNode
     // If there are no local variables to be declared, removes the node where they would be declared.
     private void CleanBlockLocalVars(ASTCleaner cleaner)
     {
-        if (cleaner.TopFragmentContext.LocalVariableNamesList.Count > 0)
+        if (cleaner.TopFragmentContext!.LocalVariableNamesList.Count > 0)
         {
             return;
         }

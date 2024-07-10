@@ -11,37 +11,31 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// <summary>
 /// Base abstract type for all macro types that evaluate/verify a condition before passing through to another macro type.
 /// </summary>
-public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFunctionArgs, IMacroTypeArrayInit, IMacroTypeConditional
+/// <remarks>
+/// Inner type can be <see langword="null"/>, specifying that the node will be passed through when resolved.
+/// </remarks>
+public abstract class ConditionalMacroType(IMacroType? innerType) 
+    : IMacroTypeInt32, IMacroTypeInt64, IMacroTypeFunctionArgs, IMacroTypeArrayInit, IMacroTypeConditional
 {
     /// <summary>
     /// The inner type that this conditional macro type holds, which will be used after verifying the condition.
-    /// If null, then there is no inner type, and the node being resolved will be passed through.
+    /// If <see langword="null"/>, then there is no inner type, and the node being resolved will be passed through.
     /// </summary>
-    public IMacroType InnerType { get; }
+    public IMacroType? InnerType { get; } = innerType;
 
     // We make this macro type required when we aren't trying to satisfy for any inner type
     public bool Required { get => InnerType is null; }
-
-    /// <summary>
-    /// Base constructor for all conditional macro types; requires inner type.
-    /// Inner type can be null, specifying that the node will be passed through when resolved.
-    /// </summary>
-    public ConditionalMacroType(IMacroType innerType)
-    {
-        InnerType = innerType;
-    }
 
     /// <summary>
     /// Evaluates the condition on the given node, returning true if successful, or false if not.
     /// </summary>
     public abstract bool EvaluateCondition(ASTCleaner cleaner, IConditionalValueNode node);
 
-
     /// <summary>
-    /// Resolves the macro type with an arbitrary conditional node, passing through the node if successful;  null otherwise.
-    /// Inner type must be null for this to resolve anything.
+    /// Resolves the macro type with an arbitrary conditional node, passing through the node if successful; <see langword="null"/> otherwise.
+    /// Inner type must be <see langword="null"/> for this to resolve anything.
     /// </summary>
-    public IExpressionNode Resolve(ASTCleaner cleaner, IConditionalValueNode node)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IConditionalValueNode node)
     {
         if (InnerType is not null)
         {
@@ -59,7 +53,7 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
         return node;
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         if (node is not IConditionalValueNode conditionalValueNode)
         {
@@ -97,7 +91,7 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
         }
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
     {
         if (node is not IConditionalValueNode conditionalValueNode)
         {
@@ -136,7 +130,7 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
         }
     }
 
-    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call)
+    public IFunctionCallNode? Resolve(ASTCleaner cleaner, IFunctionCallNode call)
     {
         // Check whether we specify any inner type at all
         if (InnerType is not null)
@@ -169,7 +163,7 @@ public abstract class ConditionalMacroType : IMacroTypeInt32, IMacroTypeInt64, I
         }
     }
 
-    public ArrayInitNode Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
+    public ArrayInitNode? Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit)
     {
         // Check whether we specify any inner type at all
         if (InnerType is not null)

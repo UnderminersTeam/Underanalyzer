@@ -65,7 +65,7 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         }
     }
 
-    private int StackTypeBias(DataType type)
+    private static int StackTypeBias(DataType type)
     {
         return type switch
         {
@@ -169,7 +169,7 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         return Left.RequiresMultipleLines(printer) || Right.RequiresMultipleLines(printer);
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         bool didAnything = false;
 

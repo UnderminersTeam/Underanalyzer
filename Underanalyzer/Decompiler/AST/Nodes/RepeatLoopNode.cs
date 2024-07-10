@@ -9,27 +9,21 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a repeat loop in the AST.
 /// </summary>
-public class RepeatLoopNode : IStatementNode
+public class RepeatLoopNode(IExpressionNode timesToRepeat, BlockNode body) : IStatementNode
 {
     /// <summary>
     /// The number of times the loop repeats.
     /// </summary>
-    public IExpressionNode TimesToRepeat { get; private set; }
+    public IExpressionNode TimesToRepeat { get; private set; } = timesToRepeat;
 
     /// <summary>
     /// The main block of the loop.
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public RepeatLoopNode(IExpressionNode timesToRepeat, BlockNode body)
-    {
-        TimesToRepeat = timesToRepeat;
-        Body = body;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

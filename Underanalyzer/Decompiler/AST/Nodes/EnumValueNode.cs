@@ -11,27 +11,28 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a reference to a single enum value in the AST.
 /// </summary>
-public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
+public class EnumValueNode(string enumName, string enumValueName, long enumValue, bool isUnknownEnum) 
+    : IExpressionNode, IMacroResolvableNode, IConditionalValueNode
 {
     /// <summary>
     /// The name of the base enum type being referenced.
     /// </summary>
-    public string EnumName { get; }
+    public string EnumName { get; } = enumName;
 
     /// <summary>
     /// The name of the value on the enum being referenced.
     /// </summary>
-    public string EnumValueName { get; }
+    public string EnumValueName { get; } = enumValueName;
 
     /// <summary>
     /// The raw value of the enum value.
     /// </summary>
-    public long EnumValue { get; }
+    public long EnumValue { get; } = enumValue;
 
     /// <summary>
     /// If true, this enum value node references an unknown enum.
     /// </summary>
-    public bool IsUnknownEnum { get; }
+    public bool IsUnknownEnum { get; } = isUnknownEnum;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -39,14 +40,6 @@ public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditional
 
     public string ConditionalTypeName => "EnumValue";
     public string ConditionalValue => IsUnknownEnum ? EnumValue.ToString() : $"{EnumName}.{EnumValueName}";
-
-    public EnumValueNode(string enumName, string enumValueName, long enumValue, bool isUnknownEnum)
-    {
-        EnumName = enumName;
-        EnumValueName = enumValueName;
-        EnumValue = enumValue;
-        IsUnknownEnum = isUnknownEnum;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -73,7 +66,7 @@ public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditional
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt64 type64)
         {
@@ -88,7 +81,7 @@ public class EnumValueNode : IExpressionNode, IMacroResolvableNode, IConditional
                     {
                         // Remove declaration altogether - it's no longer referenced
                         cleaner.Context.NameToEnumDeclaration.Remove(EnumName);
-                        cleaner.Context.EnumDeclarations.Remove(cleaner.Context.UnknownEnumDeclaration);
+                        cleaner.Context.EnumDeclarations.Remove(cleaner.Context.UnknownEnumDeclaration!);
                         cleaner.Context.UnknownEnumDeclaration = null;
                     }
                 }

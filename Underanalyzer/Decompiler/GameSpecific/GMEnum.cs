@@ -98,11 +98,11 @@ public class GMEnum
     }
 
     /// <summary>
-    /// Looks up the value entry for the given value, on this enum, or null if none exists.
+    /// Looks up the value entry for the given value, on this enum, or <see langword="null"/> if none exists.
     /// </summary>
-    public GMEnumValue FindValue(long value)
+    public GMEnumValue? FindValue(long value)
     {
-        if (_valueLookupByValue.TryGetValue(value, out GMEnumValue result))
+        if (_valueLookupByValue.TryGetValue(value, out GMEnumValue? result))
         {
             return result;
         }

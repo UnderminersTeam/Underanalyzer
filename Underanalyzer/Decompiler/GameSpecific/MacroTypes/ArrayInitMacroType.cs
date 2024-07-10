@@ -11,19 +11,14 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// <summary>
 /// Macro type that matches a macro type to an inline array initialization.
 /// </summary>
-public class ArrayInitMacroType : IMacroTypeArrayInit
+public class ArrayInitMacroType(IMacroType type) : IMacroTypeArrayInit
 {
-    public IMacroType Type { get; }
-
-    public ArrayInitMacroType(IMacroType type)
-    {
-        Type = type;
-    }
+    public IMacroType Type { get; } = type;
 
     /// <summary>
     /// Resolves this macro type for a given array initialization in the AST.
     /// </summary>
-    public ArrayInitNode Resolve(ASTCleaner cleaner, ArrayInitNode array)
+    public ArrayInitNode? Resolve(ASTCleaner cleaner, ArrayInitNode array)
     {
         bool didAnything = false;
 

@@ -12,22 +12,22 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Manages cleaning/postprocessing of the AST.
 /// </summary>
-public class ASTCleaner
+public class ASTCleaner(DecompileContext context)
 {
     /// <summary>
     /// The decompilation context this is cleaning for.
     /// </summary>
-    public DecompileContext Context { get; }
+    public DecompileContext Context { get; } = context;
 
     /// <summary>
     /// List of arguments passed into a struct fragment.
     /// </summary>
-    internal List<IExpressionNode> StructArguments { get => TopFragmentContext.StructArguments; set => TopFragmentContext.StructArguments = value; }
+    internal List<IExpressionNode>? StructArguments { get => TopFragmentContext!.StructArguments; set => TopFragmentContext!.StructArguments = value; }
 
     /// <summary>
     /// Set of all local variables present in the current fragment.
     /// </summary>
-    internal HashSet<string> LocalVariableNames { get => TopFragmentContext.LocalVariableNames; }
+    internal HashSet<string> LocalVariableNames { get => TopFragmentContext!.LocalVariableNames; }
 
     /// <summary>
     /// The stack used to manage fragment contexts.
@@ -37,7 +37,7 @@ public class ASTCleaner
     /// <summary>
     /// The current/top fragment context.
     /// </summary>
-    internal ASTFragmentContext TopFragmentContext { get; private set; }
+    internal ASTFragmentContext? TopFragmentContext { get; private set; }
 
     /// <summary>
     /// Helper to access the global macro resolver used for resolving macro types.
@@ -47,7 +47,7 @@ public class ASTCleaner
     /// <summary>
     /// Helper to access an ID instance and object type union, for resolving macro types.
     /// </summary>
-    internal IMacroType MacroInstanceIdOrObjectAsset
+    internal IMacroType? MacroInstanceIdOrObjectAsset
     {
         get
         {
@@ -63,12 +63,7 @@ public class ASTCleaner
             return _macroInstanceIdOrObjectAsset;
         }
     }
-    private IMacroType _macroInstanceIdOrObjectAsset = null;
-
-    public ASTCleaner(DecompileContext context)
-    {
-        Context = context;
-    }
+    private IMacroType? _macroInstanceIdOrObjectAsset = null;
 
     /// <summary>
     /// Pushes a context onto the fragment context stack.

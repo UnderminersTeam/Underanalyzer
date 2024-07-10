@@ -10,14 +10,9 @@ using System.Text.Json.Serialization;
 
 namespace Underanalyzer.Decompiler.GameSpecific.Json;
 
-internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistry>
+internal class GameSpecificRegistryConverter(GameSpecificRegistry existing) : JsonConverter<GameSpecificRegistry>
 {
-    public GameSpecificRegistry Registry { get; }
-
-    public GameSpecificRegistryConverter(GameSpecificRegistry existing)
-    {
-        Registry = existing;
-    }
+    public GameSpecificRegistry Registry { get; } = existing;
 
     public override GameSpecificRegistry Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -38,7 +33,7 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Depending on property name, deserialize that component
             switch (propertyName)
@@ -57,7 +52,7 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
                     break;
                 case "NamedArguments":
                     reader.Read();
-                    NamedArgumentResolverConverter.ReadContents(ref reader, options, Registry.NamedArgumentResolver);
+                    NamedArgumentResolverConverter.ReadContents(ref reader, Registry.NamedArgumentResolver);
                     break;
                 default:
                     throw new JsonException($"Unknown field {propertyName}");
@@ -86,7 +81,7 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Depending on property name, deserialize that component
             switch (propertyName)
@@ -140,15 +135,11 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName is null)
-            {
-                throw new JsonException();
-            }
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Deserialize macro type
             reader.Read();
-            T macroType = converter.Read(ref reader, typeof(T), options);
+            T macroType = converter.Read(ref reader, typeof(T), options) ?? throw new JsonException();
 
             // Register macro type under name
             Registry.RegisterType(propertyName, macroType);
@@ -178,15 +169,11 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName is null)
-            {
-                throw new JsonException();
-            }
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Deserialize macro type
             reader.Read();
-            IMacroType macroType = converter.Read(ref reader, typeof(IMacroType), options);
+            IMacroType macroType = converter.Read(ref reader, typeof(IMacroType), options) ?? throw new JsonException();
 
             // Register macro type under name
             Registry.RegisterType(propertyName, macroType);
@@ -213,11 +200,7 @@ internal class GameSpecificRegistryConverter : JsonConverter<GameSpecificRegistr
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName is null)
-            {
-                throw new JsonException();
-            }
+            string propertyName = reader.GetString() ?? throw new JsonException();
 
             // Read contents and register under code entry name
             reader.Read();

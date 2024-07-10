@@ -22,7 +22,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     /// <summary>
     /// The value being assigned.
     /// </summary>
-    public IExpressionNode Value { get; private set; }
+    public IExpressionNode? Value { get; private set; }
 
     /// <summary>
     /// The type of assignment being done.
@@ -32,7 +32,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     /// <summary>
     /// For prefix/postfix/compound, this is the instruction used to do the operation.
     /// </summary>
-    public IGMInstruction BinaryInstruction { get; private set; }
+    public IGMInstruction? BinaryInstruction { get; private set; }
 
     public bool SemicolonAfter { get => true; }
     public bool Duplicated { get; set; } = false;
@@ -225,11 +225,11 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                     // We're inside a struct initialization block
                     Variable.Print(printer);
                     printer.Write(": ");
-                    Value.Print(printer);
+                    Value!.Print(printer);
                 }
                 else
                 {
-                    if (printer.TopFragmentContext.InStaticInitialization)
+                    if (printer.TopFragmentContext!.InStaticInitialization)
                     {
                         // In static initialization, we prepend the "static" keyword to the assignment
                         printer.Write("static ");
@@ -238,20 +238,20 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                     // Normal assignment
                     Variable.Print(printer);
                     printer.Write(" = ");
-                    Value.Print(printer);
+                    Value!.Print(printer);
                 }
                 break;
             case AssignType.Prefix:
-                printer.Write((BinaryInstruction.Kind == Opcode.Add) ? "++" : "--");
+                printer.Write((BinaryInstruction!.Kind == Opcode.Add) ? "++" : "--");
                 Variable.Print(printer);
                 break;
             case AssignType.Postfix:
                 Variable.Print(printer);
-                printer.Write((BinaryInstruction.Kind == Opcode.Add) ? "++" : "--");
+                printer.Write((BinaryInstruction!.Kind == Opcode.Add) ? "++" : "--");
                 break;
             case AssignType.Compound:
                 Variable.Print(printer);
-                printer.Write(BinaryInstruction.Kind switch
+                printer.Write(BinaryInstruction!.Kind switch
                 {
                     Opcode.Add => " += ",
                     Opcode.Subtract => " -= ",
@@ -263,12 +263,12 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                     Opcode.Xor => " ^= ",
                     _ => throw new DecompilerException("Unknown binary instruction opcode in compound assignment")
                 });
-                Value.Print(printer);
+                Value!.Print(printer);
                 break;
             case AssignType.NullishCoalesce:
                 Variable.Print(printer);
                 printer.Write(" ??= ");
-                Value.Print(printer);
+                Value!.Print(printer);
                 break;
         }
     }

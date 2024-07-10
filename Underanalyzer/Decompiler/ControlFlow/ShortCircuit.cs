@@ -15,41 +15,34 @@ public enum ShortCircuitType
     Or
 }
 
-internal class ShortCircuit : IControlFlowNode
+internal class ShortCircuit(int startAddress, int endAddress, ShortCircuitType logicKind, List<IControlFlowNode> children) 
+    : IControlFlowNode
 {
-    public int StartAddress { get; private set; }
+    public int StartAddress { get; private set; } = startAddress;
 
-    public int EndAddress { get; private set; }
+    public int EndAddress { get; private set; } = endAddress;
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = new();
+    public List<IControlFlowNode?> Children { get; } = children!;
 
     public bool Unreachable { get; set; } = false;
 
-    public ShortCircuitType LogicKind { get; }
-
-    public ShortCircuit(int startAddress, int endAddress, ShortCircuitType logicKind, List<IControlFlowNode> children)
-    {
-        StartAddress = startAddress;
-        EndAddress = endAddress;
-        LogicKind = logicKind;
-        Children = children;
-    }
+    public ShortCircuitType LogicKind { get; } = logicKind;
 
     /// <summary>
     /// Locates all blocks where a short circuit "ends", storing them on the context for later processing.
     /// </summary>
     public static void FindShortCircuits(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
         bool oldBytecodeVersion = ctx.OlderThanBytecode15;
 
-        ctx.ShortCircuitBlocks = new();
+        ctx.ShortCircuitBlocks = [];
 
         // Identify and restructure short circuits
         foreach (var block in blocks)
@@ -85,10 +78,10 @@ internal class ShortCircuit : IControlFlowNode
     /// </summary>
     public static List<ShortCircuit> InsertShortCircuits(DecompileContext ctx)
     {
-        List<ShortCircuit> shortCircuits = new();
+        List<ShortCircuit> shortCircuits = [];
 
         // Identify and restructure short circuits
-        foreach (var block in ctx.ShortCircuitBlocks)
+        foreach (var block in ctx.ShortCircuitBlocks!)
         {
             // Add child nodes
             List<IControlFlowNode> children = [block.Predecessors[0]];
@@ -106,12 +99,12 @@ internal class ShortCircuit : IControlFlowNode
             // Remove branches and connections from previous blocks (not necessarily children!)
             for (int i = block.Predecessors.Count - 1; i >= 0; i--)
             {
-                Block pred = block.Predecessors[i] as Block;
+                Block pred = block.Predecessors[i] as Block ?? throw new DecompilerException("Expected predecessor to be block");
                 pred.Instructions.RemoveAt(pred.Instructions.Count - 1);
                 IControlFlowNode.DisconnectSuccessor(pred, 1);
                 IControlFlowNode.DisconnectSuccessor(pred, 0);
             }
-            Block finalBlock = ctx.Blocks[block.BlockIndex - 1];
+            Block finalBlock = ctx.Blocks![block.BlockIndex - 1];
             finalBlock.Instructions.RemoveAt(finalBlock.Instructions.Count - 1);
             IControlFlowNode.DisconnectSuccessor(finalBlock, 0);
 
@@ -150,8 +143,7 @@ internal class ShortCircuit : IControlFlowNode
         // Build the rest of the conditions
         for (int i = 1; i < Children.Count; i++)
         {
-            IControlFlowNode child = Children[i];
-            conditions.Add(builder.BuildExpression(child));
+            conditions.Add(builder.BuildExpression(Children[i]));
         }
 
         builder.ExpressionStack.Push(new ShortCircuitNode(conditions, LogicKind));

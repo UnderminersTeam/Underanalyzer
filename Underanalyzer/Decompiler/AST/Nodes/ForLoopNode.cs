@@ -9,44 +9,37 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a for loop in the AST.
 /// </summary>
-public class ForLoopNode : IStatementNode, IBlockCleanupNode
+public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition, BlockNode? incrementor, BlockNode body) 
+    : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
-    /// The initialization statement before the loop, or null if none.
+    /// The initialization statement before the loop, or <see langword="null"/> if none.
     /// </summary>
-    public IStatementNode Initializer { get; internal set; }
+    public IStatementNode? Initializer { get; internal set; } = initializer;
 
     /// <summary>
     /// The condition of the loop.
     /// </summary>
-    public IExpressionNode Condition { get; private set; }
+    public IExpressionNode? Condition { get; private set; } = condition;
 
     /// <summary>
     /// The code executed between iterations of the loop.
     /// </summary>
-    public BlockNode Incrementor { get; private set; }
+    public BlockNode? Incrementor { get; private set; } = incrementor;
 
     /// <summary>
     /// The main block of the loop.
     /// </summary>
-    public BlockNode Body { get; private set; }
+    public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter { get => false; }
     public bool EmptyLineBefore { get; internal set; }
     public bool EmptyLineAfter { get; internal set; }
 
-    public ForLoopNode(IStatementNode initializer, IExpressionNode condition, BlockNode incrementor, BlockNode body)
-    {
-        Initializer = initializer;
-        Condition = condition;
-        Incrementor = incrementor;
-        Body = body;
-    }
-
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Initializer = Initializer?.Clean(cleaner);
-        Condition = Condition.Clean(cleaner);
+        Condition = Condition!.Clean(cleaner);
         Condition.Group = false;
         Incrementor?.Clean(cleaner);
 
@@ -62,10 +55,10 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
             Condition = null;
             Incrementor = null;
 
-            if (Initializer is not BlockNode || Initializer is BlockNode block && block.Children is not [])
+            if (Initializer is not null && (Initializer is not BlockNode || Initializer is BlockNode block && block.Children is not []))
             {
                 // Move initializer above loop
-                BlockNode newBlock = new(cleaner.TopFragmentContext);
+                BlockNode newBlock = new(cleaner.TopFragmentContext!);
                 newBlock.Children.Add(Initializer);
                 newBlock.Children.Add(this);
                 res = newBlock;
@@ -111,7 +104,7 @@ public class ForLoopNode : IStatementNode, IBlockCleanupNode
         {
             Initializer?.Print(printer);
             printer.Write("; ");
-            Condition.Print(printer);
+            Condition!.Print(printer);
             if (Incrementor is not null)
             {
                 printer.Write("; ");

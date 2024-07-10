@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// </summary>
 public class InstanceMacroType : IMacroTypeInt32
 {
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         return data switch
         {

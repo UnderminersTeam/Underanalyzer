@@ -29,7 +29,7 @@ internal class UnionMacroTypeConverter
             throw new JsonException();
         }
 
-        List<IMacroType> types = new();
+        List<IMacroType> types = [];
 
         while (reader.Read())
         {
@@ -44,7 +44,7 @@ internal class UnionMacroTypeConverter
                 return new UnionMacroType(types);
             }
 
-            types.Add(macroTypeConverter.Read(ref reader, null, options));
+            types.Add(macroTypeConverter.Read(ref reader, typeof(IMacroType), options) ?? throw new JsonException());
         }
 
         throw new JsonException();

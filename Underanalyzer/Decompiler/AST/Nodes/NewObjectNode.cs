@@ -12,17 +12,18 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents the "new" keyword being used to instantiate an object in the AST.
 /// </summary>
-public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
+public class NewObjectNode(IExpressionNode function, List<IExpressionNode> arguments) 
+    : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function (constructor) being used.
     /// </summary>
-    public IExpressionNode Function { get; private set; }
+    public IExpressionNode Function { get; private set; } = function;
 
     /// <summary>
     /// The arguments passed into the function (constructor).
     /// </summary>
-    public List<IExpressionNode> Arguments { get; private set; }
+    public List<IExpressionNode> Arguments { get; private set; } = arguments;
 
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
@@ -30,16 +31,10 @@ public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueN
     public bool SemicolonAfter => true;
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-    public string FunctionName { get => (Function is FunctionReferenceNode functionRef) ? functionRef.Function.Name.Content : null; }
+    public string? FunctionName { get => (Function is FunctionReferenceNode functionRef) ? functionRef.Function.Name.Content : null; }
 
     public string ConditionalTypeName => "NewObject";
     public string ConditionalValue => ""; // TODO?
-
-    public NewObjectNode(IExpressionNode function, List<IExpressionNode> arguments)
-    {
-        Function = function;
-        Arguments = arguments;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -113,7 +108,7 @@ public class NewObjectNode : IExpressionNode, IStatementNode, IConditionalValueN
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

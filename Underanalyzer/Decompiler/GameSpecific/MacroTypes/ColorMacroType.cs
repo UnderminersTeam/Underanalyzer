@@ -41,7 +41,7 @@ public class ColorMacroType : IMacroTypeInt32
     public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
         // Check if in constant list
-        if (Constants.TryGetValue(data, out string name))
+        if (Constants.TryGetValue(data, out string? name))
         {
             return new MacroValueNode(name);
         }

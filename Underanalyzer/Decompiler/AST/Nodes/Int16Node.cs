@@ -11,15 +11,15 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a 16-bit signed integer constant in the AST.
 /// </summary>
-public class Int16Node : IConstantNode<short>, IMacroResolvableNode, IConditionalValueNode
+public class Int16Node(short value, bool regularPush) : IConstantNode<short>, IMacroResolvableNode, IConditionalValueNode
 {
-    public short Value { get; }
+    public short Value { get; } = value;
 
     /// <summary>
     /// If true, this number was pushed with a normal Push instruction opcode,
     /// rather than the usual PushImmediate.
     /// </summary>
-    public bool RegularPush { get; }
+    public bool RegularPush { get; } = regularPush;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -28,15 +28,8 @@ public class Int16Node : IConstantNode<short>, IMacroResolvableNode, IConditiona
     public string ConditionalTypeName => "Integer";
     public string ConditionalValue => Value.ToString();
 
-    public Int16Node(short value, bool regularPush)
-    {
-        Value = value;
-        RegularPush = regularPush;
-    }
-
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
-        // TODO: handle asset/macro types
         return this;
     }
 
@@ -50,7 +43,7 @@ public class Int16Node : IConstantNode<short>, IMacroResolvableNode, IConditiona
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeInt32 type32)
         {

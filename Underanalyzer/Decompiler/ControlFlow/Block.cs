@@ -12,33 +12,25 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a basic block of VM instructions.
 /// </summary>
-internal class Block : IControlFlowNode
+internal class Block(int startAddr, int endAddr, int blockIndex, List<IGMInstruction> instructions) : IControlFlowNode
 {
-    public int StartAddress { get; private set; }
+    public int StartAddress { get; private set; } = startAddr;
 
-    public int EndAddress { get; private set; }
+    public int EndAddress { get; private set; } = endAddr;
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public List<IGMInstruction> Instructions { get; }
+    public List<IGMInstruction> Instructions { get; } = instructions;
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children => null;
+    public List<IControlFlowNode?> Children => throw new System.NotImplementedException();
 
     public bool Unreachable { get; set; } = false;
 
-    public int BlockIndex { get; }
-
-    public Block(int startAddr, int endAddr, int blockIndex, List<IGMInstruction> instructions)
-    {
-        StartAddress = startAddr;
-        EndAddress = endAddr;
-        BlockIndex = blockIndex;
-        Instructions = instructions;
-    }
+    public int BlockIndex { get; } = blockIndex;
 
     /// <summary>
     /// Calculates addresses of basic VM blocks; located at instructions that are jumped to.
@@ -72,11 +64,13 @@ internal class Block : IControlFlowNode
                     break;
                 case IGMInstruction.Opcode.Call:
                     // Handle try hook addresses
-                    if (i >= 4 && instr.Function.Name?.Content == VMConstants.TryHookFunction)
+                    if (i >= 4 && instr.Function?.Name?.Content == VMConstants.TryHookFunction)
                     {
                         // If too close to end, bail
                         if (i >= code.InstructionCount - 1)
+                        {
                             break;
+                        }
 
                         // Check instructions
                         IGMInstruction finallyInstr = code.GetInstruction(i - 4);
@@ -95,7 +89,9 @@ internal class Block : IControlFlowNode
 
                         int catchBlock = catchInstr.ValueInt;
                         if (catchBlock != -1)
+                        {
                             addresses.Add(catchBlock);
+                        }
 
                         // Split this try hook into its own block - removes edge cases in later graph operations
                         addresses.Add(finallyInstr.Address);
@@ -127,9 +123,9 @@ internal class Block : IControlFlowNode
     {
         HashSet<int> addresses = FindBlockAddresses(code);
 
-        blocksByAddress = new();
-        List<Block> blocks = new();
-        Block current = null;
+        blocksByAddress = [];
+        List<Block> blocks = [];
+        Block? current = null;
         for (int i = 0; i < code.InstructionCount; i++)
         {
             // Check if we have a new block at the current instruction's address
@@ -137,7 +133,7 @@ internal class Block : IControlFlowNode
             if (addresses.Contains(instr.Address))
             {
                 // End previous block
-                if (current != null)
+                if (current is not null)
                 {
                     current.EndAddress = instr.Address;
                 }
@@ -149,7 +145,7 @@ internal class Block : IControlFlowNode
             }
 
             // Add current instruction to our currently-building block
-            current.Instructions.Add(instr);
+            current!.Instructions.Add(instr);
         }
 
         // End current block, if applicable
@@ -230,7 +226,7 @@ internal class Block : IControlFlowNode
                         {
                             IGMInstruction callInstr = b.Instructions[^2];
                             if (callInstr.Kind == IGMInstruction.Opcode.Call &&
-                                callInstr.Function.Name?.Content == VMConstants.TryHookFunction)
+                                callInstr.Function?.Name?.Content == VMConstants.TryHookFunction)
                             {
                                 // We've found a try hook - connect to targets
                                 int finallyAddr = b.Instructions[^6].ValueInt;

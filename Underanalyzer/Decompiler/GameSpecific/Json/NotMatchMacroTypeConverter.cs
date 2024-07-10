@@ -12,9 +12,9 @@ internal class MatchNotMacroTypeConverter
 {
     public static MatchNotMacroType ReadContents(ref Utf8JsonReader reader, IMacroTypeConverter macroTypeConverter, JsonSerializerOptions options)
     {
-        IMacroType innerType = null;
-        string conditionalValue = null;
-        string conditionalType = null;
+        IMacroType? innerType = null;
+        string? conditionalValue = null;
+        string? conditionalType = null;
 
         while (reader.Read())
         {
@@ -24,7 +24,7 @@ internal class MatchNotMacroTypeConverter
                 {
                     throw new JsonException();
                 }
-                return new MatchNotMacroType(innerType, conditionalType, conditionalValue);
+                return new MatchNotMacroType(innerType ?? throw new JsonException(), conditionalType, conditionalValue);
             }
 
             if (reader.TokenType != JsonTokenType.PropertyName)
@@ -60,7 +60,7 @@ internal class MatchNotMacroTypeConverter
                     {
                         throw new JsonException();
                     }
-                    innerType = macroTypeConverter.Read(ref reader, null, options);
+                    innerType = macroTypeConverter.Read(ref reader, typeof(IMacroType), options);
                     break;
                 default:
                     throw new JsonException();

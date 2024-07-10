@@ -11,21 +11,16 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a "return" statement (with a value) in the AST.
 /// </summary>
-public class ReturnNode : IStatementNode, IBlockCleanupNode
+public class ReturnNode(IExpressionNode value) : IStatementNode, IBlockCleanupNode
 {
     /// <summary>
     /// Expression being returned.
     /// </summary>
-    public IExpressionNode Value { get; private set; }
+    public IExpressionNode Value { get; private set; } = value;
 
     public bool SemicolonAfter => true;
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-
-    public ReturnNode(IExpressionNode value)
-    {
-        Value = value;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -33,7 +28,7 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
 
         // Handle macro type resolution
         if (Value is IMacroResolvableNode valueResolvable && 
-            cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, cleaner.TopFragmentContext.CodeEntryName) is IMacroType returnMacroType &&
+            cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, cleaner.TopFragmentContext!.CodeEntryName) is IMacroType returnMacroType &&
             valueResolvable.ResolveMacroType(cleaner, returnMacroType) is IExpressionNode valueResolved)
         {
             Value = valueResolved;
@@ -65,7 +60,7 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
         if (i > 0 && Value is VariableNode returnVariable &&
             returnVariable is { Variable.Name.Content: VMConstants.TempReturnVariable })
         {
-            if (block.Children[i - 1] is AssignNode assign && 
+            if (block.Children[i - 1] is AssignNode { Value: not null, AssignKind: AssignNode.AssignType.Normal } assign && 
                 assign.Variable is VariableNode { Variable.Name.Content: VMConstants.TempReturnVariable })
             {
                 // We found one - rewrite it as a normal return
@@ -76,7 +71,7 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
         }
 
         // Remove duplicated finally statements (done on second pass)
-        if (cleaner.TopFragmentContext.FinallyStatementCount.Count > 0)
+        if (cleaner.TopFragmentContext!.FinallyStatementCount.Count > 0)
         {
             int count = 0;
             foreach (int statementCount in cleaner.TopFragmentContext.FinallyStatementCount)
@@ -89,7 +84,7 @@ public class ReturnNode : IStatementNode, IBlockCleanupNode
 
                 // Additionally remove temporary variable, if it exists
                 if (i - count - 1 >= 0 &&
-                    block.Children[i - count - 1] is AssignNode assign &&
+                    block.Children[i - count - 1] is AssignNode { Value: not null, AssignKind: AssignNode.AssignType.Normal } assign &&
                     assign.Variable is VariableNode { Variable.Name.Content: VMConstants.TryCopyVariable, 
                                                       Variable.InstanceType: IGMInstruction.InstanceType.Local })
                 {

@@ -51,8 +51,8 @@ internal static class TestUtil
     /// </summary>
     public static void EnsureNoRemainingJumps(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
-        List<BinaryBranch> branches = ctx.BinaryBranchNodes;
+        List<Block> blocks = ctx.Blocks!;
+        List<BinaryBranch> branches = ctx.BinaryBranchNodes!;
 
         foreach (BinaryBranch bb in branches)
         {

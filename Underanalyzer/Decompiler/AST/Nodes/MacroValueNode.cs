@@ -12,12 +12,12 @@ namespace Underanalyzer.Decompiler.AST;
 /// Represents a reference to a single macro value in the AST.
 /// This is only generated during AST cleanup, so the stack type is undefined.
 /// </summary>
-public class MacroValueNode : IExpressionNode, IConditionalValueNode
+public class MacroValueNode(string valueName) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The content of the macro value name.
     /// </summary>
-    public string ValueName { get; }
+    public string ValueName { get; } = valueName;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -25,11 +25,6 @@ public class MacroValueNode : IExpressionNode, IConditionalValueNode
 
     public string ConditionalTypeName => "MacroValue";
     public string ConditionalValue => ValueName;
-
-    public MacroValueNode(string valueName)
-    {
-        ValueName = valueName;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -54,7 +49,7 @@ public class MacroValueNode : IExpressionNode, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

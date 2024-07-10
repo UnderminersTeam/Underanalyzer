@@ -11,7 +11,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 
 internal class WithLoop : Loop
 {
-    public override List<IControlFlowNode> Children { get; } = [null, null, null, null, null];
+    public override List<IControlFlowNode?> Children { get; } = [null, null, null, null, null];
 
     /// <summary>
     /// The node before this loop; usually a block with <see cref="IGMInstruction.Opcode.PushWithContext"/> after it.
@@ -19,7 +19,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this is connected to the loop.
     /// </remarks>
-    public IControlFlowNode Before { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Before { get => Children[0]!; private set => Children[0] = value; }
 
     /// <summary>
     /// The start of the loop body of the with loop.
@@ -27,7 +27,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its predecessors.
     /// </remarks>
-    public IControlFlowNode Head { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode Head { get => Children[1]!; private set => Children[1] = value; }
 
     /// <summary>
     /// The end of the with loop.
@@ -35,7 +35,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this is disconnected from its successors.
     /// </remarks>
-    public IControlFlowNode Tail { get => Children[2]; private set => Children[2] = value; }
+    public IControlFlowNode Tail { get => Children[2]!; private set => Children[2] = value; }
 
     /// <summary>
     /// The node reached after the with loop is completed.
@@ -43,7 +43,7 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this becomes a new <see cref="EmptyNode"/>, which is then disconnected from the external graph.
     /// </remarks>
-    public IControlFlowNode After { get => Children[3]; private set => Children[3] = value; }
+    public IControlFlowNode After { get => Children[3]!; private set => Children[3] = value; }
 
     /// <summary>
     /// If not null, this is a special block jumped to from within the with statement for "break" statements.
@@ -51,11 +51,11 @@ internal class WithLoop : Loop
     /// <remarks>
     /// Upon being processed, this node is disconnected from the graph.
     /// </remarks>
-    public IControlFlowNode BreakBlock { get => Children[4]; private set => Children[4] = value; }
+    public IControlFlowNode? BreakBlock { get => Children[4]; private set => Children[4] = value; }
 
     public WithLoop(int startAddress, int endAddress, 
                     IControlFlowNode before, IControlFlowNode head, IControlFlowNode tail,
-                    IControlFlowNode after, IControlFlowNode breakBlock)
+                    IControlFlowNode after, IControlFlowNode? breakBlock)
         : base(startAddress, endAddress)
     {
         Before = before;
@@ -102,7 +102,7 @@ internal class WithLoop : Loop
             IControlFlowNode.DisconnectSuccessor(BreakBlock, 0);
 
             // Get rid of branch instruction from oldAfter
-            Block oldAfterBlock = oldAfter as Block;
+            Block oldAfterBlock = oldAfter as Block ?? throw new DecompilerException("Expected old after to be block");
             oldAfterBlock.Instructions.RemoveAt(oldAfterBlock.Instructions.Count - 1);
 
             // Reroute successor of After to instead go to nodeToEndAt
@@ -164,7 +164,7 @@ internal class WithLoop : Loop
         }
 
         // Push this loop context
-        Loop prevLoop = builder.TopFragmentContext.SurroundingLoop;
+        Loop? prevLoop = builder.TopFragmentContext!.SurroundingLoop;
         builder.TopFragmentContext.SurroundingLoop = this;
 
         // Build loop body, and create statement

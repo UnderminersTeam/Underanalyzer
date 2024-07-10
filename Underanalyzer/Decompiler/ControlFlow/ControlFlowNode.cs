@@ -34,13 +34,13 @@ internal interface IControlFlowNode
     /// If disconnected from the rest of the graph, e.g. at the start of a high-level
     /// control flow structure like a loop, this points to the enveloping structure.
     /// </summary>
-    public IControlFlowNode Parent { get; set; }
+    public IControlFlowNode? Parent { get; set; }
 
     /// <summary>
     /// If this is a high-level control flow structure like a loop, this represents
     /// all relevant internal nodes that this structure requires handles for.
     /// </summary>
-    public List<IControlFlowNode> Children { get; }
+    public List<IControlFlowNode?> Children { get; }
 
     /// <summary>
     /// If true, this node's predecessors do not truly exist. That is,
@@ -164,6 +164,20 @@ internal interface IControlFlowNode
     }
 
     /// <summary>
+    /// Helper function to replace all instances of "search" with "replace" in a control flow list.
+    /// </summary>
+    public static void ReplaceConnectionsNullable(List<IControlFlowNode?> list, IControlFlowNode search, IControlFlowNode replace)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (list[i] == search)
+            {
+                list[i] = replace;
+            }
+        }
+    }
+
+    /// <summary>
     /// Utility function to reroute an entire section of control flow (from its beginning and end),
     /// to make way for a new high-level control flow structure, such as a loop.
     /// Assumes that "after" should have its first predecessor replaced by this new structure.
@@ -189,7 +203,7 @@ internal interface IControlFlowNode
         }
         if (start.Parent is not null)
         {
-            ReplaceConnections(start.Parent.Children, start, newStructure);
+            ReplaceConnectionsNullable(start.Parent.Children, start, newStructure);
         }
         // TODO: do we care about "start"'s Children?
         start.Predecessors.Clear();

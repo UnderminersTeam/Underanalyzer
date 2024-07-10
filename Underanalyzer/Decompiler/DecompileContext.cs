@@ -34,36 +34,36 @@ public class DecompileContext
     /// <summary>
     /// Any warnings produced throughout the decompilation process.
     /// </summary>
-    public List<IDecompileWarning> Warnings { get; } = new();
+    public List<IDecompileWarning> Warnings { get; } = [];
 
     // Helpers to refer to data on game context
     internal bool OlderThanBytecode15 { get => GameContext.Bytecode14OrLower; }
     internal bool GMLv2 { get => GameContext.UsingGMLv2; }
 
     // Data structures used (and re-used) for decompilation, as well as tests
-    internal List<Block> Blocks { get; set; }
-    internal Dictionary<int, Block> BlocksByAddress { get; set; }
-    internal List<Fragment> FragmentNodes { get; set; }
-    internal List<Loop> LoopNodes { get; set; }
-    internal List<Block> ShortCircuitBlocks { get; set; }
-    internal List<ShortCircuit> ShortCircuitNodes { get; set; }
-    internal List<StaticInit> StaticInitNodes { get; set; }
-    internal List<TryCatch> TryCatchNodes { get; set; }
-    internal List<Nullish> NullishNodes { get; set; }
-    internal List<BinaryBranch> BinaryBranchNodes { get; set; }
-    internal HashSet<IControlFlowNode> SwitchEndNodes { get; set; }
-    internal List<Switch.SwitchDetectionData> SwitchData { get; set; }
-    internal HashSet<Block> SwitchContinueBlocks { get; set; }
-    internal HashSet<Block> SwitchIgnoreJumpBlocks { get; set; }
-    internal List<Switch> SwitchNodes { get; set; }
-    internal Dictionary<Block, Loop> BlockSurroundingLoops { get; set; }
-    internal Dictionary<Block, int> BlockAfterLimits { get; set; }
-    internal List<GMEnum> EnumDeclarations { get; set; } = new();
-    internal Dictionary<string, GMEnum> NameToEnumDeclaration { get; set; } = new();
-    internal GMEnum UnknownEnumDeclaration { get; set; } = null;
+    internal List<Block>? Blocks { get; set; }
+    internal Dictionary<int, Block>? BlocksByAddress { get; set; }
+    internal List<Fragment>? FragmentNodes { get; set; }
+    internal List<Loop>? LoopNodes { get; set; }
+    internal List<Block>? ShortCircuitBlocks { get; set; }
+    internal List<ShortCircuit>? ShortCircuitNodes { get; set; }
+    internal List<StaticInit>? StaticInitNodes { get; set; }
+    internal List<TryCatch>? TryCatchNodes { get; set; }
+    internal List<Nullish>? NullishNodes { get; set; }
+    internal List<BinaryBranch>? BinaryBranchNodes { get; set; }
+    internal HashSet<IControlFlowNode>? SwitchEndNodes { get; set; }
+    internal List<Switch.SwitchDetectionData>? SwitchData { get; set; }
+    internal HashSet<Block>? SwitchContinueBlocks { get; set; }
+    internal HashSet<Block>? SwitchIgnoreJumpBlocks { get; set; }
+    internal List<Switch>? SwitchNodes { get; set; }
+    internal Dictionary<Block, Loop>? BlockSurroundingLoops { get; set; }
+    internal Dictionary<Block, int>? BlockAfterLimits { get; set; }
+    internal List<GMEnum> EnumDeclarations { get; set; } = [];
+    internal Dictionary<string, GMEnum> NameToEnumDeclaration { get; set; } = [];
+    internal GMEnum? UnknownEnumDeclaration { get; set; } = null;
     internal int UnknownEnumReferenceCount { get; set; } = 0;
 
-    public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings settings = null)
+    public DecompileContext(IGameContext gameContext, IGMCode code, IDecompileSettings? settings = null)
     {
         GameContext = gameContext;
         Code = code;
@@ -75,6 +75,7 @@ public class DecompileContext
     {
         Code = code;
         GameContext = new Mock.GameContextMock();
+        Settings = new DecompileSettings();
     }
 
     // Solely decompiles control flow from the code entry

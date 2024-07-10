@@ -23,7 +23,7 @@ public class ExitNode : IStatementNode, IBlockCleanupNode
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Remove duplicated finally statements
-        if (cleaner.TopFragmentContext.FinallyStatementCount.Count > 0)
+        if (cleaner.TopFragmentContext!.FinallyStatementCount.Count > 0)
         {
             int count = 0;
             foreach (int statementCount in cleaner.TopFragmentContext.FinallyStatementCount)

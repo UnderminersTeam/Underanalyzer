@@ -12,22 +12,23 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a variable being called as a method/function in the AST.
 /// </summary>
-public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
+public class VariableCallNode(IExpressionNode function, IExpressionNode? instance, List<IExpressionNode> arguments) 
+    : IExpressionNode, IStatementNode, IConditionalValueNode, IFunctionCallNode
 {
     /// <summary>
     /// The function/method variable being called.
     /// </summary>
-    public IExpressionNode Function { get; private set; }
+    public IExpressionNode Function { get; private set; } = function;
 
     /// <summary>
-    /// The instance the method is being called on.
+    /// The instance the method is being called on, or <see langword="null"/> if none.
     /// </summary>
-    public IExpressionNode Instance { get; private set; }
+    public IExpressionNode? Instance { get; private set; } = instance;
 
     /// <summary>
     /// The arguments used in the call.
     /// </summary>
-    public List<IExpressionNode> Arguments { get; }
+    public List<IExpressionNode> Arguments { get; } = arguments;
 
     public bool Duplicated { get; set; }
     public bool Group { get; set; } = false;
@@ -35,17 +36,10 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
     public bool SemicolonAfter => true;
     public bool EmptyLineBefore => false;
     public bool EmptyLineAfter => false;
-    public string FunctionName => null;
+    public string? FunctionName => null;
 
     public string ConditionalTypeName => "VariableCall";
     public string ConditionalValue => ""; // TODO?
-
-    public VariableCallNode(IExpressionNode function, IExpressionNode instance, List<IExpressionNode> arguments)
-    {
-        Function = function;
-        Instance = instance;
-        Arguments = arguments;
-    }
 
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
@@ -83,7 +77,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
                 // Have to also check if we *need* "self." or not, if that's what Instance happens to be.
                 if (Instance is not InstanceTypeNode instType2 || instType2.InstanceType != IGMInstruction.InstanceType.Self || // TODO: for later investigation: does Builtin also need to be checked in 2024 versions?
                     printer.LocalVariableNames.Contains(variable.Variable.Name.Content) ||
-                    printer.TopFragmentContext.NamedArguments.Contains(variable.Variable.Name.Content))
+                    printer.TopFragmentContext!.NamedArguments.Contains(variable.Variable.Name.Content))
                 {
                     Instance.Print(printer);
                     printer.Write('.');
@@ -137,7 +131,7 @@ public class VariableCallNode : IExpressionNode, IStatementNode, IConditionalVal
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

@@ -18,7 +18,7 @@ internal static class Branches
     {
         // Assign blocks to loops.
         // We assume that loops are sorted so that nested loops come after outer loops.
-        Dictionary<Block, Loop> surroundingLoops = new();
+        Dictionary<Block, Loop> surroundingLoops = [];
         foreach (Loop l in loops)
         {
             Block startBlock = blockByAddress[l.StartAddress];
@@ -44,7 +44,7 @@ internal static class Branches
     /// </summary>
     public static Dictionary<Block, int> ComputeBlockAfterLimits(List<Block> blocks, Dictionary<Block, Loop> surroundingLoops)
     {
-        Dictionary<Block, int> blockToAfterLimit = new();
+        Dictionary<Block, int> blockToAfterLimit = [];
 
         List<LimitEntry> limitStack = [new(blocks[^1].EndAddress, false)];
 
@@ -92,7 +92,7 @@ internal static class Branches
             }
 
             // If we have a loop surrounding this block, we can also use that
-            if (surroundingLoops.TryGetValue(b, out Loop loop))
+            if (surroundingLoops.TryGetValue(b, out Loop? loop))
             {
                 if (loop.EndAddress < thisLimit)
                 {
@@ -198,22 +198,22 @@ internal static class Branches
     /// </summary>
     public static void ResolveExternalJumps(DecompileContext ctx)
     {
-        Dictionary<Block, Loop> surroundingLoops = ctx.BlockSurroundingLoops;
-        Dictionary<Block, int> blockAfterLimits = ctx.BlockAfterLimits;
-        foreach (Block block in ctx.Blocks)
+        Dictionary<Block, Loop> surroundingLoops = ctx.BlockSurroundingLoops!;
+        Dictionary<Block, int> blockAfterLimits = ctx.BlockAfterLimits!;
+        foreach (Block block in ctx.Blocks!)
         {
             if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch }] && block.Successors.Count >= 1)
             {
-                IControlFlowNode node = null;
+                IControlFlowNode? node = null;
 
                 // Check that we're not supposed to be ignored
-                if (ctx.SwitchIgnoreJumpBlocks.Contains(block))
+                if (ctx.SwitchIgnoreJumpBlocks!.Contains(block))
                 {
                     continue;
                 }
 
                 // Look for a trivial branch to top or end of surrounding loop
-                if (surroundingLoops.TryGetValue(block, out Loop loop))
+                if (surroundingLoops.TryGetValue(block, out Loop? loop))
                 {
                     if (block.Successors[0] == loop)
                     {
@@ -256,13 +256,13 @@ internal static class Branches
                 {
                     // Check if we're breaking/continuing from inside of a switch statement.
                     IControlFlowNode succNode = block.Successors[0];
-                    Block succBlock = succNode as Block;
-                    if (ctx.SwitchEndNodes.Contains(succNode))
+                    Block? succBlock = succNode as Block;
+                    if (ctx.SwitchEndNodes!.Contains(succNode))
                     {
                         // This is a break from inside of a switch
                         node = new BreakNode(block.EndAddress - 4);
                     }
-                    else if (succBlock is not null && ctx.SwitchContinueBlocks.Contains(succBlock))
+                    else if (succBlock is not null && ctx.SwitchContinueBlocks!.Contains(succBlock))
                     {
                         // This is a continue from inside of a switch
                         node = new ContinueNode(block.EndAddress - 4);
@@ -361,11 +361,11 @@ internal static class Branches
     /// </summary>
     public static void ResolveRemainingExternalJumps(DecompileContext ctx)
     {
-        foreach (Block block in ctx.Blocks)
+        foreach (Block block in ctx.Blocks!)
         {
             if (block.Instructions is [.., { Kind: IGMInstruction.Opcode.Branch, Address: int address, BranchOffset: int branchOffset }])
             {
-                if (!ctx.BlockSurroundingLoops.TryGetValue(block, out Loop loop))
+                if (!ctx.BlockSurroundingLoops!.TryGetValue(block, out Loop? loop))
                 {
                     throw new DecompilerException("Expected loop to be around unresolved branch");
                 }
@@ -377,7 +377,7 @@ internal static class Branches
                     {
                         // This is probably a for loop now.
                         // We need to find the original successor, and set that as the incrementor.
-                        IControlFlowNode succ = ctx.BlocksByAddress[address + branchOffset];
+                        IControlFlowNode succ = ctx.BlocksByAddress![address + branchOffset];
                         while (succ.Parent is not null)
                         {
                             succ = succ.Parent;

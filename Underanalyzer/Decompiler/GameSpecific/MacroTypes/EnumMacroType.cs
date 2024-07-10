@@ -44,18 +44,20 @@ public class EnumMacroType : IMacroTypeInt64
     /// Constructs a macro type from an enum, where value names are the constant names, 
     /// associated with their enum values.
     /// </summary>
-    public EnumMacroType(Type enumType, string name = null)
+    public EnumMacroType(Type enumType, string? name = null)
     {
         Name = name ?? enumType.Name;
-        foreach (long value in Enum.GetValues(enumType))
+        Array values = Enum.GetValues(enumType);
+        ValueToValueName = new(values.Length);
+        foreach (long value in values)
         {
-            ValueToValueName[value] = Enum.GetName(enumType, value);
+            ValueToValueName[value] = Enum.GetName(enumType, value) ?? throw new NullReferenceException();
         }
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data)
     {
-        if (ValueToValueName.TryGetValue(data, out string valueName))
+        if (ValueToValueName.TryGetValue(data, out string? valueName))
         {
             // Use enum node, and declare new enum if one doesn't exist already
             if (!cleaner.Context.NameToEnumDeclaration.ContainsKey(Name))

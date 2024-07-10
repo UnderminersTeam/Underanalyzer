@@ -21,9 +21,9 @@ public interface IMacroType
 public interface IMacroTypeInt32 : IMacroType
 {
     /// <summary>
-    /// Resolves the macro type with the given 32-bit int value, or null if there is no resolution.
+    /// Resolves the macro type with the given 32-bit int value, or <see langword="null"/> if there is no resolution.
     /// </summary>
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data);
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data);
 }
 
 /// <summary>
@@ -32,9 +32,9 @@ public interface IMacroTypeInt32 : IMacroType
 public interface IMacroTypeInt64 : IMacroType
 {
     /// <summary>
-    /// Resolves the macro type with the given 64-bit int value, or null if there is no resolution.
+    /// Resolves the macro type with the given 64-bit int value, or <see langword="null"/> if there is no resolution.
     /// </summary>
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data);
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, long data);
 }
 
 /// <summary>
@@ -43,9 +43,9 @@ public interface IMacroTypeInt64 : IMacroType
 public interface IMacroTypeFunctionArgs : IMacroType
 {
     /// <summary>
-    /// Resolves the macro type with the given AST function, or null if there is no resolution.
+    /// Resolves the macro type with the given AST function, or <see langword="null"/> if there is no resolution.
     /// </summary>
-    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call);
+    public IFunctionCallNode? Resolve(ASTCleaner cleaner, IFunctionCallNode call);
 }
 
 /// <summary>
@@ -54,9 +54,9 @@ public interface IMacroTypeFunctionArgs : IMacroType
 public interface IMacroTypeArrayInit : IMacroType
 {
     /// <summary>
-    /// Resolves the macro type with the given AST array initialization, or null if there is no resolution.
+    /// Resolves the macro type with the given AST array initialization, or <see langword="null"/> if there is no resolution.
     /// </summary>
-    public ArrayInitNode Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit);
+    public ArrayInitNode? Resolve(ASTCleaner cleaner, ArrayInitNode arrayInit);
 }
 
 
@@ -71,7 +71,7 @@ public interface IMacroTypeConditional : IMacroType
     public bool Required { get; }
 
     /// <summary>
-    /// Resolves the macro type with the given AST array initialization, or null if there is no resolution.
+    /// Resolves the macro type with the given AST array initialization, or <see langword="null"/> if there is no resolution.
     /// </summary>
-    public IExpressionNode Resolve(ASTCleaner cleaner, IConditionalValueNode node);
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IConditionalValueNode node);
 }

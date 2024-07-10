@@ -43,15 +43,17 @@ public class ConstantsMacroType : IMacroTypeInt32
     /// </summary>
     public ConstantsMacroType(Type enumType)
     {
-        foreach (int value in Enum.GetValues(enumType))
+        Array values = Enum.GetValues(enumType);
+        ValueToConstantName = new(values.Length);
+        foreach (int value in values)
         {
-            ValueToConstantName[value] = Enum.GetName(enumType, value);
+            ValueToConstantName[value] = Enum.GetName(enumType, value) ?? throw new NullReferenceException();
         }
     }
 
-    public IExpressionNode Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
+    public IExpressionNode? Resolve(ASTCleaner cleaner, IMacroResolvableNode node, int data)
     {
-        if (ValueToConstantName.TryGetValue(data, out string name))
+        if (ValueToConstantName.TryGetValue(data, out string? name))
         {
             return new MacroValueNode(name);
         }

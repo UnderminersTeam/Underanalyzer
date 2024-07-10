@@ -13,21 +13,16 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an enum declaration node in the AST. Only appears during AST cleanup.
 /// </summary>
-public class EnumDeclNode : IStatementNode
+public class EnumDeclNode(GMEnum gmEnum) : IStatementNode
 {
     /// <summary>
     /// The enum being declared.
     /// </summary>
-    public GMEnum Enum { get; }
+    public GMEnum Enum { get; } = gmEnum;
 
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
-
-    public EnumDeclNode(GMEnum gmEnum)
-    {
-        Enum = gmEnum;
-    }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {

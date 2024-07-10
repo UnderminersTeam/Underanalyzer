@@ -12,12 +12,13 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// A function declaration within the AST.
 /// </summary>
-public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditionalValueNode
+public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, ASTFragmentContext fragmentContext) 
+    : IFragmentNode, IMultiExpressionNode, IConditionalValueNode
 {
     /// <summary>
-    /// Name of the function, or null if anonymous.
+    /// Name of the function, or <see langword="null"/> if anonymous.
     /// </summary>
-    public string Name { get; }
+    public string? Name { get; } = name;
 
     /// <summary>
     /// If true, this function is unnamed (anonymous).
@@ -27,36 +28,28 @@ public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditiona
     /// <summary>
     /// If true, this function is a constructor function.
     /// </summary>
-    public bool IsConstructor { get; }
+    public bool IsConstructor { get; } = isConstructor;
 
     /// <summary>
     /// The body of the function.
     /// </summary>
-    public BlockNode Body { get; }
+    public BlockNode Body { get; } = body;
 
     /// <summary>
     /// Mapping of argument index to default value, for a GMLv2 function declarations.
     /// </summary>
-    internal Dictionary<int, IExpressionNode> ArgumentDefaultValues { get; set; } = new();
+    internal Dictionary<int, IExpressionNode> ArgumentDefaultValues { get; set; } = [];
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
-    public ASTFragmentContext FragmentContext { get; }
+    public ASTFragmentContext FragmentContext { get; } = fragmentContext;
     public bool SemicolonAfter => false;
     public bool EmptyLineBefore { get; private set; }
     public bool EmptyLineAfter { get; private set; }
 
     public string ConditionalTypeName => "FunctionDecl";
-    public string ConditionalValue => Name;
-
-    public FunctionDeclNode(string name, bool isConstructor, BlockNode body, ASTFragmentContext fragmentContext)
-    {
-        Name = name;
-        IsConstructor = isConstructor;
-        Body = body;
-        FragmentContext = fragmentContext;
-    }
+    public string ConditionalValue => Name ?? "";
 
     private void CleanBody(ASTCleaner cleaner)
     {
@@ -143,8 +136,12 @@ public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditiona
 
             // Successfully found a default argument assignment - store expression and move on.
             // Also, process macro resolution for the default value expression, based on the argument name.
-            IExpressionNode expr = assign.Value;
-            string argName = Body.FragmentContext.GetNamedArgumentName(cleaner.Context, argIndex);
+            IExpressionNode? expr = assign.Value;
+            string? argName = Body.FragmentContext.GetNamedArgumentName(cleaner.Context, argIndex);
+            if (argName is null)
+            {
+                break;
+            }
             cleaner.PushFragmentContext(Body.FragmentContext);
             if (expr is IMacroResolvableNode valueResolvable &&
                 cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, argName) is IMacroType variableMacroType &&
@@ -153,6 +150,11 @@ public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditiona
                 expr = valueResolved;
             }
             cleaner.PopFragmentContext();
+            
+            if (expr is null)
+            {
+                break;
+            }
 
             ArgumentDefaultValues[argIndex] = expr;
             lastArgumentIndex = argIndex;
@@ -195,7 +197,7 @@ public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditiona
         for (int i = 0; i <= Body.FragmentContext.MaxReferencedArgument; i++)
         {
             printer.Write(Body.FragmentContext.GetNamedArgumentName(printer.Context, i));
-            if (ArgumentDefaultValues.TryGetValue(i, out IExpressionNode defaultValue))
+            if (ArgumentDefaultValues.TryGetValue(i, out IExpressionNode? defaultValue))
             {
                 printer.Write(" = ");
                 printer.PushFragmentContext(Body.FragmentContext);
@@ -235,7 +237,7 @@ public class FunctionDeclNode : IFragmentNode, IMultiExpressionNode, IConditiona
         return true;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {

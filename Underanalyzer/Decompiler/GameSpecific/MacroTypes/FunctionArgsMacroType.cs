@@ -12,19 +12,14 @@ namespace Underanalyzer.Decompiler.GameSpecific;
 /// <summary>
 /// Macro type that matches an array of macro types to a function call.
 /// </summary>
-public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
+public class FunctionArgsMacroType(IEnumerable<IMacroType?> types) : IMacroType, IMacroTypeFunctionArgs
 {
-    private List<IMacroType> Types { get; }
-
-    public FunctionArgsMacroType(IEnumerable<IMacroType> types)
-    {
-        Types = new(types);
-    }
+    private List<IMacroType?> Types { get; } = new(types);
 
     /// <summary>
     /// Resolves this macro type for a given function call in the AST.
     /// </summary>
-    public IFunctionCallNode Resolve(ASTCleaner cleaner, IFunctionCallNode call)
+    public IFunctionCallNode? Resolve(ASTCleaner cleaner, IFunctionCallNode call)
     {
         int callArgumentsCount = call.Arguments.Count;
         int callArgumentsStart = 0;
@@ -45,14 +40,15 @@ public class FunctionArgsMacroType : IMacroType, IMacroTypeFunctionArgs
         List<IExpressionNode> resolved = new(callArgumentsCount);
         for (int i = callArgumentsStart; i < (callArgumentsStart + callArgumentsCount); i++)
         {
-            if (Types[i - callArgumentsStart] is null || call.Arguments[i] is not IMacroResolvableNode node)
+            IMacroType? currentType = Types[i - callArgumentsStart];
+            if (currentType is null || call.Arguments[i] is not IMacroResolvableNode node)
             {
                 // Current type is not defined, or current argument is not resolvable, so just use existing argument
                 resolved.Add(call.Arguments[i]);
                 continue;
             }
 
-            if (node.ResolveMacroType(cleaner, Types[i - callArgumentsStart]) is not IExpressionNode nodeResolved)
+            if (node.ResolveMacroType(cleaner, currentType) is not IExpressionNode nodeResolved)
             {
                 // Failed to resolve current argument's macro type.
                 // If the type is a conditional which is required in this scope, then fail this resolution;

@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Underanalyzer.Decompiler.ControlFlow;
 using static Underanalyzer.IGMInstruction;
@@ -42,8 +43,8 @@ public class GlobalFunctions : IGlobalFunctions
     /// </summary>
     public GlobalFunctions()
     {
-        FunctionToName = new();
-        NameToFunction = new();
+        FunctionToName = [];
+        NameToFunction = [];
     }
 
     /// <summary>
@@ -51,10 +52,10 @@ public class GlobalFunctions : IGlobalFunctions
     /// Optionally, <see cref="ParallelOptions"/> can be passed in to configure parallelization.
     /// By default, the default settings are used (which has no limits).
     /// </summary>
-    public GlobalFunctions(IEnumerable<IGMCode> globalScripts, ParallelOptions parallelOptions = null)
+    public GlobalFunctions(IEnumerable<IGMCode> globalScripts, ParallelOptions? parallelOptions = null)
     {
-        Dictionary<IGMFunction, string> functionToName = new();
-        Dictionary<string, IGMFunction> nameToFunction = new();
+        Dictionary<IGMFunction, string> functionToName = [];
+        Dictionary<string, IGMFunction> nameToFunction = [];
         object _lock = new();
 
         Parallel.ForEach(globalScripts, parallelOptions ?? new(), script =>
@@ -72,15 +73,13 @@ public class GlobalFunctions : IGlobalFunctions
                     // If no successors, assume code is corrupt and don't consider it
                     continue;
                 }
-                Block after = fragment.Successors[0] as Block;
-                if (after is null)
+                if (fragment.Successors[0] is not Block after)
                 {
                     // If block after isn't a block, assume code is corrupt as well
                     continue;
                 }
 
-                string name = GetFunctionNameAfterFragment(after, out IGMFunction function);
-                if (name is not null)
+                if (GetFunctionNameAfterFragment(after, out string? name, out IGMFunction? function))
                 {
                     lock (_lock)
                     {
@@ -97,29 +96,30 @@ public class GlobalFunctions : IGlobalFunctions
 
     /// <summary>
     /// Gets the name of a global function based on the instructions after a code fragment.
-    /// Returns null if there is none, or the code is corrupt.
+    /// Returns true if one is found, or false if the code is corrupt or one could not be found.
     /// </summary>
-    private string GetFunctionNameAfterFragment(Block block, out IGMFunction foundFunction)
+    private static bool GetFunctionNameAfterFragment(Block block, [MaybeNullWhen(false)] out string name, [MaybeNullWhen(false)] out IGMFunction foundFunction)
     {
+        name = null;
         foundFunction = null;
 
         // Ensure enough instructions exist
         if (block.Instructions.Count < 3)
         {
-            return null;
+            return false;
         }
 
         // Get function reference for fragment
         if (block.Instructions[0] is not { Kind: Opcode.Push, Type1: DataType.Int32, Function: IGMFunction function } || function is null)
         {
-            return null;
+            return false;
         }
         foundFunction = function;
 
         // Ensure conv instruction exists
         if (block.Instructions[1] is not { Kind: Opcode.Convert, Type1: DataType.Int32, Type2: DataType.Variable })
         {
-            return null;
+            return false;
         }
 
         switch (block.Instructions[2].Kind)
@@ -137,7 +137,7 @@ public class GlobalFunctions : IGlobalFunctions
                         ])
                     {
                         // Failed to match instructions
-                        return null;
+                        return false;
                     }
 
                     // Check if we have a name
@@ -151,7 +151,8 @@ public class GlobalFunctions : IGlobalFunctions
                         ])
                     {
                         // We have a name!
-                        return funcName;
+                        name = funcName;
+                        return true;
                     }
                     break;
                 }
@@ -167,7 +168,7 @@ public class GlobalFunctions : IGlobalFunctions
                         ])
                     {
                         // Failed to match instructions
-                        return null;
+                        return false;
                     }
 
                     // Check if we're a struct or function constructor (named)
@@ -184,13 +185,14 @@ public class GlobalFunctions : IGlobalFunctions
                         if (pushVal != -16 && pushVal != -5)
                         {
                             // We're a constructor!
-                            return funcName;
+                            name = funcName;
+                            return true;
                         }
                     }
                     break;
                 }
         }
 
-        return null;
+        return false;
     }
 }

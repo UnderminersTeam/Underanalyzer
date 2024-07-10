@@ -12,30 +12,32 @@ namespace Underanalyzer.Mock;
 /// <summary>
 /// A default implementation of the <see cref="IGMCode"/> interface.
 /// </summary>
-public class GMCode : IGMCode
+/// <param name="name">The name of the code entry.</param>
+/// <param name="instructions">List of instructions contained within the code entry.</param>
+public class GMCode(string name, List<GMInstruction> instructions) : IGMCode
 {
     /// <summary>
     /// The name of the code entry.
     /// </summary>
-    public GMString Name { get; set; }
-    
+    public GMString Name { get; set; } = new(name);
+
     /// <inheritdoc/>
     public int Length { get; set; } = 0;
-    
+
     /// <summary>
     /// A list of instructions this entry has.
     /// </summary>
-    public List<GMInstruction> Instructions { get; set; }
-    
+    public List<GMInstruction> Instructions { get; set; } = instructions;
+
     /// <summary>
     /// The parent code entry.
     /// </summary>
-    public GMCode Parent { get; set; } = null;
-    
+    public GMCode? Parent { get; set; } = null;
+
     /// <summary>
     /// A list of child code entries.
     /// </summary>
-    public List<GMCode> Children { get; set; } = new();
+    public List<GMCode> Children { get; set; } = [];
     
     /// <inheritdoc/>
     public int StartOffset { get; set; } = 0;
@@ -46,19 +48,8 @@ public class GMCode : IGMCode
     /// <inheritdoc/>
     public int LocalCount { get; set; } = 0;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GMCode"/> class.
-    /// </summary>
-    /// <param name="name">The name of the code entry.</param>
-    /// <param name="instructions">A list of instructions.</param>
-    public GMCode(string name, List<GMInstruction> instructions)
-    {
-        Name = new(name);
-        Instructions = instructions;
-    }
-
     // Interface implementation
-    
+
     /// <inheritdoc/>
     IGMString IGMCode.Name => Name;
     
@@ -66,7 +57,7 @@ public class GMCode : IGMCode
     public int InstructionCount => Instructions.Count;
     
     /// <inheritdoc/>
-    IGMCode IGMCode.Parent => Parent;
+    IGMCode? IGMCode.Parent => Parent;
     
     /// <inheritdoc/>
     public int ChildCount => Children.Count;
@@ -112,10 +103,10 @@ public class GMInstruction : IGMInstruction
     public IGMInstruction.InstanceType InstType { get; set; }
     
     /// <inheritdoc/>
-    public IGMVariable Variable { get; set; }
+    public IGMVariable? Variable { get; set; }
     
     /// <inheritdoc/>
-    public IGMFunction Function { get; set; }
+    public IGMFunction? Function { get; set; }
     
     /// <inheritdoc/>
     public IGMInstruction.VariableType ReferenceVarType { get; set; }
@@ -136,7 +127,7 @@ public class GMInstruction : IGMInstruction
     public bool ValueBool { get; set; }
     
     /// <inheritdoc/>
-    public IGMString ValueString { get; set; }
+    public IGMString? ValueString { get; set; }
     
     /// <inheritdoc/>
     public int BranchOffset { get => ValueInt; set => ValueInt = value; }
@@ -175,16 +166,11 @@ public class GMInstruction : IGMInstruction
 /// <summary>
 /// A default implementation of the <see cref="IGMString"/> interface.
 /// </summary>
-public class GMString : IGMString
+/// <param name="content">The content contained within the string.</param>
+public class GMString(string content) : IGMString
 {
     /// <inheritdoc/>
-    public string Content { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GMString"/> class.
-    /// </summary>
-    /// <param name="content">The content of a string.</param>
-    public GMString(string content) => Content = content;
+    public string Content { get; set; } = content;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -196,10 +182,10 @@ public class GMString : IGMString
 /// <summary>
 /// A default implementation of the <see cref="IGMVariable"/> interface.
 /// </summary>
-public class GMVariable : IGMVariable
+public class GMVariable(IGMString name) : IGMVariable
 {
     /// <inheritdoc/>
-    public IGMString Name { get; set; }
+    public IGMString Name { get; set; } = name;
 
     /// <inheritdoc/>
     public IGMInstruction.InstanceType InstanceType { get; set; }
@@ -220,8 +206,12 @@ public class GMVariable : IGMVariable
 public class GMVariableComparer : IEqualityComparer<GMVariable>
 {
     /// <inheritdoc/>
-    public bool Equals(GMVariable x, GMVariable y)
+    public bool Equals(GMVariable? x, GMVariable? y)
     {
+        if (x is null || y is null)
+        {
+            throw new NullReferenceException();
+        }
         return x.Name.Content == y.Name.Content && x.InstanceType == y.InstanceType && x.VariableID == y.VariableID;
     }
 
@@ -235,16 +225,11 @@ public class GMVariableComparer : IEqualityComparer<GMVariable>
 /// <summary>
 /// A default implementation of the <see cref="IGMFunction"/> interface.
 /// </summary>
-public class GMFunction : IGMFunction
+/// <param name="name">The name of the function.</param>
+public class GMFunction(string name) : IGMFunction
 {
     /// <inheritdoc/>
-    public IGMString Name { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GMFunction"/> class.
-    /// </summary>
-    /// <param name="name">The function name.</param>
-    public GMFunction(string name) => Name = new GMString(name);
+    public IGMString Name { get; set; } = new GMString(name);
 
     /// <inheritdoc/>
     public override string ToString()
@@ -252,7 +237,7 @@ public class GMFunction : IGMFunction
         return $"{nameof(GMFunction)}: {Name.Content}";
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is not GMFunction func)
         {
@@ -273,8 +258,12 @@ public class GMFunction : IGMFunction
 public class GMFunctionComparer : IEqualityComparer<GMFunction>
 {
     /// <inheritdoc/>
-    public bool Equals(GMFunction x, GMFunction y)
+    public bool Equals(GMFunction? x, GMFunction? y)
     {
+        if (x is null || y is null)
+        {
+            throw new NullReferenceException();
+        }
         return x.Name.Content == y.Name.Content;
     }
 

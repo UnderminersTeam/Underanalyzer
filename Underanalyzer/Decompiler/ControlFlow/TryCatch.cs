@@ -19,13 +19,13 @@ internal class TryCatch : IControlFlowNode
 
     public int EndAddress { get; private set; }
 
-    public List<IControlFlowNode> Predecessors { get; } = new();
+    public List<IControlFlowNode> Predecessors { get; } = [];
 
-    public List<IControlFlowNode> Successors { get; } = new();
+    public List<IControlFlowNode> Successors { get; } = [];
 
-    public IControlFlowNode Parent { get; set; } = null;
+    public IControlFlowNode? Parent { get; set; } = null;
 
-    public List<IControlFlowNode> Children { get; } = [null, null];
+    public List<IControlFlowNode?> Children { get; } = [null, null];
 
     public bool Unreachable { get; set; } = false;
 
@@ -36,18 +36,18 @@ internal class TryCatch : IControlFlowNode
     /// Upon being processed, this has its predecessors disconnected. 
     /// All paths exiting from it are also isolated from the external graph.
     /// </remarks>
-    public IControlFlowNode Try { get => Children[0]; private set => Children[0] = value; }
+    public IControlFlowNode Try { get => Children[0]!; private set => Children[0] = value; }
 
     /// <summary>
-    /// The "catch" block of the try statement, or null if none exists.
+    /// The "catch" block of the try statement, or <see langword="null"/> if none exists.
     /// </summary>
     /// <remarks>
     /// Upon being processed, this has its predecessors disconnected.
     /// All paths exiting from it are also isolated from the external graph.
     /// </remarks>
-    public IControlFlowNode Catch { get => Children[1]; private set => Children[1] = value; }
+    public IControlFlowNode? Catch { get => Children[1]; private set => Children[1] = value; }
 
-    public TryCatch(int startAddress, int endAddress, IControlFlowNode tryNode, IControlFlowNode catchNode)
+    public TryCatch(int startAddress, int endAddress, IControlFlowNode tryNode, IControlFlowNode? catchNode)
     {
         StartAddress = startAddress;
         EndAddress = endAddress;
@@ -60,9 +60,9 @@ internal class TryCatch : IControlFlowNode
     /// </summary>
     public static List<TryCatch> FindTryCatch(DecompileContext ctx)
     {
-        List<Block> blocks = ctx.Blocks;
+        List<Block> blocks = ctx.Blocks!;
 
-        List<TryCatch> res = new();
+        List<TryCatch> res = [];
 
         foreach (var block in blocks)
         {
@@ -71,14 +71,14 @@ internal class TryCatch : IControlFlowNode
             {
                 IGMInstruction call = block.Instructions[^2];
                 if (call.Kind == IGMInstruction.Opcode.Call &&
-                    call.Function.Name?.Content == VMConstants.TryHookFunction)
+                    call.Function?.Name?.Content == VMConstants.TryHookFunction)
                 {
                     // Get components of our try..catch statement
                     IControlFlowNode tryNode = block.Successors[0];
-                    IControlFlowNode catchNode = block.Successors.Count >= 3 ? block.Successors[2] : null;
-                    IControlFlowNode endNode = block.Successors[1];
+                    IControlFlowNode? catchNode = block.Successors.Count >= 3 ? block.Successors[2] : null;
+                    Block endBlock = block.Successors[1] as Block ?? throw new DecompilerException("Expected second successor to be block");
 
-                    TryCatch tc = new(block.StartAddress, endNode.StartAddress, tryNode, catchNode);
+                    TryCatch tc = new(block.StartAddress, endBlock.StartAddress, tryNode, catchNode);
                     res.Add(tc);
 
                     // Remove predecessor of try node
@@ -91,7 +91,7 @@ internal class TryCatch : IControlFlowNode
 
                         // Remove branch instruction from end node's second predecessor, i.e.
                         // the end of the try block
-                        Block tryEndBlock = endNode.Predecessors[1] as Block;
+                        Block tryEndBlock = endBlock.Predecessors[1] as Block ?? throw new DecompilerException("Expected second predecessor to be block");
                         if (tryEndBlock == block || tryEndBlock.StartAddress >= catchNode.StartAddress)
                         {
                             throw new DecompilerException("Failed to find end of try block");
@@ -104,7 +104,7 @@ internal class TryCatch : IControlFlowNode
                         tryEndBlock.Instructions.RemoveAt(tryEndBlock.Instructions.Count - 1);
 
                         // Remove instructions from the end of the catch block
-                        Block catchEndBlock = blocks[(endNode as Block).BlockIndex - 1];
+                        Block catchEndBlock = blocks[endBlock.BlockIndex - 1];
                         if (catchEndBlock.Instructions is not
                             [.., { Kind: IGMInstruction.Opcode.Call }, { Kind: IGMInstruction.Opcode.PopDelete },
                             { Kind: IGMInstruction.Opcode.Branch }])
@@ -115,16 +115,16 @@ internal class TryCatch : IControlFlowNode
 
                         // Reroute end of the catch block into our end node (temporarily)
                         IControlFlowNode.DisconnectSuccessor(catchEndBlock, 0);
-                        catchEndBlock.Successors.Add(endNode);
-                        endNode.Predecessors.Add(catchEndBlock);
+                        catchEndBlock.Successors.Add(endBlock);
+                        endBlock.Predecessors.Add(catchEndBlock);
                     }
 
                     // Disconnect start node from end node
-                    IControlFlowNode.DisconnectPredecessor(endNode, 0);
+                    IControlFlowNode.DisconnectPredecessor(endBlock, 0);
 
                     // Add new empty node to act as a meet point for both try and catch blocks
-                    EmptyNode empty = new(endNode.StartAddress);
-                    IControlFlowNode.InsertPredecessors(endNode, empty, tc.StartAddress);
+                    EmptyNode empty = new(endBlock.StartAddress);
+                    IControlFlowNode.InsertPredecessors(endBlock, empty, tc.StartAddress);
 
                     // Disconnect new empty node from the end node
                     IControlFlowNode.DisconnectSuccessor(empty, 0);
@@ -133,9 +133,8 @@ internal class TryCatch : IControlFlowNode
                     block.Instructions.Clear();
 
                     // Remove try unhook instructions from end node
-                    Block endBlock = endNode as Block;
                     if (endBlock.Instructions[0].Kind != IGMInstruction.Opcode.Call ||
-                        endBlock.Instructions[0].Function.Name?.Content != VMConstants.TryUnhookFunction)
+                        endBlock.Instructions[0].Function?.Name?.Content != VMConstants.TryUnhookFunction)
                     {
                         throw new DecompilerException("Expected try unhook in end node");
                     }
@@ -148,12 +147,12 @@ internal class TryCatch : IControlFlowNode
                     }
                     block.Successors.Add(tc);
                     tc.Predecessors.Add(block);
-                    if (endNode.Predecessors.Count != 0)
+                    if (endBlock.Predecessors.Count != 0)
                     {
                         throw new DecompilerException("Expected no predecessors for try end block");
                     }
-                    tc.Successors.Add(endNode);
-                    endNode.Predecessors.Add(tc);
+                    tc.Successors.Add(endBlock);
+                    endBlock.Predecessors.Add(tc);
 
                     continue;
                 }
@@ -164,7 +163,7 @@ internal class TryCatch : IControlFlowNode
             {
                 IGMInstruction call = block.Instructions[^3];
                 if (call.Kind == IGMInstruction.Opcode.Call &&
-                    call.Function.Name?.Content == VMConstants.FinishFinallyFunction)
+                    call.Function?.Name?.Content == VMConstants.FinishFinallyFunction)
                 {
                     // Remove redundant branch instruction for later operation.
                     // We leave final blocks for post-processing on the syntax tree due to complexity.
@@ -188,7 +187,7 @@ internal class TryCatch : IControlFlowNode
     /// </summary>
     public static void CleanTryEndBranches(DecompileContext ctx)
     {
-        foreach (TryCatch tc in ctx.TryCatchNodes)
+        foreach (TryCatch tc in ctx.TryCatchNodes!)
         {
             // Only process if we have 1 successor (and more than 1 is an error at this point)
             if (tc.Successors.Count == 0)
@@ -223,20 +222,17 @@ internal class TryCatch : IControlFlowNode
         BlockNode tryBlock = builder.BuildBlock(tryNode);
 
         // Handle catch block, if it exists
-        BlockNode catchBlock = null;
-        VariableNode catchVariable = null;
+        BlockNode? catchBlock = null;
+        VariableNode? catchVariable = null;
         if (Catch is not null)
         {
             // Get variable from start of catch's initial block
-            Block catchInstrBlock = builder.Context.BlocksByAddress[Catch.StartAddress];
+            Block catchInstrBlock = builder.Context.BlocksByAddress![Catch.StartAddress];
             if (catchInstrBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.Pop, Variable: IGMVariable variable }, ..])
             {
                 throw new DecompilerException("Expected first instruction of catch block to store to variable");
             }
-            catchVariable = new VariableNode(variable, IGMInstruction.VariableType.Normal)
-            {
-                Left = new InstanceTypeNode(IGMInstruction.InstanceType.Local)
-            };
+            catchVariable = new VariableNode(variable, IGMInstruction.VariableType.Normal, new InstanceTypeNode(IGMInstruction.InstanceType.Local));
             catchInstrBlock.Instructions.RemoveAt(0);
 
             // Register this as a local variable, but not to local variable declaration list

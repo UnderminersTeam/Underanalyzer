@@ -129,7 +129,7 @@ public class TryCatch_FindTryCatch
         Assert.Single(blocks[1].Successors);
         Assert.IsType<EmptyNode>(blocks[1].Successors[0]);
         Assert.Equal(blocks[2], tc.Catch);
-        Assert.Empty(tc.Catch.Predecessors);
+        Assert.Empty(tc.Catch!.Predecessors);
         Assert.Single(blocks[2].Successors);
         Assert.IsType<EmptyNode>(blocks[2].Successors[0]);
 
@@ -234,7 +234,7 @@ public class TryCatch_FindTryCatch
         Assert.Equal(blocks[1], tc0.Try);
         Assert.Equal(blocks[6], tc0.Catch);
         Assert.Empty(tc0.Try.Predecessors);
-        Assert.Empty(tc0.Catch.Predecessors);
+        Assert.Empty(tc0.Catch!.Predecessors);
         Assert.Single(blocks[5].Successors);
         Assert.IsType<EmptyNode>(blocks[5].Successors[0]);
         Assert.Single(blocks[11].Successors);
@@ -246,7 +246,7 @@ public class TryCatch_FindTryCatch
         Assert.Equal(blocks[2], tc1.Try);
         Assert.Equal(blocks[3], tc1.Catch);
         Assert.Empty(tc1.Try.Predecessors);
-        Assert.Empty(tc1.Catch.Predecessors);
+        Assert.Empty(tc1.Catch!.Predecessors);
         Assert.Single(blocks[2].Successors);
         Assert.IsType<EmptyNode>(blocks[2].Successors[0]);
         Assert.Single(blocks[3].Successors);
@@ -258,7 +258,7 @@ public class TryCatch_FindTryCatch
         Assert.Equal(blocks[8], tc2.Try);
         Assert.Equal(blocks[9], tc2.Catch);
         Assert.Empty(tc2.Try.Predecessors);
-        Assert.Empty(tc2.Catch.Predecessors);
+        Assert.Empty(tc2.Catch!.Predecessors);
         Assert.Single(blocks[8].Successors);
         Assert.IsType<EmptyNode>(blocks[8].Successors[0]);
         Assert.Single(blocks[9].Successors);

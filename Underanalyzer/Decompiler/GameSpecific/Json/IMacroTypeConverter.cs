@@ -11,16 +11,11 @@ using System.Text.Json.Serialization;
 
 namespace Underanalyzer.Decompiler.GameSpecific.Json;
 
-internal class IMacroTypeConverter : JsonConverter<IMacroType>
+internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverter<IMacroType>
 {
-    public GameSpecificRegistry Registry { get; }
+    public GameSpecificRegistry Registry { get; } = registry;
 
-    public IMacroTypeConverter(GameSpecificRegistry registry)
-    {
-        Registry = registry;
-    }
-
-    public override IMacroType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override IMacroType? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -31,13 +26,13 @@ internal class IMacroTypeConverter : JsonConverter<IMacroType>
         if (reader.TokenType == JsonTokenType.String)
         {
             // Read type name - access registry
-            return Registry.FindType(reader.GetString());
+            return Registry.FindType(reader.GetString() ?? throw new JsonException());
         }
 
         if (reader.TokenType == JsonTokenType.StartArray)
         {
             // Read array of macro types as function arguments macro type
-            List<IMacroType> subMacroTypes = new();
+            List<IMacroType> subMacroTypes = [];
             while (reader.Read())
             {
                 if (reader.TokenType == JsonTokenType.EndArray)
@@ -45,7 +40,7 @@ internal class IMacroTypeConverter : JsonConverter<IMacroType>
                     return new FunctionArgsMacroType(subMacroTypes);
                 }
 
-                subMacroTypes.Add(Read(ref reader, typeToConvert, options));
+                subMacroTypes.Add(Read(ref reader, typeToConvert, options) ?? throw new JsonException());
             }
 
             throw new JsonException();
@@ -59,8 +54,8 @@ internal class IMacroTypeConverter : JsonConverter<IMacroType>
             {
                 throw new JsonException();
             }
-            string propertyName = reader.GetString();
-            if (propertyName != "MacroType")
+            string? propertyName = reader.GetString();
+            if (propertyName is not "MacroType")
             {
                 throw new JsonException();
             }

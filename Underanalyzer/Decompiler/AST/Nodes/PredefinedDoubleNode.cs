@@ -11,10 +11,10 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a predefined double constant in the AST, with one single part.
 /// </summary>
-public class PredefinedDoubleSingleNode : IExpressionNode, IConditionalValueNode
+public class PredefinedDoubleSingleNode(string value, double originalValue) : IExpressionNode, IConditionalValueNode
 {
-    public string Value { get; }
-    public double OriginalValue { get; }
+    public string Value { get; } = value;
+    public double OriginalValue { get; } = originalValue;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
@@ -22,12 +22,6 @@ public class PredefinedDoubleSingleNode : IExpressionNode, IConditionalValueNode
 
     public string ConditionalTypeName => "PredefinedDouble";
     public string ConditionalValue => Value;
-
-    public PredefinedDoubleSingleNode(string value, double originalValue)
-    {
-        Value = value;
-        OriginalValue = originalValue;
-    }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -44,7 +38,7 @@ public class PredefinedDoubleSingleNode : IExpressionNode, IConditionalValueNode
         return false;
     }
 
-    public IExpressionNode ResolveMacroType(ASTCleaner cleaner, IMacroType type)
+    public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)
         {
@@ -57,12 +51,9 @@ public class PredefinedDoubleSingleNode : IExpressionNode, IConditionalValueNode
 /// <summary>
 /// Represents a predefined double constant in the AST, with multiple parts.
 /// </summary>
-public class PredefinedDoubleMultiNode : PredefinedDoubleSingleNode, IMultiExpressionNode
+public class PredefinedDoubleMultiNode(string value, double originalValue) 
+    : PredefinedDoubleSingleNode(value, originalValue), IMultiExpressionNode
 {
-    public PredefinedDoubleMultiNode(string value, double originalValue) : base(value, originalValue)
-    {
-    }
-
     public override void Print(ASTPrinter printer)
     {
         if (Group)
