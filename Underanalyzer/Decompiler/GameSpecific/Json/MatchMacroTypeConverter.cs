@@ -24,7 +24,7 @@ internal class MatchMacroTypeConverter
                 {
                     throw new JsonException();
                 }
-                return new MatchMacroType(innerType ?? throw new JsonException(), conditionalType, conditionalValue);
+                return new MatchMacroType(innerType, conditionalType, conditionalValue);
             }
 
             if (reader.TokenType != JsonTokenType.PropertyName)
