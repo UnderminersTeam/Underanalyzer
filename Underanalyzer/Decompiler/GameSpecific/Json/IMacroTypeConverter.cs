@@ -32,7 +32,7 @@ internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverte
         if (reader.TokenType == JsonTokenType.StartArray)
         {
             // Read array of macro types as function arguments macro type
-            List<IMacroType> subMacroTypes = [];
+            List<IMacroType?> subMacroTypes = [];
             while (reader.Read())
             {
                 if (reader.TokenType == JsonTokenType.EndArray)
@@ -40,7 +40,7 @@ internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverte
                     return new FunctionArgsMacroType(subMacroTypes);
                 }
 
-                subMacroTypes.Add(Read(ref reader, typeToConvert, options) ?? throw new JsonException());
+                subMacroTypes.Add(Read(ref reader, typeToConvert, options));
             }
 
             throw new JsonException();
