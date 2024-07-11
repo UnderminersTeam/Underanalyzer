@@ -63,8 +63,8 @@ internal class WhileLoop : Loop
     /// </summary>
     public bool MustBeWhileLoop { get; set; } = false;
 
-    public WhileLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
-        : base(startAddress, endAddress)
+    public WhileLoop(int startAddress, int endAddress, int index, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
+        : base(startAddress, endAddress, index)
     {
         Head = head;
         Tail = tail;

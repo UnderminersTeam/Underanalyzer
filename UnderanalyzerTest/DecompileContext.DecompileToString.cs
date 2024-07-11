@@ -2269,4 +2269,50 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestWhileWhileIfBreak()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v builtin.a
+            conv.v.b
+            bf [6]
+
+            :[1]
+            push.v builtin.b
+            conv.v.b
+            bf [5]
+
+            :[2]
+            push.v builtin.c
+            conv.v.b
+            bf [4]
+
+            :[3]
+            b [5]
+
+            :[4]
+            b [1]
+
+            :[5]
+            b [0]
+
+            :[6]
+            """,
+            """
+            while (a)
+            {
+                while (b)
+                {
+                    if (c)
+                    {
+                        break;
+                    }
+                }
+            }
+            """
+        );
+    }
 }

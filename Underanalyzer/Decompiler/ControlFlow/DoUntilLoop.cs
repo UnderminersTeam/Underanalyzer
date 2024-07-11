@@ -40,8 +40,8 @@ internal class DoUntilLoop : Loop
     /// </remarks>
     public IControlFlowNode After { get => Children[2]!; private set => Children[2] = value; }
 
-    public DoUntilLoop(int startAddress, int endAddress, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
-        : base(startAddress, endAddress)
+    public DoUntilLoop(int startAddress, int endAddress, int index, IControlFlowNode head, IControlFlowNode tail, IControlFlowNode after)
+        : base(startAddress, endAddress, index)
     {
         Head = head;
         Tail = tail;

@@ -17,12 +17,10 @@ internal static class Branches
         List<Block> blocks, Dictionary<int, Block> blockByAddress, List<Loop> loops)
     {
         // Assign blocks to loops.
-        // We assume that loops are sorted so that nested loops come before outer loops.
-        // We go in reverse so that inner loops override outer loops.
+        // We iterate over loops so that inner loops are processed after outer loops.
         Dictionary<Block, Loop> surroundingLoops = [];
-        for (int i = loops.Count - 1; i >= 0; i--)
+        foreach (Loop l in loops)
         {
-            Loop l = loops[i];
             Block startBlock = blockByAddress[l.StartAddress];
             Block endBlock = blockByAddress[l.EndAddress];
             for (int blockIndex = startBlock.BlockIndex; blockIndex < endBlock.BlockIndex; blockIndex++)

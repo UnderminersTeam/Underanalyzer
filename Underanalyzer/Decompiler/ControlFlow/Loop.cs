@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a loop (jump/branch backwards) node in a control flow graph.
 /// </summary>
-internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNode
+internal abstract class Loop(int startAddress, int endAddress, int index) : IControlFlowNode
 {
     public int StartAddress { get; private set; } = startAddress;
 
@@ -32,6 +32,11 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
     public bool Unreachable { get; set; } = false;
 
     /// <summary>
+    /// The index of this loop, as assigned in order of when the loop was first discovered (from top to bottom of code).
+    /// </summary>
+    public int LoopIndex { get; } = index;
+
+    /// <summary>
     /// Called to insert a given loop's node into the control flow graph.
     /// </summary>
     public abstract void UpdateFlowGraph();
@@ -45,6 +50,7 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
 
         List<Loop> loops = [];
         HashSet<int> whileLoopsFound = [];
+        int loopIndex = 0;
 
         // Search for different loop types based on instruction patterns
         // Do this in reverse order, because we want to find the ends of loops first
@@ -70,7 +76,7 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
                         int conditionAddr = instr.Address + instr.BranchOffset;
                         if (whileLoopsFound.Add(conditionAddr))
                         {
-                            loops.Add(new WhileLoop(conditionAddr, block.EndAddress,
+                            loops.Add(new WhileLoop(conditionAddr, block.EndAddress, loopIndex++,
                                 block.Successors[0], block, blocks[block.BlockIndex + 1]));
                         }
                     }
@@ -79,7 +85,7 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
                     if (instr.BranchOffset < 0)
                     {
                         // Do...until loop detected
-                        loops.Add(new DoUntilLoop(block.Successors[1].StartAddress, block.EndAddress,
+                        loops.Add(new DoUntilLoop(block.Successors[1].StartAddress, block.EndAddress, loopIndex++,
                             block.Successors[1], block, block.Successors[0]));
                     }
                     break;
@@ -87,7 +93,7 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
                     if (instr.BranchOffset < 0)
                     {
                         // Repeat loop detected
-                        loops.Add(new RepeatLoop(block.Successors[1].StartAddress, block.EndAddress,
+                        loops.Add(new RepeatLoop(block.Successors[1].StartAddress, block.EndAddress, loopIndex++,
                             block.Successors[1], block, block.Successors[0]));
                     }
                     break;
@@ -106,7 +112,7 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
                                 breakBlock = potentialBreakBlock;
                             }
                         }
-                        loops.Add(new WithLoop(block.EndAddress, block.Successors[1].StartAddress,
+                        loops.Add(new WithLoop(block.EndAddress, block.Successors[1].StartAddress, loopIndex++,
                             block, block.Successors[0], block.Successors[1], afterBlock, breakBlock));
                     }
                     break;
@@ -120,7 +126,11 @@ internal abstract class Loop(int startAddress, int endAddress) : IControlFlowNod
                 return -1;
             if (a.StartAddress > b.StartAddress)
                 return 1;
-            return b.EndAddress - a.EndAddress;
+            if (b.EndAddress < a.EndAddress)
+                return -1;
+            if (b.EndAddress > a.EndAddress)
+                return 1;
+            return b.LoopIndex - a.LoopIndex;
         });
         foreach (var loop in loops)
             loop.UpdateFlowGraph();

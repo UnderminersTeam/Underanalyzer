@@ -53,10 +53,10 @@ internal class WithLoop : Loop
     /// </remarks>
     public IControlFlowNode? BreakBlock { get => Children[4]; private set => Children[4] = value; }
 
-    public WithLoop(int startAddress, int endAddress, 
+    public WithLoop(int startAddress, int endAddress, int index,
                     IControlFlowNode before, IControlFlowNode head, IControlFlowNode tail,
                     IControlFlowNode after, IControlFlowNode? breakBlock)
-        : base(startAddress, endAddress)
+        : base(startAddress, endAddress, index)
     {
         Before = before;
         Head = head;
