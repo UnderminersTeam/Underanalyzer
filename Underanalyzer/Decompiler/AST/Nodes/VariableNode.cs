@@ -278,7 +278,19 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         {
             // Basic numerical instance type
             int value = leftI16?.Value ?? (int)leftInstType!.InstanceType;
-            if (value < 0)
+            if (ReferenceType == VariableType.Instance)
+            {
+                // Room instance ID
+                if (value < 0)
+                {
+                    // If negative, convert to an unsigned short (as old GameMaker versions use this for room instance IDs)
+                    value = (ushort)value;
+                }
+                printer.Write('(');
+                printer.Write(value + 100000);
+                printer.Write(").");
+            }
+            else if (value < 0)
             {
                 // GameMaker constant instance types
                 switch (value)
@@ -302,14 +314,6 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
                         printer.Write("global.");
                         break;
                 }
-            }
-            else if (ReferenceType == VariableType.Instance)
-            {
-                // Room instance ID
-                // TODO: verify this is correct
-                printer.Write('(');
-                printer.Write(value + 100000);
-                printer.Write(").");
             }
             else
             {

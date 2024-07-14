@@ -2337,4 +2337,18 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestOldInstanceIds()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            pushi.e 123
+            pop.v.i [instance]-456.a
+            """,
+            """
+            (165080).a = 123;
+            """
+        );
+    }
 }
