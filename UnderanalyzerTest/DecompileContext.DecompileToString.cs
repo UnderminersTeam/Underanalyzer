@@ -2315,4 +2315,26 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestNoAccessorBuiltinArray()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            pushi.e -1
+            push.l 0
+            conv.l.i
+            push.v [array]self.view_xview
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.view_xview
+            pop.v.v self.a
+            """,
+            """
+            a = view_xview;
+            a = view_xview[0];
+            """
+        );
+    }
 }

@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer;
 
 /// <summary>
@@ -54,4 +56,29 @@ internal static class VMConstants
     // Special-case GML functions used during macro resolution
     public const string ChooseFunction = "choose";
     public const string ScriptExecuteFunction = "script_execute";
+
+    // Builtin array variables (some of which don't exist past GMS2, but are still recognized by the compiler apparently)
+    public static readonly HashSet<string> BuiltinArrayVariables = 
+    [
+        "view_xview",
+        "view_yview",
+        "view_wview",
+        "view_hview",
+        "view_angle",
+        "view_hborder",
+        "view_vborder",
+        "view_hspeed",
+        "view_vspeed",
+        "view_object",
+        "view_xport",
+        "view_yport",
+        "view_wport",
+        "view_hport",
+        "view_surface_id",
+        "view_camera",
+        "phy_collision_x",
+        "phy_collision_y",
+        "phy_col_normal_x",
+        "phy_col_normal_y"
+    ];
 }

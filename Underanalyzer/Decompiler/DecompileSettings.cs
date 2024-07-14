@@ -94,20 +94,26 @@ public interface IDecompileSettings
     public bool RemoveSingleLineBlockBraces { get; }
 
     /// <summary>
-    /// Whether try/catch/finally statements should have their compiler-generated control flow cleaned up.
+    /// True if try/catch/finally statements should have their compiler-generated control flow cleaned up.
     /// This cleanup can occasionally be inaccurate to the code that actually executes, due to multiple compiler bugs.
     /// </summary>
     public bool CleanupTry { get; }
 
     /// <summary>
-    /// Whether empty if/else chains at the end of a loop body should be rewritten as continue statements, when possible.
+    /// True if empty if/else chains at the end of a loop body should be rewritten as continue statements, when possible.
     /// </summary>
     public bool CleanupElseToContinue { get; }
 
     /// <summary>
-    /// Whether GMLv2 default argument values in functions should be detected and cleaned up.
+    /// True if GMLv2 default argument values in functions should be detected and cleaned up.
     /// </summary>
     public bool CleanupDefaultArgumentValues { get; }
+
+    /// <summary>
+    /// True if built-in array variables used without an array accessor should be rewritten as such,
+    /// rather than using the compiler-generated array accessor at index 0.
+    /// </summary>
+    public bool CleanupBuiltinArrayVariables { get; }
 
     /// <summary>
     /// If true, enum values that are detected in a code entry (including any unknown ones) will 
@@ -171,6 +177,7 @@ public class DecompileSettings : IDecompileSettings
     public bool CleanupTry { get; set; } = true;
     public bool CleanupElseToContinue { get; set; } = true;
     public bool CleanupDefaultArgumentValues { get; set; } = true;
+    public bool CleanupBuiltinArrayVariables { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";

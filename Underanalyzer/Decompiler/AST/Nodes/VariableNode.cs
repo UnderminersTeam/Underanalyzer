@@ -195,7 +195,26 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
+        // Clean up left side of variable, and get basic instance type, or 0 if none
         Left = Left.Clean(cleaner);
+        int instType = (Left as Int16Node)?.Value ?? (int?)((Left as InstanceTypeNode)?.InstanceType) ?? 0;
+
+        // Check if we're a builtin array variable, and if so, rewrite with no array accessor if
+        // a 64-bit zero value is supplied as an index. This is a GML compiler quirk.
+        if (instType == (int)InstanceType.Self || instType == (int)InstanceType.Builtin)
+        {
+            if (ArrayIndices is [Int64Node { Value: 0 }] &&
+                VMConstants.BuiltinArrayVariables.Contains(Variable.Name.Content))
+            {
+                // This is most likely a compiler-generated array access; get rid of it
+                if (cleaner.Context.Settings.CleanupBuiltinArrayVariables)
+                {
+                    ArrayIndices = null;
+                }
+            }
+        }
+
+        // Clean up array indices
         if (ArrayIndices is not null)
         {
             for (int i = 0; i < ArrayIndices.Count; i++)
@@ -209,9 +228,6 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         {
             Left.Group = true;
         }
-        
-        // Get basic instance type, or 0 if none
-        int instType = (Left as Int16Node)?.Value ?? (int?)((Left as InstanceTypeNode)?.InstanceType) ?? 0;
 
         // Check if we're a struct argument
         if (cleaner.StructArguments is not null)
