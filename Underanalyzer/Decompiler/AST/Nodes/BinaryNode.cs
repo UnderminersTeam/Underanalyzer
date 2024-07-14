@@ -118,6 +118,13 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         CheckGroup(Left);
         CheckGroup(Right);
 
+        // If the right side of the binary is another BinaryNode, that implies it was evaluated earlier
+        // than this one, meaning it should have parentheses around it.
+        if (Right is BinaryNode)
+        {
+            Right.Group = true;
+        }
+
         return this;
     }
 

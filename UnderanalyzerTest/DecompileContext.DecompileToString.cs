@@ -2351,4 +2351,34 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestBinaryOrderOfOperations()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.b
+            push.v self.c
+            push.v self.d
+            add.v.v
+            add.v.v
+            pop.v.v self.a
+            exit.i
+
+            :[1]
+            push.v self.b
+            push.v self.c
+            add.v.v
+            push.v self.d
+            add.v.v
+            pop.v.v self.a
+            """,
+            """
+            a = b + (c + d);
+            exit;
+            a = b + c + d;
+            """
+        );
+    }
 }
