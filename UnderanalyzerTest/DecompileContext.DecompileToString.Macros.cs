@@ -592,4 +592,51 @@ public class DecompileContext_DecompileToString_Macros
             gameContext
         );
     }
+
+    [Fact]
+    public void TestNoneWithBoolean()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingTypedBooleans = false
+        };
+
+        GameSpecificRegistry registry = gameContext.GameSpecificRegistry;
+        registry.RegisterBasic();
+
+        NameMacroTypeResolver globalNames = registry.MacroResolver.GlobalNames;
+        globalNames.DefineVariableType("test", registry.FindType("Bool"));
+
+        TestUtil.VerifyDecompileResult(
+            """
+            pushi.e 1
+            pop.v.i self.test
+            pushi.e 0
+            pop.v.i self.test
+            """,
+            """
+            test = true;
+            test = false;
+            """,
+            gameContext
+        );
+
+        NameMacroTypeResolver specificNames = new();
+        specificNames.DefineVariableType("test", NoneMacroType.ReusableInstance);
+        registry.MacroResolver.DefineCodeEntry("root", specificNames);
+
+        TestUtil.VerifyDecompileResult(
+            """
+            pushi.e 1
+            pop.v.i self.test
+            pushi.e 0
+            pop.v.i self.test
+            """,
+            """
+            test = 1;
+            test = 0;
+            """,
+            gameContext
+        );
+    }
 }

@@ -4,6 +4,9 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using Underanalyzer.Decompiler;
+using Underanalyzer.Mock;
+
 namespace UnderanalyzerTest;
 
 public class DecompileContext_DecompileToString
@@ -2380,5 +2383,14 @@ public class DecompileContext_DecompileToString
             a = b + c + d;
             """
         );
+    }
+
+    [Fact]
+    public void TestEmpty()
+    {
+        GameContextMock gameContext = new();
+        DecompileContext decompilerContext = new(gameContext, TestUtil.GetCode("", gameContext));
+        string decompileResult = decompilerContext.DecompileToString();
+        Assert.Equal("", decompileResult);
     }
 }

@@ -78,6 +78,8 @@ internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverte
                     return MatchMacroTypeConverter.ReadContents(ref reader, this, options);
                 case "MatchNot":
                     return MatchNotMacroTypeConverter.ReadContents(ref reader, this, options);
+                case "None":
+                    return NoneMacroType.ReusableInstance;
             }
         }
 
