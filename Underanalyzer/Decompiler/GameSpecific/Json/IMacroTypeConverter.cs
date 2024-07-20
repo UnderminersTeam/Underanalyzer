@@ -25,8 +25,13 @@ internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverte
 
         if (reader.TokenType == JsonTokenType.String)
         {
-            // Read type name - access registry
-            return Registry.FindType(reader.GetString() ?? throw new JsonException());
+            // Read type name - access registry (or None to use none)
+            string typeName = reader.GetString() ?? throw new JsonException();
+            if (typeName == "None")
+            {
+                return NoneMacroType.ReusableInstance;
+            }
+            return Registry.FindType(typeName);
         }
 
         if (reader.TokenType == JsonTokenType.StartArray)
@@ -79,6 +84,11 @@ internal class IMacroTypeConverter(GameSpecificRegistry registry) : JsonConverte
                 case "MatchNot":
                     return MatchNotMacroTypeConverter.ReadContents(ref reader, this, options);
                 case "None":
+                    reader.Read();
+                    if (reader.TokenType != JsonTokenType.EndObject)
+                    {
+                        throw new JsonException();
+                    }
                     return NoneMacroType.ReusableInstance;
             }
         }
