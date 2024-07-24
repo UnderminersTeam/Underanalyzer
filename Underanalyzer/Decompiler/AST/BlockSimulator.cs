@@ -705,7 +705,10 @@ internal class BlockSimulator
 
         // Make a copy of the variable we already have, with the new index at the end of array indices
         List<IExpressionNode> existingArrayIndices = variable.ArrayIndices ?? throw new DecompilerException("Expected existing array indices");
-        VariableNode extendedVariable = new(variable.Variable, variable.ReferenceType, variable.Left, new(existingArrayIndices) { index }, variable.RegularPush);
+        VariableNode extendedVariable = new(variable.Variable, variable.ReferenceType, variable.Left, new(existingArrayIndices) { index }, variable.RegularPush)
+        {
+            Duplicated = variable.Duplicated
+        };
 
         // Make assignment node with this variable, and the value remaining at the top of the stack
         IExpressionNode value = builder.ExpressionStack.Pop();

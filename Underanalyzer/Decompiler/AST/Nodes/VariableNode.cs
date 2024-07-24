@@ -445,9 +445,20 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
     /// <summary>
     /// Returns true if this variable represents the constant <c>undefined</c>, or false otherwise.
     /// </summary>
-    /// <returns></returns>
     public bool IsUndefinedVariable()
     {
         return Variable.Name.Content == "undefined";
+    }
+
+    /// <summary>
+    /// Returns true if the variable is "simple," meaning that it can be referenced with 
+    /// one instruction, or false otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This occurs in variables with no left-side expression, and no array indices.
+    /// </remarks>
+    public bool IsSimpleVariable()
+    {
+        return Left is InstanceTypeNode && ArrayIndices is null;
     }
 }

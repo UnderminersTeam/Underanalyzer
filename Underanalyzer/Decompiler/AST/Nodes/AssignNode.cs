@@ -94,9 +94,12 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         Value = Value?.Clean(cleaner);
 
         // Clean up any remaining postfix/compound operations
-        if (AssignKind == AssignType.Normal && Variable is VariableNode variable && Value is BinaryNode binary)
+        if (AssignKind == AssignType.Normal && Variable is VariableNode variable && Value is BinaryNode binary &&
+            binary.Instruction.Kind is Opcode.Add or Opcode.Subtract or Opcode.Multiply or Opcode.Divide or 
+                                       Opcode.GMLModulo or Opcode.And or Opcode.Or or Opcode.Xor)
         {
-            if (binary.Left is VariableNode binVariable && binVariable.IdenticalToInExpression(variable))
+            if (binary.Left is VariableNode binVariable && binVariable.IdenticalToInExpression(variable) &&
+                (variable.Duplicated || variable.IsSimpleVariable()))
             {
                 // This is probably a compound operation
 

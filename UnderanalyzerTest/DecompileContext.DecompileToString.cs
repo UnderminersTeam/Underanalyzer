@@ -2393,4 +2393,205 @@ public class DecompileContext_DecompileToString
         string decompileResult = decompilerContext.DecompileToString();
         Assert.Equal("", decompileResult);
     }
+
+    [Fact]
+    public void TestCompoundOperators()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.v self.a
+            pushi.e 2
+            add.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            sub.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            mul.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            div.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            and.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            or.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            xor.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            mod.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            rem.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v EQ
+            pop.v.b self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v NEQ
+            pop.v.b self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v GT
+            pop.v.b self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v LT
+            pop.v.b self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v LTE
+            pop.v.b self.a
+            push.v self.a
+            pushi.e 2
+            cmp.i.v GTE
+            pop.v.b self.a
+            push.v self.a
+            conv.v.l
+            pushi.e 2
+            conv.i.l
+            shl.l.l
+            pop.v.l self.a
+            push.v self.a
+            conv.v.l
+            pushi.e 2
+            conv.i.l
+            shr.l.l
+            pop.v.l self.a
+            """,
+            """
+            a += 2;
+            a -= 2;
+            a *= 2;
+            a /= 2;
+            a &= 2;
+            a |= 2;
+            a ^= 2;
+            a %= 2;
+            a = a div 2;
+            a = a == 2;
+            a = a != 2;
+            a = a > 2;
+            a = a < 2;
+            a = a <= 2;
+            a = a >= 2;
+            a = a << 2;
+            a = a >> 2;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestComplexCompoundOperators()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.v self.a
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.b
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.b
+            push.v self.a
+            conv.v.i
+            dup.i 0
+            push.v [stacktop]self.b
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.b
+            push.v self.a
+            conv.v.i
+            push.v [stacktop]self.b
+            pushi.e 1
+            add.i.v
+            push.v self.a
+            conv.v.i
+            pop.v.v [stacktop]self.b
+            pushi.e -6
+            pushi.e 0
+            push.v [multipushpop]self.a
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            dup.i 4
+            savearef.e
+            pushaf.e
+            pushi.e 1
+            add.i.v
+            restorearef.e
+            dup.i 4 5
+            popaf.e
+            pushi.e -6
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            pushaf.e
+            pushi.e 1
+            add.i.v
+            pushi.e -6
+            pushi.e 0
+            push.v [multipushpop]self.a
+            pushi.e 1
+            pushac.e
+            pushi.e 2
+            popaf.e
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.b
+            push.e 1
+            add.i.v
+            pop.i.v [stacktop]self.b
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.b
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.b
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            pushi.e 1
+            add.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            pushi.e -9
+            pop.v.v [stacktop]self.b
+            """,
+            """
+            a.b++;
+            a.b += 1;
+            a.b = a.b + 1;
+            a[0][1][2] += 1;
+            a[0][1][2] = a[0][1][2] + 1;
+            a().b++;
+            a().b += 1;
+            a().b = a().b + 1;
+            """
+        );
+    }
 }
