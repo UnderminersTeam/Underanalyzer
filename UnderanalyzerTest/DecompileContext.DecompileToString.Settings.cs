@@ -1119,4 +1119,27 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestEnumOpenBraceSameLine()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.l 0
+            pop.v.l self.a
+            """,
+            """
+            a = UnknownEnum.Value_0;
+
+            enum UnknownEnum {
+                Value_0
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                OpenBlockBraceOnSameLine = true
+            }
+        );
+    }
 }

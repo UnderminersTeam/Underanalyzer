@@ -34,6 +34,10 @@ public class EnumDeclNode(GMEnum gmEnum) : IStatementNode
     {
         printer.Write("enum ");
         printer.Write(Enum.Name);
+        if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+        {
+            printer.Write(' ');
+        }
         printer.OpenBlock();
 
         // Sort values of enum by value
