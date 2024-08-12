@@ -417,14 +417,16 @@ public interface IGMInstruction
         ResetStatic = -7,
 
         /// <summary>
-        /// Stores an array reference temporarily. Used in multi-dimensional array compound assignment statements.
+        /// Keeps track of an array reference temporarily. Used in multi-dimensional array compound assignment statements.
+        /// Presumed to be used for garbage collection purposes.
         /// Mnemonic: "savearef"
         /// </summary>
         [OpcodeInfo("savearef")]
         SaveArrayReference = -8,
 
         /// <summary>
-        /// Restores a previously-stored array reference. Used in multi-dimensional array compound assignment statements.
+        /// Restores a previously-tracked array reference. Used in multi-dimensional array compound assignment statements.
+        /// Presumed to be used for garbage collection purposes.
         /// Mnemonic: "restorearef"
         /// </summary>
         [OpcodeInfo("restorearef")]
