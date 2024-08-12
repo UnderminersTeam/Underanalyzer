@@ -2594,4 +2594,131 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestOver16NamedArguments()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > gml_Script_First (locals=0, args=17)
+            :[1]
+            push.v arg.argument15
+            pop.v.v builtin.a
+            pushi.e -15
+            pushi.e 16
+            push.v [array]self.argument
+            pop.v.v builtin.b
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_First
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.First
+            popz.v
+            b [4]
+
+            > gml_Script_Second (locals=0, args=18)
+            :[3]
+            push.v arg.argument15
+            pop.v.v builtin.a
+            pushi.e -15
+            pushi.e 16
+            push.v [array]self.argument
+            pop.v.v builtin.b
+            exit.i
+
+            :[4]
+            push.i [function]gml_Script_Second
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.Second
+            popz.v
+            b [6]
+
+            > gml_Script_Third (locals=0, args=16)
+            :[5]
+            push.v arg.argument15
+            pop.v.v builtin.a
+            pushi.e -15
+            pushi.e 16
+            push.v [array]self.argument
+            pop.v.v builtin.b
+            exit.i
+
+            :[6]
+            push.i [function]gml_Script_Third
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.Third
+            popz.v
+            b [8]
+
+            > gml_Script_Fourth (locals=0, args=17)
+            :[7]
+            pushi.e -15
+            pushi.e 16
+            push.v [multipush]self.argument
+            pushi.e 123
+            pushaf.e
+            pop.v.v builtin.a
+            exit.i
+
+            :[8]
+            push.i [function]gml_Script_Fourth
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.Fourth
+            popz.v
+            """,
+            """
+            function First(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16)
+            {
+                a = _15;
+                b = _16;
+            }
+
+            function Second(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17)
+            {
+                a = _15;
+                b = _16;
+            }
+
+            function Third(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15)
+            {
+                a = _15;
+                b = argument[16];
+            }
+
+            function Fourth(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16)
+            {
+                a = _16[123];
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                UnknownArgumentNamePattern = "_{0}"
+            }
+        );
+    }
 }

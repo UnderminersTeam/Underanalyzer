@@ -104,7 +104,7 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
 
             // Verify the left variable is an argument we have not yet provided a default value for,
             // and is strictly greater than the previous argument index
-            int argIndex = argumentVariable.GetArgumentIndex();
+            int argIndex = argumentVariable.GetArgumentIndex(cleaner.TopFragmentContext!.MaxReferencedArgument);
             if (argIndex == -1 || ArgumentDefaultValues.ContainsKey(argIndex) || argIndex <= lastArgumentIndex)
             {
                 break;
@@ -129,7 +129,7 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
             }
 
             // Assignment's destination should be the same argument variable
-            if (assign.Variable is not VariableNode assignDest || assignDest.GetArgumentIndex() != argIndex)
+            if (assign.Variable is not VariableNode assignDest || assignDest.GetArgumentIndex(cleaner.TopFragmentContext!.MaxReferencedArgument) != argIndex)
             {
                 break;
             }

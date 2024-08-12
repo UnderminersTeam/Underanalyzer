@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
@@ -252,7 +253,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         // Check if we're a regular argument, and set maximum referenced argument variable if so
         if (instType == (int)InstanceType.Argument)
         {
-            int num = GetArgumentIndex();
+            int num = GetArgumentIndex(cleaner.TopFragmentContext!.MaxReferencedArgument);
             if (num != -1)
             {
                 if (num > cleaner.TopFragmentContext!.MaxReferencedArgument)
@@ -341,7 +342,8 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
             printer.Write('.');
         }
 
-        int argIndex = GetArgumentIndex();
+        int argIndex = GetArgumentIndex(printer.TopFragmentContext!.MaxReferencedArgument);
+        bool namedArgumentArray = false;
         if (argIndex == -1)
         {
             // Variable name
@@ -354,6 +356,9 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
             if (namedArg is not null)
             {
                 printer.Write(namedArg);
+
+                // If the variable is a case like "argument[16]", track this so we omit the array index later
+                namedArgumentArray = Variable.Name.Content == "argument";
             }
             else
             {
@@ -366,17 +371,32 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
             // Print array indices
             if (printer.Context.GMLv2)
             {
-                // For GMLv2
-                foreach (IExpressionNode index in ArrayIndices)
+                // For GMLv2, an arbitrary number of array indices are supported
+                if (namedArgumentArray)
                 {
-                    printer.Write('[');
-                    index.Print(printer);
-                    printer.Write(']');
+                    // Named argument array access; skip first index
+                    for (int i = 1; i < ArrayIndices.Count; i++)
+                    {
+                        IExpressionNode index = ArrayIndices[i];
+                        printer.Write('[');
+                        index.Print(printer);
+                        printer.Write(']');
+                    }
+                }
+                else
+                {
+                    // Normal variable; print all of its indices
+                    foreach (IExpressionNode index in ArrayIndices)
+                    {
+                        printer.Write('[');
+                        index.Print(printer);
+                        printer.Write(']');
+                    }
                 }
             }
             else
             {
-                // For GMLv1
+                // For GMLv1, only two array indices are supported
                 printer.Write('[');
                 ArrayIndices[0].Print(printer);
                 if (ArrayIndices.Count == 2)
@@ -425,17 +445,28 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
     /// <summary>
     /// Returns the argument index this variable represents, or -1 if this is not an argument variable.
     /// </summary>
-    public int GetArgumentIndex()
+    /// <remarks>
+    /// Meant for named arguments, so this returns -1 for cases such as argument[0].
+    /// </remarks>
+    public int GetArgumentIndex(int maxArgumentArrayIndex)
     {
         string variableName = Variable.Name.Content;
 
-        if (variableName.StartsWith("argument") &&
-            variableName.Length >= "argument".Length + 1 &&
-            variableName.Length <= "argument".Length + 2)
+        if (variableName.StartsWith("argument", StringComparison.InvariantCulture))
         {
-            if (int.TryParse(variableName["argument".Length..], out int num) && num >= 0 && num <= 15)
+            if (variableName.Length >= "argument".Length + 1 &&
+                variableName.Length <= "argument".Length + 2)
             {
-                return num;
+                // Normal argument variable
+                if (int.TryParse(variableName["argument".Length..], out int num) && num >= 0 && num <= 15)
+                {
+                    return num;
+                }
+            }
+            else if (variableName == "argument" && ArrayIndices is [Int16Node { Value: >= 16 } index, ..] && index.Value <= maxArgumentArrayIndex)
+            {
+                // Argument, using array access (introduced in 2024.8)
+                return index.Value;
             }
         }
 
