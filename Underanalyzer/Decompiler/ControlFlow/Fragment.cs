@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a single VM code fragment, used for single function contexts.
 /// </summary>
-internal class Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks) : IControlFlowNode
+internal sealed class Fragment(int startAddr, int endAddr, IGMCode codeEntry, List<IControlFlowNode> blocks) : IControlFlowNode
 {
     public int StartAddress { get; private set; } = startAddr;
 

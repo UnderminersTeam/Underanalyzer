@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a "do...until" loop node in a control flow graph.
 /// </summary>
-internal class DoUntilLoop : Loop
+internal sealed class DoUntilLoop : Loop
 {
     public override List<IControlFlowNode?> Children { get; } = [null, null, null];
 

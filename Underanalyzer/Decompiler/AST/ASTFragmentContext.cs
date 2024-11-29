@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents a single fragment context within the AST.
 /// </summary>
-public class ASTFragmentContext
+public sealed class ASTFragmentContext
 {
     /// <summary>
     /// The fragment we belong to.

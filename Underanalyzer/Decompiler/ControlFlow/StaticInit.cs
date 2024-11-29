@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a static initialization block for a function.
 /// </summary>
-internal class StaticInit : IControlFlowNode
+internal sealed class StaticInit : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 

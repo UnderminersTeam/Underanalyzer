@@ -15,7 +15,7 @@ public enum ShortCircuitType
     Or
 }
 
-internal class ShortCircuit(int startAddress, int endAddress, ShortCircuitType logicKind, List<IControlFlowNode> children) 
+internal sealed class ShortCircuit(int startAddress, int endAddress, ShortCircuitType logicKind, List<IControlFlowNode> children) 
     : IControlFlowNode
 {
     public int StartAddress { get; private set; } = startAddress;

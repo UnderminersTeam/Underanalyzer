@@ -9,7 +9,7 @@ using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
-internal class WithLoop : Loop
+internal sealed class WithLoop : Loop
 {
     public override List<IControlFlowNode?> Children { get; } = [null, null, null, null, null];
 

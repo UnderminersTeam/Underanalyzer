@@ -9,12 +9,12 @@ using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
-internal class Switch : IControlFlowNode
+internal sealed class Switch : IControlFlowNode
 {
     /// <summary>
     /// Initial detection data for a switch statement, used to prevent calculations being done twice.
     /// </summary>
-    public class SwitchDetectionData(Block endBlock, IControlFlowNode endNode, bool mayBeMisdetected)
+    public sealed class SwitchDetectionData(Block endBlock, IControlFlowNode endNode, bool mayBeMisdetected)
     {
         public Block EndBlock { get; set; } = endBlock;
         public IControlFlowNode EndNode { get; set; } = endNode;
@@ -25,7 +25,7 @@ internal class Switch : IControlFlowNode
         public bool MayBeMisdetected { get; set; } = mayBeMisdetected;
     }
 
-    public class CaseJumpNode(int address) : IControlFlowNode
+    public sealed class CaseJumpNode(int address) : IControlFlowNode
     {
         public int StartAddress { get; private set; } = address;
 
@@ -56,7 +56,7 @@ internal class Switch : IControlFlowNode
         }
     }
 
-    public class CaseDestinationNode(int address) : IControlFlowNode
+    public sealed class CaseDestinationNode(int address) : IControlFlowNode
     {
         public int StartAddress { get; private set; } = address;
 

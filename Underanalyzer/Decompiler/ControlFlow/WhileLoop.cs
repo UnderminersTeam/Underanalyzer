@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// Represents a "while" loop in a control flow graph.
 /// Can become a "for" loop as needed or desired, depending on the code.
 /// </summary>
-internal class WhileLoop : Loop
+internal sealed class WhileLoop : Loop
 {
     public override List<IControlFlowNode?> Children { get; } = [null, null, null, null, null];
 

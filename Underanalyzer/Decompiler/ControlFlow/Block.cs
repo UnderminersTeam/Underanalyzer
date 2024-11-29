@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// <summary>
 /// Represents a basic block of VM instructions.
 /// </summary>
-internal class Block(int startAddr, int endAddr, int blockIndex, List<IGMInstruction> instructions) : IControlFlowNode
+internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGMInstruction> instructions) : IControlFlowNode
 {
     public int StartAddress { get; private set; } = startAddr;
 

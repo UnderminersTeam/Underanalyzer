@@ -13,7 +13,7 @@ namespace Underanalyzer.Decompiler.ControlFlow;
 /// Represents a try..catch statement in GML code.
 /// Notably, this does NOT include the "finally" block, which is detected later on in the process.
 /// </summary>
-internal class TryCatch : IControlFlowNode
+internal sealed class TryCatch : IControlFlowNode
 {
     public int StartAddress { get; private set; }
 

@@ -14,7 +14,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Manages the printing of all AST nodes.
 /// </summary>
-public class ASTPrinter(DecompileContext context)
+public sealed class ASTPrinter(DecompileContext context)
 {
     /// <summary>
     /// The decompilation context this is printing for.

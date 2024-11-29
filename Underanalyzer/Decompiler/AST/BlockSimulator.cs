@@ -14,7 +14,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Handles simulating VM instructions within a single control flow block.
 /// </summary>
-internal class BlockSimulator
+internal sealed class BlockSimulator
 {
     private static readonly Dictionary<DataType, int> DataTypeToSize = [];
 

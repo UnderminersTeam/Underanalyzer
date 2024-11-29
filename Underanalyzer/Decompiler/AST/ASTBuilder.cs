@@ -12,7 +12,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Manages the building of a high-level AST from control flow nodes.
 /// </summary>
-public class ASTBuilder(DecompileContext context)
+public sealed class ASTBuilder(DecompileContext context)
 {
     /// <summary>
     /// The corresponding code context for this AST builder.
