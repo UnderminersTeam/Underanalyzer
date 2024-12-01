@@ -1388,6 +1388,62 @@ public class DecompileContext_DecompileToString_Locals
     }
 
     [Fact]
+    public void TestSwitch4()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            pushi.e 0
+
+            pop.v.i local.a
+            push.v self.b
+            dup.v 0
+            pushi.e 1
+            cmp.i.v EQ
+            bt [3]
+
+            :[1]
+            dup.v 0
+            pushi.e 2
+            cmp.i.v EQ
+            bt [4]
+
+            :[2]
+            b [5]
+
+            :[3]
+            pushi.e 1
+            pop.v.i local.a
+            b [5]
+
+            :[4]
+            pushi.e 2
+            pop.v.i local.a
+            b [5]
+
+            :[5]
+            popz.v
+            pushloc.v local.a
+            call.i show_debug_message 1
+            popz.v
+            """,
+            """
+            var a = 0;
+            switch (b)
+            {
+                case 1:
+                    a = 1;
+                    break;
+                case 2:
+                    a = 2;
+                    break;
+            }
+            show_debug_message(a);
+            """
+        );
+    }
+
+    [Fact]
     public void TestStruct()
     {
         TestUtil.VerifyDecompileResult(

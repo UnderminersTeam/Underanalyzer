@@ -166,7 +166,8 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         {
             // We have a local variable which is (at least) declared by the time of this assignment.
             LocalScope currentLocalScope = cleaner.TopFragmentContext!.CurrentLocalScope!;
-            if (currentLocalScope.DeclaredLocals.Add(localName))
+            if (!currentLocalScope.LocalDeclaredInAnyParentOrSelf(localName) && 
+                currentLocalScope.DeclaredLocals.Add(localName))
             {
                 // Track this AssignNode to potentially generate a declaration later.
                 currentLocalScope.FirstLocalAssignments.Add(localName, this);
