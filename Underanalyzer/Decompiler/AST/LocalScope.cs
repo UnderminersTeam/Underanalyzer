@@ -192,12 +192,15 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
                 }
                 blockChildren.Insert(index, localDecl!);
 
+                /*
+                // TODO? perhaps add this as a setting, but for now, will disable this to keep code style consistent
                 // If immediately before a node that has an empty line before it, take it over.
                 if (index < blockChildren.Count - 1 && blockChildren[index + 1].EmptyLineBefore)
                 {
                     blockChildren[index + 1].EmptyLineBefore = false;
                     localDecl!.EmptyLineBefore = true;
                 }
+                */
             }
         }
 

@@ -1172,8 +1172,8 @@ public class DecompileContext_DecompileToString_Locals
             else
             {
                 j = -1;
-                
                 var i;
+                
                 if (c)
                 {
                 }
