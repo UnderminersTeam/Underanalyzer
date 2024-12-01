@@ -71,7 +71,7 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
         Parent = parent;
         parent.Children.Add(this);
     }
-    
+
     /// <summary>
     /// Returns whether a local variable has already been denoted as "declared" in this 
     /// local scope, or any of its parent local scopes.
@@ -88,15 +88,13 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
         }
         return false;
     }
-    
+
     /// <summary>
     /// Enumerates all children scopes in order, finding the first one that either itself
     /// declares the given local variable name, or one of its own children declares the given
     /// local variable name. If no such child exists, returns null.
-    /// 
-    /// Also returns the precise local scope where the local is currently declared, or null if none.
     /// </summary>
-    public (LocalScope?, LocalScope?) FindLocalDeclaredInAnyChild(string localName)
+    public LocalScope? FindLocalDeclaredInAnyChild(string localName)
     {
         foreach (LocalScope child in Children)
         {
@@ -107,14 +105,14 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
             }
             if (child.DeclaredLocals.Contains(localName))
             {
-                return (child, child);
+                return child;
             }
-            if (child.FindLocalDeclaredInAnyChild(localName) is (LocalScope, LocalScope declaration))
+            if (child.FindLocalDeclaredInAnyChild(localName) is not null)
             {
-                return (child, declaration);
+                return child;
             }
         }
-        return (null, null);
+        return null;
     }
 
     /// <summary>
@@ -124,14 +122,13 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
     /// declaration to. Specifically, it should be hoisted to just before the scope.
     /// 
     /// Returns null if no suitable scope is found (i.e., the local is never declared anywhere).
-    /// Also returns the precise local scope where the local is currently declared, or null if none.
     /// </summary>
-    public (LocalScope?, LocalScope?) FindBestHoistLocation(string localName)
+    public LocalScope? FindBestHoistLocation(string localName)
     {
         // Look for locals in any immediate child scopes first
-        if (FindLocalDeclaredInAnyChild(localName) is (LocalScope result, LocalScope declaration))
+        if (FindLocalDeclaredInAnyChild(localName) is LocalScope result)
         {
-            return (result, declaration);
+            return result;
         }
 
         // Since none were found here, search the parent, if one exists
@@ -140,23 +137,24 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
             // Prevent this scope from being searched for locals (we already considered it)
             _ignoreInSearch = true;
 
-            (LocalScope?, LocalScope?) parentResult = Parent.FindBestHoistLocation(localName);
+            LocalScope? parentResult = Parent.FindBestHoistLocation(localName);
 
             _ignoreInSearch = false;
             return parentResult;
         }
 
         // No parent, so no result
-        return (null, null);
+        return null;
     }
 
     /// <summary>
     /// Generates local variable declarations where necessary.
     /// Recursively performs this operation across all local scopes in the fragment.
     /// </summary>
-    public void GenerateDeclarations(HashSet<string> alreadyDeclared, HashSet<string> declaredAnywhere)
+    public void GenerateDeclarations(HashSet<string> declaredAnywhere)
     {
         // First, hoist local variables from child scopes.
+        HashSet<string> hoistedLocals = new(8);
         foreach (LocalScope child in Children)
         {
             if (child.HoistedLocals.Count > 0)
@@ -168,12 +166,13 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
                 bool anyNew = false;
                 foreach (string hoistedLocal in child.HoistedLocals)
                 {
-                    if (alreadyDeclared.Add(hoistedLocal))
+                    if (Parent is null || !Parent.LocalDeclaredInAnyParentOrSelf(hoistedLocal))
                     {
                         anyNew = true;
                         localDecl ??= new();
                         localDecl.Locals.Add(hoistedLocal);
                         declaredAnywhere.Add(hoistedLocal);
+                        hoistedLocals.Add(hoistedLocal);
                     }
                 }
 
@@ -205,7 +204,11 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
         // For remaining locals declared in this scope, declare them on their first assignments
         foreach (string local in DeclaredLocals)
         {
-            if (alreadyDeclared.Add(local))
+            if (hoistedLocals.Contains(local))
+            {
+                continue;
+            }
+            if (Parent is null || !Parent.LocalDeclaredInAnyParentOrSelf(local))
             {
                 FirstLocalAssignments[local].DeclareLocalVar = true;
                 declaredAnywhere.Add(local);
@@ -215,10 +218,7 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
         // Generate declarations for child scopes
         foreach (LocalScope child in Children)
         {
-            child.GenerateDeclarations(alreadyDeclared, declaredAnywhere);
+            child.GenerateDeclarations(declaredAnywhere);
         }
-
-        // Exit this scope (un-declare its declared locals)
-        alreadyDeclared.ExceptWith(DeclaredLocals);
     }
 }

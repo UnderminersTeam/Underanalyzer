@@ -290,16 +290,13 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
             if (!currentLocalScope.LocalDeclaredInAnyParentOrSelf(localName))
             {
                 // Attempt hoist of declaration (if we can find an existing declaration to hoist)
-                if (currentLocalScope.FindBestHoistLocation(localName) is (LocalScope hoistScope, LocalScope declaringScope))
+                if (currentLocalScope.FindBestHoistLocation(localName) is LocalScope hoistScope)
                 {
                     // Found a suitable scope to hoist before - mark it as such.
                     hoistScope.HoistedLocals.Add(localName);
 
                     // Parent scope of the hoist is where the local is actually declared.
                     hoistScope.Parent?.DeclaredLocals?.Add(localName);
-
-                    // Remove declaration from scope that originally had it.
-                    declaringScope.DeclaredLocals.Remove(localName);
                 }
             }    
         }

@@ -207,9 +207,8 @@ public sealed class ASTFragmentContext
         if (CurrentLocalScope is null)
         {
             // Perform a pass on local scopes, generating local variable declarations.
-            HashSet<string> alreadyDeclared = new(LocalVariableNames.Count);
             HashSet<string> declaredAnywhere = new(LocalVariableNames.Count);
-            oldScope.GenerateDeclarations(alreadyDeclared, declaredAnywhere);
+            oldScope.GenerateDeclarations(declaredAnywhere);
 
             // Generate local variable declaration for any remaining undeclared locals
             List<string> toDeclareAtTop = new(LocalVariableNames.Count);

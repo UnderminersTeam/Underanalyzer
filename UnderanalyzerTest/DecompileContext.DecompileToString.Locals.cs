@@ -1444,6 +1444,97 @@ public class DecompileContext_DecompileToString_Locals
     }
 
     [Fact]
+    public void TestSwitch5()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v self.c
+            dup.v 0
+            pushi.e 1
+            cmp.i.v EQ
+            bt [6]
+
+            :[1]
+            dup.v 0
+            pushi.e 2
+            cmp.i.v EQ
+            bt [7]
+
+            :[2]
+            dup.v 0
+            pushi.e 3
+            cmp.i.v EQ
+            bt [8]
+
+            :[3]
+            dup.v 0
+            pushi.e 4
+            cmp.i.v EQ
+            bt [9]
+
+            :[4]
+            b [10]
+
+            :[5]
+            b [11]
+
+            :[6]
+            pushi.e 1
+            pop.v.i local.a
+            b [11]
+
+            :[7]
+            pushi.e 2
+            pop.v.i local.a
+            b [11]
+
+            :[8]
+            pushi.e 3
+            pop.v.i local.a
+            b [11]
+
+            :[9]
+            pushi.e 4
+            pop.v.i local.a
+            b [11]
+
+            :[10]
+            pushi.e 5
+            pop.v.i local.a
+            b [11]
+
+            :[11]
+            popz.v
+            pushloc.v local.a
+            pop.v.v self.b
+            """,
+            """
+            var a;
+            switch (c)
+            {
+                case 1:
+                    a = 1;
+                    break;
+                case 2:
+                    a = 2;
+                    break;
+                case 3:
+                    a = 3;
+                    break;
+                case 4:
+                    a = 4;
+                    break;
+                default:
+                    a = 5;
+                    break;
+            }
+            b = a;
+            """
+        );
+    }
+
+    [Fact]
     public void TestStruct()
     {
         TestUtil.VerifyDecompileResult(
@@ -1555,4 +1646,5 @@ public class DecompileContext_DecompileToString_Locals
 
     // TODO: hoist4 with ideal spacing?
     // TODO: settings alternate versions for all of the above cases
+    // TODO: nested struct test
 }
