@@ -134,7 +134,8 @@ public sealed class DecompileContext
             {
                 AST.EnumDeclNode.GenerateDeclarations(cleaner, cleaned);
             }
-            return cleaned;
+            AST.IStatementNode postCleaned = cleaned.PostClean(cleaner);
+            return postCleaned;
         }
         catch (DecompilerException ex)
         {

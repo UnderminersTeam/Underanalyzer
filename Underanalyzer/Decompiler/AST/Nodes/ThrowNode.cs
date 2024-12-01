@@ -20,8 +20,8 @@ public class ThrowNode(IExpressionNode value) : IExpressionNode, IStatementNode,
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
 
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
@@ -32,6 +32,18 @@ public class ThrowNode(IExpressionNode value) : IExpressionNode, IStatementNode,
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         Value = Value.Clean(cleaner);
+        return this;
+    }
+
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Value = Value.PostClean(cleaner);
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
+    {
+        Value = Value.PostClean(cleaner);
         return this;
     }
 

@@ -270,6 +270,43 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Left = Left.PostClean(cleaner);
+        if (ArrayIndices is not null)
+        {
+            for (int i = 0; i < ArrayIndices.Count; i++)
+            {
+                ArrayIndices[i] = ArrayIndices[i].PostClean(cleaner);
+            }
+        }
+
+        if (cleaner.Context.Settings.CleanupLocalVarDeclarations &&
+            Left is Int16Node { Value: (int)InstanceType.Local } or InstanceTypeNode { InstanceType: InstanceType.Local })
+        {
+            // Check if not declared already. If not, check to see if we can hoist an existing declaration.
+            string localName = Variable.Name.Content;
+            LocalScope currentLocalScope = cleaner.TopFragmentContext!.CurrentLocalScope!;
+            if (!currentLocalScope.LocalDeclaredInAnyParentOrSelf(localName))
+            {
+                // Attempt hoist of declaration (if we can find an existing declaration to hoist)
+                if (currentLocalScope.FindBestHoistLocation(localName) is (LocalScope hoistScope, LocalScope declaringScope))
+                {
+                    // Found a suitable scope to hoist before - mark it as such.
+                    hoistScope.HoistedLocals.Add(localName);
+
+                    // Parent scope of the hoist is where the local is actually declared.
+                    hoistScope.Parent?.DeclaredLocals?.Add(localName);
+
+                    // Remove declaration from scope that originally had it.
+                    declaringScope.DeclaredLocals.Remove(localName);
+                }
+            }    
+        }
+
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         // Print out left side, if necessary

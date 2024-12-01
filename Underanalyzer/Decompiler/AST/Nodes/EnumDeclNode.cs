@@ -21,12 +21,17 @@ public class EnumDeclNode(GMEnum gmEnum) : IStatementNode
     public GMEnum Enum { get; } = gmEnum;
 
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundEnums;
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
         return this;
     }
 

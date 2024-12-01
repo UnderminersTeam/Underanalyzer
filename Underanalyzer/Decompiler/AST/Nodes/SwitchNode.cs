@@ -24,8 +24,8 @@ public class SwitchNode(IExpressionNode expression, BlockNode body) : IStatement
     public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -47,6 +47,13 @@ public class SwitchNode(IExpressionNode expression, BlockNode body) : IStatement
 
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Expression = Expression.PostClean(cleaner);
+        Body.PostCleanSwitch(cleaner, this);
         return this;
     }
 

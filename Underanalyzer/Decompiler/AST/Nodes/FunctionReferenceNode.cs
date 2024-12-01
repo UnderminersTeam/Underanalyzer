@@ -30,6 +30,11 @@ public class FunctionReferenceNode(IGMFunction function) : IExpressionNode, ICon
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write(printer.LookupFunction(Function));

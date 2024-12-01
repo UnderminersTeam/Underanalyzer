@@ -9,13 +9,15 @@ using System.Collections.Generic;
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
-/// Represents a local variable declaration statement for the enclosing block.
+/// Represents a local variable declaration statement, for specific local variables.
 /// </summary>
-public class BlockLocalVarDeclNode : IStatementNode
+public class LocalVarDeclNode : IStatementNode
 {
+    public List<string> Locals { get; } = new(4);
+
     public bool SemicolonAfter => true;
-    public bool EmptyLineAfter { get; set; }
-    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get; set; } = false;
+    public bool EmptyLineBefore { get; set; } = false;
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -29,17 +31,13 @@ public class BlockLocalVarDeclNode : IStatementNode
 
     public void Print(ASTPrinter printer)
     {
-        List<string> localNames = printer.TopFragmentContext!.LocalVariableNamesList;
-        if (localNames.Count > 0)
+        printer.Write("var ");
+        for (int i = 0; i < Locals.Count; i++)
         {
-            printer.Write("var ");
-            for (int i = 0; i < localNames.Count; i++)
+            printer.Write(Locals[i]);
+            if (i != Locals.Count - 1)
             {
-                printer.Write(localNames[i]);
-                if (i != localNames.Count - 1)
-                {
-                    printer.Write(", ");
-                }
+                printer.Write(", ");
             }
         }
     }

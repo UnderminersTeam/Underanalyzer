@@ -28,8 +28,8 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
     public bool MustBeWhileLoop { get; } = mustBeWhileLoop;
 
     public bool SemicolonAfter { get => false; }
-    public bool EmptyLineBefore { get; internal set; }
-    public bool EmptyLineAfter { get; internal set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -53,30 +53,6 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         }
 
         return this;
-    }
-
-    public void Print(ASTPrinter printer)
-    {
-        printer.Write("while (");
-        Condition.Print(printer);
-        printer.Write(')');
-        if (printer.Context.Settings.RemoveSingleLineBlockBraces && !Body.RequiresMultipleLines(printer))
-        {
-            Body.PrintSingleLine(printer);
-        }
-        else
-        {
-            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
-            {
-                printer.Write(' ');
-            }
-            Body.Print(printer);
-        }
-    }
-
-    public bool RequiresMultipleLines(ASTPrinter printer)
-    {
-        return true;
     }
 
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
@@ -122,5 +98,41 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         }
 
         return i;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Condition = Condition.PostClean(cleaner);
+        Condition.Group = false;
+
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Body.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        return this;
+    }
+
+    public void Print(ASTPrinter printer)
+    {
+        printer.Write("while (");
+        Condition.Print(printer);
+        printer.Write(')');
+        if (printer.Context.Settings.RemoveSingleLineBlockBraces && !Body.RequiresMultipleLines(printer))
+        {
+            Body.PrintSingleLine(printer);
+        }
+        else
+        {
+            if (printer.Context.Settings.OpenBlockBraceOnSameLine)
+            {
+                printer.Write(' ');
+            }
+            Body.Print(printer);
+        }
+    }
+
+    public bool RequiresMultipleLines(ASTPrinter printer)
+    {
+        return true;
     }
 }

@@ -35,6 +35,11 @@ public class AssetReferenceNode(int assetId, AssetType assetType) : IExpressionN
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return false;

@@ -17,12 +17,18 @@ public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBloc
     public IExpressionNode? Expression { get; internal set; } = expression;
 
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Expression = Expression?.Clean(cleaner);
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Expression = Expression?.PostClean(cleaner);
         return this;
     }
 

@@ -27,6 +27,11 @@ public class Int32Node(int value) : IConstantNode<int>, IMacroResolvableNode, IC
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value);

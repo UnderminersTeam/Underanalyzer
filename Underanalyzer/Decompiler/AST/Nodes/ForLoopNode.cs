@@ -33,8 +33,8 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
     public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter { get => false; }
-    public bool EmptyLineBefore { get; internal set; }
-    public bool EmptyLineAfter { get; internal set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -87,6 +87,23 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         }
 
         return i;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+
+        Initializer = Initializer?.PostClean(cleaner);
+        Condition = Condition?.PostClean(cleaner);
+        Incrementor?.PostClean(cleaner);
+
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Body.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        return this;
     }
 
     public void Print(ASTPrinter printer)

@@ -45,8 +45,8 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public ASTFragmentContext FragmentContext { get; } = fragmentContext;
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public string ConditionalTypeName => "FunctionDecl";
     public string ConditionalValue => Name ?? "";
@@ -59,6 +59,17 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         {
             cleaner.PushFragmentContext(Body.FragmentContext);
             Body.FragmentContext.BaseParentCall = Body.FragmentContext.BaseParentCall.Clean(cleaner);
+            cleaner.PopFragmentContext();
+        }
+    }
+
+    private void PostCleanBody(ASTCleaner cleaner)
+    {
+        Body.PostClean(cleaner);
+        if (Body.FragmentContext.BaseParentCall is not null)
+        {
+            cleaner.PushFragmentContext(Body.FragmentContext);
+            Body.FragmentContext.BaseParentCall = Body.FragmentContext.BaseParentCall.PostClean(cleaner);
             cleaner.PopFragmentContext();
         }
     }
@@ -81,7 +92,7 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         while (childIndex < Body.Children.Count)
         {
             // Skip locals, if they exist
-            if (Body.Children[childIndex] is BlockLocalVarDeclNode)
+            if (Body.Children[childIndex] is BlockLocalVarDeclNode or LocalVarDeclNode)
             {
                 firstIfIndex++;
                 childIndex++;
@@ -178,6 +189,18 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         CleanBody(cleaner);
         CleanEmptyLines(cleaner);
         CleanDefaultArgumentValues(cleaner);
+        return this;
+    }
+
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        PostCleanBody(cleaner);
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
+    {
+        PostCleanBody(cleaner);
         return this;
     }
 

@@ -35,6 +35,15 @@ public class ArrayInitNode(List<IExpressionNode> elements) : IExpressionNode, IM
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Elements.Count; i++)
+        {
+            Elements[i] = Elements[i].PostClean(cleaner);
+        }
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write('[');

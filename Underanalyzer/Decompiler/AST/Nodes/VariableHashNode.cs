@@ -22,8 +22,8 @@ public class VariableHashNode(IGMVariable variable) : IExpressionNode, IStatemen
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
 
     public string ConditionalTypeName => "VariableHash";
     public string ConditionalValue => Variable.Name.Content; // TODO?
@@ -34,6 +34,16 @@ public class VariableHashNode(IGMVariable variable) : IExpressionNode, IStatemen
     }
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
+    IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         return this;
     }

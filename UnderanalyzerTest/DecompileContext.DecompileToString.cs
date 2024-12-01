@@ -1776,9 +1776,7 @@ public class DecompileContext_DecompileToString
             """
             function args_conflict(arg0_)
             {
-                var arg0;
-                
-                arg0 = 123;
+                var arg0 = 123;
             }
             """
         );
@@ -1822,9 +1820,7 @@ public class DecompileContext_DecompileToString
             """
             function default_args_locals(arg0 = 123)
             {
-                var local;
-                
-                local = 123;
+                var local = 123;
             }
             """
         );

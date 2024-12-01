@@ -29,8 +29,8 @@ public class NewObjectNode(IExpressionNode function, List<IExpressionNode> argum
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
     public string? FunctionName { get => (Function is FunctionReferenceNode functionRef) ? functionRef.Function.Name.Content : null; }
 
     public string ConditionalTypeName => "NewObject";
@@ -62,6 +62,26 @@ public class NewObjectNode(IExpressionNode function, List<IExpressionNode> argum
         for (int i = 0; i < Arguments.Count; i++)
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
+        }
+        return this;
+    }
+
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Function = Function.PostClean(cleaner);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
+        }
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
+    {
+        Function = Function.PostClean(cleaner);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
         }
         return this;
     }

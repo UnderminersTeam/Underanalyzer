@@ -128,6 +128,13 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Left = Left.PostClean(cleaner);
+        Right = Right.PostClean(cleaner);
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

@@ -27,6 +27,11 @@ public class BooleanNode(bool value) : IConstantNode<bool>, IConditionalValueNod
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value ? "true" : "false");

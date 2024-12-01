@@ -17,8 +17,8 @@ public class StaticInitNode(BlockNode body) : IStatementNode
     public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -27,6 +27,12 @@ public class StaticInitNode(BlockNode body) : IStatementNode
 
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundStaticInitialization;
 
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Body.PostClean(cleaner);
         return this;
     }
 

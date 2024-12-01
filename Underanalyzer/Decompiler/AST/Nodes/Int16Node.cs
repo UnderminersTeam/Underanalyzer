@@ -33,6 +33,11 @@ public class Int16Node(short value, bool regularPush) : IConstantNode<short>, IM
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value);

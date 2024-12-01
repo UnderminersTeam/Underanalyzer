@@ -59,6 +59,14 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Condition = Condition.PostClean(cleaner);
+        True = True.PostClean(cleaner);
+        False = False.PostClean(cleaner);
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

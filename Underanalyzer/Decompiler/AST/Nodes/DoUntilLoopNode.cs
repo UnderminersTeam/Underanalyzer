@@ -22,8 +22,8 @@ public class DoUntilLoopNode(BlockNode body, IExpressionNode condition) : IState
     public IExpressionNode Condition { get; private set; } = condition;
 
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -34,6 +34,16 @@ public class DoUntilLoopNode(BlockNode body, IExpressionNode condition) : IState
 
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Body.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        Condition = Condition.PostClean(cleaner);
         return this;
     }
 

@@ -22,8 +22,8 @@ public class WithLoopNode(IExpressionNode target, BlockNode body) : IStatementNo
     public BlockNode Body { get; private set; } = body;
 
     public bool SemicolonAfter { get => false; }
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
@@ -37,6 +37,17 @@ public class WithLoopNode(IExpressionNode target, BlockNode body) : IStatementNo
         Body.Clean(cleaner);
 
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
+
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Target = Target.PostClean(cleaner);
+
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Body.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
 
         return this;
     }

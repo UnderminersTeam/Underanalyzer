@@ -18,6 +18,12 @@ public interface IASTNode<T>
     public T Clean(ASTCleaner cleaner);
 
     /// <summary>
+    /// Second cleanup pass on this node and all of its sub-nodes.
+    /// Returns the second-pass cleaned version of the node (which is very often the same reference).
+    /// </summary>
+    public T PostClean(ASTCleaner cleaner);
+
+    /// <summary>
     /// Prints this node using the provided printer.
     /// </summary>
     public void Print(ASTPrinter printer);

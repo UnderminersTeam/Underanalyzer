@@ -34,8 +34,8 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
     public string? FunctionName => null;
 
     public string ConditionalTypeName => "VariableCall";
@@ -60,6 +60,30 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         for (int i = 0; i < Arguments.Count; i++)
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
+        }
+
+        return this;
+    }
+
+    IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
+    {
+        Function = Function.PostClean(cleaner);
+        Instance = Instance?.PostClean(cleaner);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
+        }
+
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
+    {
+        Function = Function.PostClean(cleaner);
+        Instance = Instance?.PostClean(cleaner);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
         }
 
         return this;

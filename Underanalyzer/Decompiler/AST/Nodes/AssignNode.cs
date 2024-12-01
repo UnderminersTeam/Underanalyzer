@@ -34,11 +34,36 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     /// </summary>
     public IGMInstruction? BinaryInstruction { get; private set; }
 
+    /// <summary>
+    /// Whether this assignment node should declare a local variable specifically.
+    /// </summary>
+    public bool DeclareLocalVar { get; set; } = false;
+
     public bool SemicolonAfter { get => true; }
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
-    public bool EmptyLineBefore => Value is IStatementNode stmt && stmt.EmptyLineBefore;
-    public bool EmptyLineAfter => Value is IStatementNode stmt && stmt.EmptyLineAfter;
+    public bool EmptyLineBefore 
+    { 
+        get => Value is IStatementNode stmt && stmt.EmptyLineBefore; 
+        set 
+        {
+            if (Value is IStatementNode stmt)
+            {
+                stmt.EmptyLineBefore = value;
+            }
+        }
+    }
+    public bool EmptyLineAfter
+    {
+        get => Value is IStatementNode stmt && stmt.EmptyLineAfter;
+        set
+        {
+            if (Value is IStatementNode stmt)
+            {
+                stmt.EmptyLineAfter = value;
+            }
+        }
+    }
     public DataType StackType { get; set; } = DataType.Variable;
 
     /// <summary>
@@ -130,9 +155,39 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         return this;
     }
 
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        if (cleaner.Context.Settings.CleanupLocalVarDeclarations &&
+            Variable is VariableNode
+            {
+                Left: Int16Node { Value: (int)InstanceType.Local } or InstanceTypeNode { InstanceType: InstanceType.Local },
+                Variable.Name: IGMString { Content: string localName }
+            })
+        {
+            // We have a local variable which is (at least) declared by the time of this assignment.
+            LocalScope currentLocalScope = cleaner.TopFragmentContext!.CurrentLocalScope!;
+            if (currentLocalScope.DeclaredLocals.Add(localName))
+            {
+                // Track this AssignNode to potentially generate a declaration later.
+                currentLocalScope.FirstLocalAssignments.Add(localName, this);
+            }
+        }
+
+        Variable = Variable.PostClean(cleaner);
+        Value = Value?.PostClean(cleaner);
+
+        return this;
+    }
+
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         Variable = Variable.Clean(cleaner);
+        return this;
+    }
+
+    IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
+    {
+        Variable = Variable.PostClean(cleaner);
         return this;
     }
 
@@ -218,8 +273,6 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
 
     public void Print(ASTPrinter printer)
     {
-        // TODO: handle local variable declarations
-
         switch (AssignKind)
         {
             case AssignType.Normal:
@@ -236,6 +289,23 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                     {
                         // In static initialization, we prepend the "static" keyword to the assignment
                         printer.Write("static ");
+                    }
+                    else if (DeclareLocalVar &&
+                             printer.Context.Settings.CleanupLocalVarDeclarations &&
+                             Variable is VariableNode { Variable.Name: IGMString { Content: string localName } } variable)
+                    {
+                        // Local variable getting declared here
+                        printer.Write("var ");
+                        
+                        // If array indices are used here, we actually need to split
+                        // this into two lines (avoiding invalid syntax).
+                        if (variable.ArrayIndices is not null)
+                        {
+                            printer.Write(localName);
+                            printer.Semicolon();
+                            printer.EndLine();
+                            printer.StartLine();
+                        }
                     }
 
                     // Normal assignment

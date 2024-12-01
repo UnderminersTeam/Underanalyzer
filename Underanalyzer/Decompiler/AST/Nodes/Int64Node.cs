@@ -63,6 +63,11 @@ public class Int64Node(long value) : IConstantNode<long>, IMacroResolvableNode, 
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value);

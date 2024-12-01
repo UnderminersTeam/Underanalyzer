@@ -1142,4 +1142,96 @@ public class DecompileContext_DecompileToString_Settings
             }
         );
     }
+
+    [Fact]
+    public void TestArgumentsLocal_BlockLocals()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [4]
+
+            > gml_Script_default_args_locals (locals=1, args=1)
+            :[1]
+            push.v arg.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i arg.argument0
+
+            :[3]
+            pushi.e 123
+            pop.v.i local.local
+            exit.i
+
+            :[4]
+            push.i [function]gml_Script_default_args_locals
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.default_args_locals
+            popz.v
+            """,
+            """
+            function default_args_locals(arg0 = 123)
+            {
+                var local;
+                
+                local = 123;
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                CleanupLocalVarDeclarations = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestArgumentsConflict_BlockLocals()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > gml_Script_args_conflict (locals=1, args=1)
+            :[1]
+            pushi.e 123
+            pop.v.i local.arg0
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_args_conflict
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.args_conflict
+            popz.v
+            """,
+            """
+            function args_conflict(arg0_)
+            {
+                var arg0;
+                
+                arg0 = 123;
+            }
+            """,
+            null,
+            new DecompileSettings()
+            {
+                CleanupLocalVarDeclarations = false
+            }
+        );
+    }
 }

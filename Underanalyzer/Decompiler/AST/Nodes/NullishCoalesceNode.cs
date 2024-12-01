@@ -47,6 +47,13 @@ public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : 
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Left = Left.PostClean(cleaner);
+        Right = Right.PostClean(cleaner);
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

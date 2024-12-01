@@ -40,6 +40,11 @@ public class DoubleNode(double value) : IConstantNode<double>, IConditionalValue
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         ReadOnlySpan<char> str = Value.ToString("R", CultureInfo.InvariantCulture);

@@ -44,8 +44,8 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
     public string? ContinueVariableName { get; internal set; } = null;
 
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore { get; private set; }
-    public bool EmptyLineAfter { get; private set; }
+    public bool EmptyLineBefore { get; set; }
+    public bool EmptyLineAfter { get; set; }
 
     // Cleans out compiler-generated control flow from individual try or catch blocks.
     private void CleanPart(BlockNode node)
@@ -126,6 +126,25 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         return this;
     }
 
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Finally?.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Try.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
+        Catch?.PostClean(cleaner);
+        cleaner.TopFragmentContext!.PopLocalScope(cleaner.Context);
+
+        CatchVariable?.PostClean(cleaner);
+
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         printer.Write("try");
@@ -186,8 +205,8 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
     public class FinishFinallyNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     {
         public bool SemicolonAfter => false;
-        public bool EmptyLineBefore => false;
-        public bool EmptyLineAfter => false;
+        public bool EmptyLineBefore { get => false; set => _ = value; }
+        public bool EmptyLineAfter { get => false; set => _ = value; }
         public bool Duplicated { get; set; }
         public bool Group { get; set; } = false;
         public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
@@ -198,6 +217,16 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         }
 
         IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
+        {
+            return this;
+        }
+
+        public IStatementNode PostClean(ASTCleaner cleaner)
+        {
+            return this;
+        }
+
+        IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
         {
             return this;
         }

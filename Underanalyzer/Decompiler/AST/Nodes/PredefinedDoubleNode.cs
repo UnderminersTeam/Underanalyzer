@@ -28,6 +28,11 @@ public class PredefinedDoubleSingleNode(string value, double originalValue) : IE
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public virtual void Print(ASTPrinter printer)
     {
         printer.Write(Value);

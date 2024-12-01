@@ -31,6 +31,11 @@ public class MacroValueNode(string valueName) : IExpressionNode, IConditionalVal
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

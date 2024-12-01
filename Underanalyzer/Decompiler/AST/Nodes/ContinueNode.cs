@@ -9,10 +9,15 @@ namespace Underanalyzer.Decompiler.AST;
 public class ContinueNode : IStatementNode
 {
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
     {
         return this;
     }

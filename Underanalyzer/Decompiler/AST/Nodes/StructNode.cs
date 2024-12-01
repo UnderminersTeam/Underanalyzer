@@ -23,8 +23,8 @@ public class StructNode(BlockNode body, ASTFragmentContext fragmentContext) : IF
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter => false;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
     public ASTFragmentContext FragmentContext { get; } = fragmentContext;
 
     public string ConditionalTypeName => "Struct";
@@ -36,7 +36,18 @@ public class StructNode(BlockNode body, ASTFragmentContext fragmentContext) : IF
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Body.PostCleanStruct(cleaner);
+        return this;
+    }
+
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
+    {
+        throw new NotImplementedException();
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         throw new NotImplementedException();
     }

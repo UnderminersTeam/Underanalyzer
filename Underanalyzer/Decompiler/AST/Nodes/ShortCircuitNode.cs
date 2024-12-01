@@ -44,6 +44,15 @@ public class ShortCircuitNode(List<IExpressionNode> conditions, ShortCircuitType
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Conditions.Count; i++)
+        {
+            Conditions[i] = Conditions[i].PostClean(cleaner);
+        }
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

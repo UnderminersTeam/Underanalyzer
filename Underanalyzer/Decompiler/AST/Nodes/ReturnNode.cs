@@ -19,21 +19,27 @@ public class ReturnNode(IExpressionNode value) : IStatementNode, IBlockCleanupNo
     public IExpressionNode Value { get; private set; } = value;
 
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
 
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Value = Value.Clean(cleaner);
 
         // Handle macro type resolution
-        if (Value is IMacroResolvableNode valueResolvable && 
+        if (Value is IMacroResolvableNode valueResolvable &&
             cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, cleaner.TopFragmentContext!.CodeEntryName) is IMacroType returnMacroType &&
             valueResolvable.ResolveMacroType(cleaner, returnMacroType) is IExpressionNode valueResolved)
         {
             Value = valueResolved;
         }
 
+        return this;
+    }
+
+    public IStatementNode PostClean(ASTCleaner cleaner)
+    {
+        Value = Value.PostClean(cleaner);
         return this;
     }
 

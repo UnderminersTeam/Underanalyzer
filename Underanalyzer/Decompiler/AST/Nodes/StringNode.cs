@@ -28,6 +28,11 @@ public class StringNode(IGMString value) : IConstantNode<IGMString>, IConditiona
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         ReadOnlySpan<char> content = Value.Content;

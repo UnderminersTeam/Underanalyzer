@@ -46,6 +46,11 @@ public class EnumValueNode(string enumName, string enumValueName, long enumValue
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

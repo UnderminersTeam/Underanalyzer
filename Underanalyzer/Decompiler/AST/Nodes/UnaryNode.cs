@@ -44,6 +44,12 @@ public class UnaryNode(IExpressionNode value, IGMInstruction instruction) : IExp
         return this;
     }
 
+    public IExpressionNode PostClean(ASTCleaner cleaner)
+    {
+        Value = Value.PostClean(cleaner);
+        return this;
+    }
+
     public void Print(ASTPrinter printer)
     {
         if (Group)

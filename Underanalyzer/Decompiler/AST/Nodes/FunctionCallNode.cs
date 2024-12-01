@@ -29,8 +29,8 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
     public bool Group { get; set; } = false;
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
     public bool SemicolonAfter => true;
-    public bool EmptyLineBefore => false;
-    public bool EmptyLineAfter => false;
+    public bool EmptyLineBefore { get => false; set => _ = value; }
+    public bool EmptyLineAfter { get => false; set => _ = value; }
     public string FunctionName { get => Function.Name.Content; }
 
     public string ConditionalTypeName => "FunctionCall";
@@ -75,6 +75,24 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         }
 
         return CleanupMacroTypes(cleaner);
+    }
+
+    IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
+        }
+        return this;
+    }
+
+    IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
+    {
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostClean(cleaner);
+        }
+        return this;
     }
 
     private IFunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
