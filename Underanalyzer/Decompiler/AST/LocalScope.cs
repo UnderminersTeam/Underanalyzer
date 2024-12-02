@@ -204,7 +204,7 @@ internal sealed class LocalScope(LocalScope? parent, BlockNode containingBlock, 
             }
         }
 
-        // For remaining locals declared in this scope, declare them on their first assignments
+        // For remaining locals to be declared in this scope, declare them on their first assignments
         foreach (string local in DeclaredLocals)
         {
             if (hoistedLocals.Contains(local))

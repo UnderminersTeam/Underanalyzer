@@ -104,6 +104,50 @@ public class DecompileContext_DecompileToString_Locals
     }
 
     [Fact]
+    public void TestOnlyIncrementLocal()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v local.a
+            pushi.e 1
+            add.i.v
+            pop.v.v local.a
+            """,
+            """
+            var a;
+            a += 1;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestOnlyIncrementLocal2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            push.v local.a
+            pushi.e 1
+            add.i.v
+            pop.v.v local.a
+            pushi.e -7
+            pushi.e 0
+            dup.i 1
+            push.v [array]local.b
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]local.b
+            """,
+            """
+            var a, b;
+            a += 1;
+            b[0] += 1;
+            """
+        );
+    }
+
+    [Fact]
     public void TestFunctionLocal1()
     {
         TestUtil.VerifyDecompileResult(

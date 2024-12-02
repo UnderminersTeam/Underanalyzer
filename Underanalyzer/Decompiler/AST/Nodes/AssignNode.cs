@@ -158,6 +158,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         if (cleaner.Context.Settings.CleanupLocalVarDeclarations &&
+            AssignKind == AssignType.Normal &&
             Variable is VariableNode
             {
                 Left: Int16Node { Value: (int)InstanceType.Local } or InstanceTypeNode { InstanceType: InstanceType.Local },
