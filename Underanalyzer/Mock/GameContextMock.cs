@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using Underanalyzer.Compiler;
 using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.GameSpecific;
 
@@ -33,6 +34,8 @@ public class GameContextMock : IGameContext
     public IGlobalFunctions GlobalFunctions { get; } = new GlobalFunctions();
     /// <inheritdoc/>
     public GameSpecificRegistry GameSpecificRegistry { get; set; } = new();
+    /// <inheritdoc/>
+    public IBuiltins Builtins { get; } = new BuiltinsMock();
 
     /// <summary>
     /// A Dictionary that mocks asset chunks and their contents.
@@ -83,5 +86,13 @@ public class GameContextMock : IGameContext
             AssetType.RoomInstance => assetIndex >= 100000 ? $"inst_id_{assetIndex}" : null,
             _ => GetMockAsset(assetType, assetIndex)
         };
+    }
+
+    /// <inheritdoc/>
+    public bool GetAssetId(string assetName, out int assetId)
+    {
+        // TODO: implement
+        assetId = 0;
+        return false;
     }
 }

@@ -5,6 +5,8 @@
 */
 
 using Underanalyzer;
+using Underanalyzer.Compiler;
+using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
@@ -80,5 +82,27 @@ internal static class TestUtil
         string decompileResult = decompilerContext.DecompileToString().Trim();
         Assert.Equal(gml.Trim().ReplaceLineEndings("\n"), decompileResult);
         return decompilerContext;
+    }
+
+    /// <summary>
+    /// Utility function to lex GML code with the compiler, for testing.
+    /// </summary>
+    public static LexContext Lex(string code, GameContextMock? gameContext = null)
+    {
+        CompileContext compileContext = new(gameContext ?? new());
+        LexContext rootLexContext = new(compileContext, code);
+        rootLexContext.Tokenize();
+        rootLexContext.PostProcessTokens();
+        return rootLexContext;
+    }
+
+    public static void AssertTokens((string Text, Type Type)[] expected, List<IToken> tokens)
+    {
+        Assert.Equal(expected.Length, tokens.Count);
+        for (int i = 0; i < expected.Length; i++)
+        {
+            Assert.Equal(expected[i].Text.ReplaceLineEndings("\n"), tokens[i].ToString()?.ReplaceLineEndings("\n"));
+            Assert.IsType(expected[i].Type, tokens[i]);
+        }
     }
 }

@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using Underanalyzer.Compiler;
 using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.GameSpecific;
 
@@ -89,7 +90,21 @@ public interface IGameContext
     public GameSpecificRegistry GameSpecificRegistry { get; }
 
     /// <summary>
+    /// Interface representing an instance of builtin function/variable/etc. information to use for compilation.
+    /// </summary>
+    public IBuiltins Builtins { get; }
+
+    /// <summary>
     /// Returns the string name of an asset, or <see langword="null"/> if no such asset exists.
     /// </summary>
     public string? GetAssetName(AssetType assetType, int assetIndex);
+
+    /// <summary>
+    /// Returns the ID of an asset, if one exists. If <see cref="UsingAssetReferences"/> is <see langword="true"/>, 
+    /// this ID encodes the correct asset type as well.
+    /// </summary>
+    /// <param name="assetName">Asset name to look up</param>
+    /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if an asset ID was found; <see langword="false"/> otherwise.</returns>
+    public bool GetAssetId(string assetName, out int assetId);
 }
