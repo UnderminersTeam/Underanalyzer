@@ -4,7 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using Newtonsoft.Json.Linq;
+using Underanalyzer;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Mock;
 
@@ -490,5 +490,34 @@ public class LexContext_Tokenize
         );
 
         Assert.Equal(3, context.CompileContext.Errors.Count);
+    }
+
+    [Fact]
+    public void TestAssets()
+    {
+        GameContextMock mock = new();
+        mock.DefineMockAsset(AssetType.Sprite, 8, "spr_test");
+        LexContext context = TestUtil.Lex(
+            """
+            sprite = spr_test;
+            notSprite = spr_test_nonexistent;
+            """,
+            mock
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        TestUtil.AssertTokens([
+            ("sprite", typeof(TokenVariable)),
+            ("=", typeof(TokenOperator)),
+            ("spr_test", typeof(TokenAssetReference)),
+            (";", typeof(TokenSeparator)),
+            ("notSprite", typeof(TokenVariable)),
+            ("=", typeof(TokenOperator)),
+            ("spr_test_nonexistent", typeof(TokenVariable)),
+            (";", typeof(TokenSeparator)),
+        ], context.Tokens);
+
+        Assert.True(mock.GetAssetId("spr_test", out int assetId));
+        Assert.Equal(assetId, ((TokenAssetReference)context.Tokens[2]).AssetId);
     }
 }

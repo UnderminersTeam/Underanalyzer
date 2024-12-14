@@ -7,6 +7,7 @@
 using Underanalyzer;
 using Underanalyzer.Compiler;
 using Underanalyzer.Compiler.Lexer;
+using Underanalyzer.Compiler.Parser;
 using Underanalyzer.Decompiler;
 using Underanalyzer.Decompiler.ControlFlow;
 using Underanalyzer.Mock;
@@ -96,6 +97,9 @@ internal static class TestUtil
         return rootLexContext;
     }
 
+    /// <summary>
+    /// Asserts that a list of tokens match a list of text and type pairs, corresponding to each expected token.
+    /// </summary>
     public static void AssertTokens((string Text, Type Type)[] expected, List<IToken> tokens)
     {
         Assert.Equal(expected.Length, tokens.Count);
@@ -104,5 +108,16 @@ internal static class TestUtil
             Assert.Equal(expected[i].Text.ReplaceLineEndings("\n"), tokens[i].ToString()?.ReplaceLineEndings("\n"));
             Assert.IsType(expected[i].Type, tokens[i]);
         }
+    }
+
+    /// <summary>
+    /// Utility function to parse GML code with the compiler, for testing.
+    /// </summary>
+    public static ParseContext Parse(string code, GameContextMock? gameContext = null)
+    {
+        LexContext lexContext = Lex(code, gameContext);
+        ParseContext parseContext = new(lexContext.CompileContext, lexContext.Tokens);
+        parseContext.Parse();
+        return parseContext;
     }
 }

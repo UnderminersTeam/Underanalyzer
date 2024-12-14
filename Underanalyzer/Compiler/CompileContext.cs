@@ -37,4 +37,12 @@ public sealed class CompileContext(IGameContext gameContext)
     {
         Errors.Add(new LexerError(message, lexContext, textPosition));
     }
+
+    /// <summary>
+    /// Pushes a parser error to the list of errors generated for this compile context.
+    /// </summary>
+    internal void PushError(string message, IToken? nearbyToken = null)
+    {
+        Errors.Add(new ParserError(message, nearbyToken));
+    }
 }

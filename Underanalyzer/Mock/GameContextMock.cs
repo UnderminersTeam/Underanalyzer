@@ -38,35 +38,41 @@ public class GameContextMock : IGameContext
     public IBuiltins Builtins { get; } = new BuiltinsMock();
 
     /// <summary>
-    /// A Dictionary that mocks asset chunks and their contents.
+    /// A Dictionary that mocks asset types and their contents.
     /// </summary>
-    public Dictionary<AssetType, Dictionary<int, string>> MockAssets { get; set; } = [];
+    private Dictionary<AssetType, Dictionary<int, string>> _mockAssetsByType { get; set; } = [];
 
     /// <summary>
-    /// Define a new mock asset that gets added to <see cref="MockAssets"/>.
+    /// A Dictionary that mocks assets by their name.
+    /// </summary>
+    private Dictionary<string, int> _mockAssetsByName { get; set; } = [];
+
+    /// <summary>
+    /// Define a new mock asset that gets added to <see cref="_mockAssetsByType"/>.
     /// </summary>
     /// <param name="assetType">The type of the asset.</param>
     /// <param name="assetIndex">The index of the asset.</param>
     /// <param name="assetName">The name of the asset.</param>
     public void DefineMockAsset(AssetType assetType, int assetIndex, string assetName)
     {
-        if (!MockAssets.TryGetValue(assetType, out Dictionary<int, string>? assets))
+        if (!_mockAssetsByType.TryGetValue(assetType, out Dictionary<int, string>? assets))
         {
             assets = [];
-            MockAssets.Add(assetType, assets);
+            _mockAssetsByType.Add(assetType, assets);
         }
         assets[assetIndex] = assetName;
+        _mockAssetsByName[assetName] = assetIndex | (UsingAssetReferences ? ((int)assetType << 24) : 0);
     }
     
     /// <summary>
-    /// Fetches an asset from <see cref="MockAssets"/>.
+    /// Fetches an asset from <see cref="_mockAssetsByType"/>.
     /// </summary>
     /// <param name="assetType">The asset type of the asset that should be fetched.</param>
     /// <param name="assetIndex">The index of the asset that should be fetched.</param>
     /// <returns>The name of the asset, or <see langword="null"/> if it does not exist.</returns>
     public string? GetMockAsset(AssetType assetType, int assetIndex)
     {
-        if (!MockAssets.TryGetValue(assetType, out var dict))
+        if (!_mockAssetsByType.TryGetValue(assetType, out var dict))
         {
             return null;
         }
@@ -91,8 +97,6 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool GetAssetId(string assetName, out int assetId)
     {
-        // TODO: implement
-        assetId = 0;
-        return false;
+        return _mockAssetsByName.TryGetValue(assetName, out assetId);
     }
 }

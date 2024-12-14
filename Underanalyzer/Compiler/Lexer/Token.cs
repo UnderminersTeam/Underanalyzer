@@ -49,9 +49,9 @@ internal enum SeparatorKind
 /// <param name="Kind">Separator kind for this token.</param>
 internal sealed record TokenSeparator(LexContext Context, int TextPosition, SeparatorKind Kind) : IToken
 {
-    public override string ToString()
+    public static string KindToString(SeparatorKind kind)
     {
-        return Kind switch
+        return kind switch
         {
             SeparatorKind.BlockOpen => "{",
             SeparatorKind.BlockClose => "}",
@@ -68,8 +68,13 @@ internal sealed record TokenSeparator(LexContext Context, int TextPosition, Sepa
             SeparatorKind.ArrayOpenDirect => "[@",
             SeparatorKind.ArrayOpenStruct => "[$",
             SeparatorKind.ArrayClose => "]",
-            _ => throw new Exception($"Unknown separator kind {Kind}")
+            _ => throw new Exception($"Unknown separator kind {kind}")
         };
+    }
+
+    public override string ToString()
+    {
+        return KindToString(Kind);
     }
 }
 
@@ -127,9 +132,9 @@ internal enum OperatorKind
 /// <param name="Kind">Operator kind for this token.</param>
 internal sealed record TokenOperator(LexContext Context, int TextPosition, OperatorKind Kind) : IToken
 {
-    public override string ToString()
+    public static string KindToString(OperatorKind kind)
     {
-        return Kind switch
+        return kind switch
         {
             OperatorKind.Assign => "=",
             OperatorKind.Assign2 => ":=",
@@ -168,8 +173,13 @@ internal sealed record TokenOperator(LexContext Context, int TextPosition, Opera
             OperatorKind.CompoundBitwiseAnd => "&=",
             OperatorKind.CompoundBitwiseOr => "|=",
             OperatorKind.CompoundBitwiseXor => "^=",
-             _ => throw new Exception($"Unknown operator kind {Kind}")
+            _ => throw new Exception($"Unknown operator kind {kind}")
         };
+    }
+
+    public override string ToString()
+    {
+        return KindToString(Kind);
     }
 }
 
@@ -228,9 +238,9 @@ internal enum KeywordKind
 /// <param name="Kind">Keyword kind for this token.</param>
 internal sealed record TokenKeyword(LexContext Context, int TextPosition, KeywordKind Kind) : IToken
 {
-    public override string ToString()
+    public static string KindToString(KeywordKind kind)
     {
-        return Kind switch
+        return kind switch
         {
             KeywordKind.If => "if",
             KeywordKind.Then => "then",
@@ -264,8 +274,13 @@ internal sealed record TokenKeyword(LexContext Context, int TextPosition, Keywor
             KeywordKind.Delete => "delete",
             KeywordKind.Function => "function",
             KeywordKind.Static => "static",
-            _ => throw new Exception($"Unknown keyword kind {Kind}")
+            _ => throw new Exception($"Unknown keyword kind {kind}")
         };
+    }
+
+    public override string ToString()
+    {
+        return KindToString(Kind);
     }
 }
 
