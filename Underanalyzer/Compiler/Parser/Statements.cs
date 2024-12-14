@@ -67,7 +67,7 @@ internal static class Statements
                 context.Position++;
                 return new ContinueNode(tokenContinue);
             default:
-                if (ParseAssignmentOrCallStatement(context) is IASTNode stmt)
+                if (ParseAssignmentOrExpressionStatement(context) is IASTNode stmt)
                 {
                     return stmt;
                 }
@@ -78,7 +78,7 @@ internal static class Statements
         return null;
     }
 
-    private static IASTNode? ParseAssignmentOrCallStatement(ParseContext context)
+    private static IASTNode? ParseAssignmentOrExpressionStatement(ParseContext context)
     {
         // Parse expression (destination of assignment, or chain function call)
         if (Expressions.ParseChainExpression(context) is not IASTNode expr)
@@ -86,49 +86,46 @@ internal static class Statements
             return null;
         }
 
-        if (expr is IAssignableASTNode assignable && !context.EndOfCode)
-        {
-            // Check for assignment
-            IToken token = context.Tokens[context.Position];
-            switch (token)
+        // Check for assignment
+        if (expr is IAssignableASTNode assignable && !context.EndOfCode && 
+            context.Tokens[context.Position] is TokenOperator
             {
-                case TokenOperator 
-                { 
-                    Kind: OperatorKind.Assign or OperatorKind.Assign2 or 
-                          OperatorKind.CompoundPlus or OperatorKind.CompoundMinus or
-                          OperatorKind.CompoundTimes or OperatorKind.CompoundDivide or
-                          OperatorKind.CompoundMod or OperatorKind.CompoundBitwiseAnd or
-                          OperatorKind.CompoundBitwiseOr or OperatorKind.CompoundBitwiseXor or
-                          OperatorKind.CompoundNullishCoalesce
-                } tokenOperator:
-                    context.Position++;
+                Kind: OperatorKind.Assign                   or OperatorKind.Assign2             or
+                      OperatorKind.CompoundPlus             or OperatorKind.CompoundMinus       or
+                      OperatorKind.CompoundTimes            or OperatorKind.CompoundDivide      or
+                      OperatorKind.CompoundMod              or OperatorKind.CompoundBitwiseAnd  or
+                      OperatorKind.CompoundBitwiseOr        or OperatorKind.CompoundBitwiseXor  or
+                      OperatorKind.CompoundNullishCoalesce
+            } 
+            tokenOperator)
+        {
+            context.Position++;
 
-                    // If left side is assigning to a read-only builtin variable, push an error
-                    if (assignable is IVariableASTNode variable && !(variable.BuiltinVariable?.CanSet ?? true))
-                    {
-                        context.CompileContext.PushError($"Attempting to assign read-only variable '{variable.VariableName}'", variable.NearbyToken);
-                    }
-
-                    // Parse expression on right side and make assignment if possible
-                    if (Expressions.ParseExpression(context) is IASTNode rhs)
-                    {
-                        return new AssignNode(tokenOperator.Kind switch
-                        {
-                            OperatorKind.Assign or OperatorKind.Assign2 => AssignNode.AssignKind.Normal,
-                            OperatorKind.CompoundPlus => AssignNode.AssignKind.CompoundPlus,
-                            OperatorKind.CompoundMinus => AssignNode.AssignKind.CompoundMinus,
-                            OperatorKind.CompoundTimes => AssignNode.AssignKind.CompoundTimes,
-                            OperatorKind.CompoundDivide => AssignNode.AssignKind.CompoundDivide,
-                            OperatorKind.CompoundMod => AssignNode.AssignKind.CompoundMod,
-                            OperatorKind.CompoundBitwiseAnd => AssignNode.AssignKind.CompoundBitwiseAnd,
-                            OperatorKind.CompoundBitwiseOr => AssignNode.AssignKind.CompoundBitwiseOr,
-                            OperatorKind.CompoundBitwiseXor => AssignNode.AssignKind.CompoundBitwiseXor,
-                            OperatorKind.CompoundNullishCoalesce => AssignNode.AssignKind.CompoundNullishCoalesce,
-                            _ => throw new Exception("Unknown operator kind in assignment")
-                        }, assignable, rhs);
-                    }
-                    return null;
+            // If left side is assigning to a read-only builtin variable, push an error
+            if (assignable is IVariableASTNode variable && !(variable.BuiltinVariable?.CanSet ?? true))
+            {
+                context.CompileContext.PushError($"Attempting to assign read-only variable '{variable.VariableName}'", variable.NearbyToken);
             }
+
+            // Parse expression on right side and make assignment if possible
+            if (Expressions.ParseExpression(context) is IASTNode rhs)
+            {
+                return new AssignNode(tokenOperator.Kind switch
+                {
+                    OperatorKind.Assign or OperatorKind.Assign2 =>  AssignNode.AssignKind.Normal,
+                    OperatorKind.CompoundPlus =>                    AssignNode.AssignKind.CompoundPlus,
+                    OperatorKind.CompoundMinus =>                   AssignNode.AssignKind.CompoundMinus,
+                    OperatorKind.CompoundTimes =>                   AssignNode.AssignKind.CompoundTimes,
+                    OperatorKind.CompoundDivide =>                  AssignNode.AssignKind.CompoundDivide,
+                    OperatorKind.CompoundMod =>                     AssignNode.AssignKind.CompoundMod,
+                    OperatorKind.CompoundBitwiseAnd =>              AssignNode.AssignKind.CompoundBitwiseAnd,
+                    OperatorKind.CompoundBitwiseOr =>               AssignNode.AssignKind.CompoundBitwiseOr,
+                    OperatorKind.CompoundBitwiseXor =>              AssignNode.AssignKind.CompoundBitwiseXor,
+                    OperatorKind.CompoundNullishCoalesce =>         AssignNode.AssignKind.CompoundNullishCoalesce,
+                    _ => throw new Exception("Unknown operator kind in assignment")
+                }, assignable, rhs);
+            }
+            return null;
         }
         
         if (expr is IMaybeStatementASTNode statement)

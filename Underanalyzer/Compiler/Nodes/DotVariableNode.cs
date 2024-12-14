@@ -4,7 +4,6 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -12,10 +11,15 @@ using Underanalyzer.Compiler.Parser;
 namespace Underanalyzer.Compiler.Nodes;
 
 /// <summary>
-/// Represents a simple variable reference in the AST.
+/// Represents a dot (.) variable reference in the AST, as part of a chain reference.
 /// </summary>
-internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
+internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
 {
+    /// <summary>
+    /// Expression on the left side of the dot.
+    /// </summary>
+    public IASTNode LeftExpression { get; }
+
     /// <inheritdoc/>
     public string VariableName { get; }
 
@@ -26,22 +30,24 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public IToken? NearbyToken { get; }
 
     /// <summary>
-    /// Creates a simple variable reference node, given the provided variable token.
+    /// Creates a dot variable reference node, given the provided left side expression, and variable token.
     /// </summary>
-    public SimpleVariableNode(TokenVariable token)
+    public DotVariableNode(IASTNode leftExpression, TokenVariable token)
     {
+        LeftExpression = leftExpression;
         NearbyToken = token;
         VariableName = token.Text;
         BuiltinVariable = token.BuiltinVariable;
     }
 
     /// <summary>
-    /// Creates a simple variable reference node, given the provided name and builtin variable.
+    /// Creates a dot variable reference node, given the provided left side expression, and function token.
     /// </summary>
-    public SimpleVariableNode(string variableName, IBuiltinVariable? builtinVariable)
+    public DotVariableNode(IASTNode leftExpression, TokenFunction token)
     {
-        VariableName = variableName;
-        BuiltinVariable = builtinVariable;
+        LeftExpression = leftExpression;
+        NearbyToken = token;
+        VariableName = token.Text;
     }
 
     /// <inheritdoc/>

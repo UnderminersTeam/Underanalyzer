@@ -145,6 +145,18 @@ internal sealed class ParseContext(CompileContext context, List<IToken> tokens)
     }
 
     /// <summary>
+    /// Returns true if the current token is a given operator type; false otherwise.
+    /// </summary>
+    public bool IsCurrentToken(OperatorKind kind)
+    {
+        if (EndOfCode)
+        {
+            return false;
+        }
+        return Tokens[Position] is TokenOperator tokenOperator && tokenOperator.Kind == kind;
+    }
+
+    /// <summary>
     /// Returns true if the current token is a given keyword type; false otherwise.
     /// </summary>
     public bool IsCurrentToken(KeywordKind kind)

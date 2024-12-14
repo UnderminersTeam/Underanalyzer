@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Xml.Linq;
 using Underanalyzer;
 using Underanalyzer.Compiler.Nodes;
 using Underanalyzer.Compiler.Parser;
@@ -119,6 +120,8 @@ public class ParseContext_Parse
             if (++c) {}
             d();
             if (e()) {}
+            f++;
+            if (g++) {}
             """
         );
 
@@ -160,6 +163,21 @@ public class ParseContext_Parse
                 Assert.Equal("e", funcCall.FunctionName);
                 Assert.False(funcCall.IsStatement);
                 Assert.Empty(funcCall.Arguments);
+            },
+            (node) =>
+            {
+                PostfixNode postfix = (PostfixNode)node;
+                Assert.Equal("f", ((SimpleVariableNode)postfix.Expression!).VariableName);
+                Assert.True(postfix.IsIncrement);
+                Assert.True(postfix.IsStatement);
+            },
+            (node) =>
+            {
+                IfNode ifNode = (IfNode)node;
+                PostfixNode postfix = (PostfixNode)ifNode.Condition!;
+                Assert.Equal("g", ((SimpleVariableNode)postfix.Expression!).VariableName);
+                Assert.True(postfix.IsIncrement);
+                Assert.False(postfix.IsStatement);
             }
         );
     }
@@ -167,7 +185,6 @@ public class ParseContext_Parse
     [Fact]
     public void TestAssignTypes()
     {
-        // TODO: postfix here as well
         ParseContext context = TestUtil.Parse(
             """
             a = 1;
@@ -183,6 +200,8 @@ public class ParseContext_Parse
             a ??= 1;
             ++a;
             --a;
+            a++;
+            a--;
             """
         );
 
@@ -200,7 +219,9 @@ public class ParseContext_Parse
             (node) => Assert.Equal(AssignNode.AssignKind.CompoundBitwiseXor, ((AssignNode)node).Kind),
             (node) => Assert.Equal(AssignNode.AssignKind.CompoundNullishCoalesce, ((AssignNode)node).Kind),
             (node) => Assert.True(((PrefixNode)node).IsIncrement),
-            (node) => Assert.False(((PrefixNode)node).IsIncrement)
+            (node) => Assert.False(((PrefixNode)node).IsIncrement),
+            (node) => Assert.True(((PostfixNode)node).IsIncrement),
+            (node) => Assert.False(((PostfixNode)node).IsIncrement)
         );
     }
 
@@ -395,5 +416,140 @@ public class ParseContext_Parse
             """
         );
         Assert.Single(context.CompileContext.Errors);
+    }
+
+    [Fact]
+    public void TestChain()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a[0].b.c()[123][456] = 789;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Single(((BlockNode)context.Root!).Children);
+        AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
+        AccessorNode accessor1 = (AccessorNode)assign.Destination;
+        Assert.Equal(456, ((NumberNode)accessor1.AccessorExpression!).Value);
+        Assert.Null(accessor1.AccessorExpression2);
+        AccessorNode accessor2 = (AccessorNode)accessor1.Expression;
+        Assert.Equal(123, ((NumberNode)accessor2.AccessorExpression!).Value);
+        Assert.Null(accessor2.AccessorExpression2);
+        FunctionCallNode funcCall = (FunctionCallNode)accessor2.Expression;
+        Assert.Empty(funcCall.Arguments);
+        DotVariableNode dot1 = (DotVariableNode)funcCall.Expression;
+        Assert.Equal("c", dot1.VariableName);
+        DotVariableNode dot2 = (DotVariableNode)dot1.LeftExpression;
+        Assert.Equal("b", dot2.VariableName);
+        AccessorNode accessor3 = (AccessorNode)dot2.LeftExpression;
+        Assert.Equal(0, ((NumberNode)accessor3.AccessorExpression!).Value);
+        Assert.Null(accessor3.AccessorExpression2);
+        SimpleVariableNode variable = (SimpleVariableNode)accessor3.Expression;
+        Assert.Equal("a", variable.VariableName);
+    }
+
+    [Fact]
+    public void TestConditional()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a = b ? c : d;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Single(((BlockNode)context.Root!).Children);
+        AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
+        ConditionalNode conditional = (ConditionalNode)assign.Expression;
+        Assert.Equal("b", ((SimpleVariableNode)conditional.Condition).VariableName);
+        Assert.Equal("c", ((SimpleVariableNode)conditional.TrueExpression).VariableName);
+        Assert.Equal("d", ((SimpleVariableNode)conditional.FalseExpression).VariableName);
+    }
+
+    [Fact]
+    public void TestNullish()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a = b ?? c;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Single(((BlockNode)context.Root!).Children);
+        AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
+        NullishCoalesceNode conditional = (NullishCoalesceNode)assign.Expression;
+        Assert.Equal("b", ((SimpleVariableNode)conditional.Left).VariableName);
+        Assert.Equal("c", ((SimpleVariableNode)conditional.Right).VariableName);
+    }
+
+    [Fact]
+    public void TestBinary()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a = (b + c) - (d * e);
+            f = g + h - i;
+            j = k * l / m % n mod o div p;
+            q = (r / s) * t;
+            u = v / (w * x);
+            y = 1 & 2 | 3 ^ 4;
+            z = 1 << 2 >> 3;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.Subtract], bin1.Operations);
+                BinaryChainNode bin2 = (BinaryChainNode)bin1.Arguments[0];
+                Assert.Equal([BinaryChainNode.BinaryOperation.Add], bin2.Operations);
+                BinaryChainNode bin3 = (BinaryChainNode)bin1.Arguments[1];
+                Assert.Equal([BinaryChainNode.BinaryOperation.Multiply], bin3.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.Add, BinaryChainNode.BinaryOperation.Subtract], bin1.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.Multiply, BinaryChainNode.BinaryOperation.Divide,
+                              BinaryChainNode.BinaryOperation.GMLModulo, BinaryChainNode.BinaryOperation.GMLModulo,
+                              BinaryChainNode.BinaryOperation.GMLDivRemainder], 
+                             bin1.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.Multiply], bin1.Operations);
+                BinaryChainNode bin2 = (BinaryChainNode)bin1.Arguments[0];
+                Assert.Equal([BinaryChainNode.BinaryOperation.Divide], bin2.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.Divide], bin1.Operations);
+                BinaryChainNode bin2 = (BinaryChainNode)bin1.Arguments[1];
+                Assert.Equal([BinaryChainNode.BinaryOperation.Multiply], bin2.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.BitwiseAnd, BinaryChainNode.BinaryOperation.BitwiseOr,
+                              BinaryChainNode.BinaryOperation.BitwiseXor],
+                             bin1.Operations);
+            },
+            (node) =>
+            {
+                BinaryChainNode bin1 = (BinaryChainNode)((AssignNode)node).Expression;
+                Assert.Equal([BinaryChainNode.BinaryOperation.BitwiseShiftLeft, BinaryChainNode.BinaryOperation.BitwiseShiftRight],
+                             bin1.Operations);
+            }
+        );
     }
 }

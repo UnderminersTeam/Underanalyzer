@@ -5,7 +5,6 @@
 */
 
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -13,7 +12,7 @@ using Underanalyzer.Compiler.Parser;
 namespace Underanalyzer.Compiler.Nodes;
 
 /// <summary>
-/// Represents a simple function call in the AST
+/// Represents a simple function call in the AST.
 /// </summary>
 internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
 {
