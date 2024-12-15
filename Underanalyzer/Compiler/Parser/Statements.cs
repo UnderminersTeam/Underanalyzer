@@ -46,6 +46,10 @@ internal static class Statements
                 return RepeatLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Do }:
                 return DoUntilLoopNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.With }:
+                return WithLoopNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Var }:
+                return LocalVarDeclNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Exit } tokenExit:
                 context.Position++;
                 return new ExitNode(tokenExit);

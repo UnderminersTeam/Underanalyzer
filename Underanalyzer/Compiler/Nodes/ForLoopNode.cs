@@ -58,6 +58,9 @@ internal sealed class ForLoopNode : IASTNode
             return null;
         }
 
+        // Ensure we have "(" here
+        context.EnsureToken(SeparatorKind.GroupOpen);
+
         // Parse loop initializer
         IASTNode initializer;
         if (context.IsCurrentToken(SeparatorKind.Semicolon))
@@ -125,7 +128,7 @@ internal sealed class ForLoopNode : IASTNode
             context.SkipSemicolons();
         }
 
-        // Ensure we have a group close here
+        // Ensure we have ")" here
         context.EnsureToken(SeparatorKind.GroupClose);
 
         // Parse loop body

@@ -552,4 +552,155 @@ public class ParseContext_Parse
             }
         );
     }
+
+    [Fact]
+    public void TestLocalDeclaration()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            var a, b = 123, c;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                LocalVarDeclNode decl = (LocalVarDeclNode)node;
+                Assert.Equal(["a", "b", "c"], decl.DeclaredLocals);
+                Assert.Equal(3, decl.AssignedValues.Count);
+                Assert.Null(decl.AssignedValues[0]);
+                Assert.Equal(123, ((NumberNode)decl.AssignedValues[1]!).Value);
+                Assert.Null(decl.AssignedValues[2]);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestBranchStatements()
+    {
+
+        ParseContext context = TestUtil.Parse(
+            """
+            switch (a)
+            {
+                case 123:
+                    break;
+                default:
+            }
+            while (b) 
+                c = 1;
+            while b do c = 1
+            for (var i = 0; i < 10; i++)
+                d = 1;
+            repeat (8)
+                e = 1;
+            with (123)
+                f = 1;
+            with 123 do f = 1
+            do
+            {
+                test();
+            }
+            until g;
+            do test(); until g;
+            for (;;) {}
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                SwitchNode switchNode = (SwitchNode)node;
+                Assert.Equal("a", ((SimpleVariableNode)switchNode.Expression).VariableName);
+                Assert.Collection(switchNode.Children,
+                    (node) =>
+                    {
+                        SwitchCaseNode case1 = (SwitchCaseNode)node;
+                        Assert.Equal(123, ((NumberNode)case1.Expression!).Value);
+                    },
+                    (node) => Assert.IsType<BreakNode>(node),
+                    (node) =>
+                    {
+                        SwitchCaseNode case2 = (SwitchCaseNode)node;
+                        Assert.Null(case2.Expression);
+                    }
+                );
+            },
+            (node) =>
+            {
+                WhileLoopNode whileLoopNode = (WhileLoopNode)node;
+                Assert.Equal("b", ((SimpleVariableNode)whileLoopNode.Condition).VariableName);
+                AssignNode assign = (AssignNode)whileLoopNode.Body;
+                Assert.Equal("c", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                WhileLoopNode whileLoopNode = (WhileLoopNode)node;
+                Assert.Equal("b", ((SimpleVariableNode)whileLoopNode.Condition).VariableName);
+                AssignNode assign = (AssignNode)whileLoopNode.Body;
+                Assert.Equal("c", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                ForLoopNode forLoopNode = (ForLoopNode)node;
+                LocalVarDeclNode decl = (LocalVarDeclNode)forLoopNode.Initializer;
+                Assert.Equal(["i"], decl.DeclaredLocals);
+                Assert.Single(decl.AssignedValues);
+                Assert.Equal(0, ((NumberNode)decl.AssignedValues[0]!).Value);
+                BinaryChainNode condition = (BinaryChainNode)forLoopNode.Condition;
+                Assert.Equal("i", ((SimpleVariableNode)condition.Arguments[0]).VariableName);
+                Assert.Equal(10, ((NumberNode)condition.Arguments[1]).Value);
+                Assert.Equal([BinaryChainNode.BinaryOperation.CompareLesser], condition.Operations);
+                PostfixNode incrementor = (PostfixNode)forLoopNode.Incrementor;
+                Assert.Equal("i", ((SimpleVariableNode)incrementor.Expression).VariableName);
+                Assert.True(incrementor.IsStatement);
+                AssignNode assign = (AssignNode)forLoopNode.Body;
+                Assert.Equal("d", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                RepeatLoopNode repeatLoopNode = (RepeatLoopNode)node;
+                Assert.Equal(8, ((NumberNode)repeatLoopNode.TimesToRepeat).Value);
+                AssignNode assign = (AssignNode)repeatLoopNode.Body;
+                Assert.Equal("e", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                WithLoopNode withLoopNode = (WithLoopNode)node;
+                Assert.Equal(123, ((NumberNode)withLoopNode.Expression).Value);
+                AssignNode assign = (AssignNode)withLoopNode.Body;
+                Assert.Equal("f", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                WithLoopNode withLoopNode = (WithLoopNode)node;
+                Assert.Equal(123, ((NumberNode)withLoopNode.Expression).Value);
+                AssignNode assign = (AssignNode)withLoopNode.Body;
+                Assert.Equal("f", ((SimpleVariableNode)assign.Destination).VariableName);
+            },
+            (node) =>
+            {
+                DoUntilLoopNode doUntilLoopNode = (DoUntilLoopNode)node;
+                BlockNode block = (BlockNode)doUntilLoopNode.Body;
+                Assert.Equal("test", ((SimpleFunctionCallNode)block.Children[0]).FunctionName);
+                Assert.Equal("g", ((SimpleVariableNode)doUntilLoopNode.Condition).VariableName);
+            },
+            (node) =>
+            {
+                DoUntilLoopNode doUntilLoopNode = (DoUntilLoopNode)node;
+                Assert.Equal("test", ((SimpleFunctionCallNode)doUntilLoopNode.Body).FunctionName);
+                Assert.Equal("g", ((SimpleVariableNode)doUntilLoopNode.Condition).VariableName);
+            },
+            (node) =>
+            {
+                ForLoopNode forLoopNode = (ForLoopNode)node;
+                Assert.Empty(((BlockNode)forLoopNode.Initializer).Children);
+                Assert.Equal(1, ((Int64Node)forLoopNode.Condition).Value);
+                Assert.Empty(((BlockNode)forLoopNode.Incrementor).Children);
+                Assert.Empty(((BlockNode)forLoopNode.Body).Children);
+            }
+        );
+    }
 }

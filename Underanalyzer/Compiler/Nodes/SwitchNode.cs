@@ -65,6 +65,7 @@ internal sealed class SwitchNode : IASTNode
             if (currentToken is TokenKeyword { Kind: KeywordKind.Case } tokenCase)
             {
                 // "case" label: parse expression
+                context.Position++;
                 if (Expressions.ParseExpression(context) is IASTNode caseExpr)
                 {
                     SwitchCaseNode caseNode = new(tokenCase, caseExpr);
@@ -75,6 +76,7 @@ internal sealed class SwitchNode : IASTNode
             else if (currentToken is TokenKeyword { Kind: KeywordKind.Default } tokenDefault)
             {
                 // "default" label: no expression to parse
+                context.Position++;
                 SwitchCaseNode defaultNode = new(tokenDefault, null);
                 context.EnsureToken(SeparatorKind.Colon);
                 children.Add(defaultNode);
