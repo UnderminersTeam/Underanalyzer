@@ -13,22 +13,27 @@ namespace Underanalyzer.Compiler.Parser;
 /// <summary>
 /// A context for the parser, for a single code entry.
 /// </summary>
-internal sealed class ParseContext(CompileContext context, List<IToken> tokens)
+internal sealed class ParseContext
 {
     /// <summary>
     /// The compile context for the overarching code entry.
     /// </summary>
-    public CompileContext CompileContext { get; } = context;
+    public CompileContext CompileContext { get; }
 
     /// <summary>
     /// List of tokens to be parsed by this context.
     /// </summary>
-    public List<IToken> Tokens { get; } = tokens;
+    public List<IToken> Tokens { get; }
 
     /// <summary>
     /// Root node as parsed by this context.
     /// </summary>
     public IASTNode? Root { get; private set; } = null;
+
+    /// <summary>
+    /// Root function scope being used during parsing.
+    /// </summary>
+    public FunctionScope RootScope { get; set; }
 
     /// <summary>
     /// List of tokens to be parsed by this context.
@@ -41,14 +46,25 @@ internal sealed class ParseContext(CompileContext context, List<IToken> tokens)
     public bool EndOfCode => Position >= Tokens.Count;
 
     /// <summary>
+    /// Current function scope being used during parsing.
+    /// </summary>
+    public FunctionScope CurrentScope { get; set; }
+
+    public ParseContext(CompileContext context, List<IToken> tokens)
+    {
+        CompileContext = context;
+        Tokens = tokens;
+        RootScope = new();
+        CurrentScope = RootScope;
+    }
+
+    /// <summary>
     /// Performs a full parse of the list of tokens, returning the root block 
     /// node of the resulting AST.
     /// </summary>
     public void Parse()
     {
-        BlockNode root = new();
-        Root = root;
-        root.ParseRoot(this);
+        Root = BlockNode.ParseRoot(this);
     }
 
     /// <summary>

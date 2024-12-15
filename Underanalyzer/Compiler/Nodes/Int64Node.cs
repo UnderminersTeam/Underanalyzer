@@ -13,15 +13,33 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a constant 64-bit integer in the AST.
 /// </summary>
-internal sealed class Int64Node(TokenInt64 token) : IConstantASTNode
+internal sealed class Int64Node : IConstantASTNode
 {
     /// <summary>
     /// Number being used as a value for this node.
     /// </summary>
-    public long Value { get; } = token.Value;
+    public long Value { get; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; } = token;
+    public IToken? NearbyToken { get; }
+
+    /// <summary>
+    /// Creates a 64-bit integer node from a given 64-bit integer token.
+    /// </summary>
+    public Int64Node(TokenInt64 token)
+    {
+        Value = token.Value;
+        NearbyToken = token;
+    }
+
+    /// <summary>
+    /// Creates a 64-bit integer node from a given value and nearby token.
+    /// </summary>
+    public Int64Node(long value, IToken? nearbyToken)
+    {
+        Value = value;
+        NearbyToken = nearbyToken;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)

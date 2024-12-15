@@ -33,13 +33,19 @@ internal static class Statements
         {
             case TokenSeparator { Kind: SeparatorKind.BlockOpen }:
             case TokenKeyword { Kind: KeywordKind.Begin }:
-                {
-                    BlockNode block = new();
-                    block.ParseRegular(context);
-                    return block;
-                }
+                return BlockNode.ParseRegular(context);
             case TokenKeyword { Kind: KeywordKind.If }:
-                return new IfNode(context);
+                return IfNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Switch }:
+                return SwitchNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.While }:
+                return WhileLoopNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.For }:
+                return ForLoopNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Repeat }:
+                return RepeatLoopNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Do }:
+                return DoUntilLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Exit } tokenExit:
                 context.Position++;
                 return new ExitNode(tokenExit);
@@ -66,6 +72,7 @@ internal static class Statements
             case TokenKeyword { Kind: KeywordKind.Continue } tokenContinue:
                 context.Position++;
                 return new ContinueNode(tokenContinue);
+            // TODO: try/catch/finally, static, enums
             default:
                 if (ParseAssignmentOrExpressionStatement(context) is IASTNode stmt)
                 {

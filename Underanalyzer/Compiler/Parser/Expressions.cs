@@ -561,7 +561,7 @@ internal static class Expressions
                 context.Position++;
 
                 // Parse accessor
-                AccessorNode accessor = new(context, tokenArrayOpen, lhs, tokenArrayOpen.Kind switch
+                AccessorNode? accessor = AccessorNode.Parse(context, tokenArrayOpen, lhs, tokenArrayOpen.Kind switch
                 {
                     SeparatorKind.ArrayOpen =>          AccessorNode.AccessorKind.Array,
                     SeparatorKind.ArrayOpenDirect =>    AccessorNode.AccessorKind.ArrayDirect,
@@ -571,6 +571,11 @@ internal static class Expressions
                     SeparatorKind.ArrayOpenStruct =>    AccessorNode.AccessorKind.Struct,
                     _ => throw new Exception("Unknown accessor kind")
                 });
+                if (accessor is null)
+                {
+                    // Failed to parse accessor; stop parsing chain
+                    break;
+                }
 
                 // If in GMLv2, rewrite old 2D array accesses as modern ones
                 if (context.CompileContext.GameContext.UsingGMLv2)
@@ -709,11 +714,11 @@ internal static class Expressions
                 }
             case TokenOperator { Kind: OperatorKind.Increment or OperatorKind.Decrement } tokenPrefix:
                 context.Position++;
-                return new PrefixNode(context, tokenPrefix, tokenPrefix.Kind == OperatorKind.Increment);
+                return PrefixNode.Parse(context, tokenPrefix, tokenPrefix.Kind == OperatorKind.Increment);
             case TokenOperator { Kind: OperatorKind.Not or OperatorKind.BitwiseNegate or 
                                        OperatorKind.Plus or OperatorKind.Minus } tokenUnary:
                 context.Position++;
-                return new UnaryNode(context, tokenUnary, tokenUnary.Kind switch
+                return UnaryNode.Parse(context, tokenUnary, tokenUnary.Kind switch
                 {
                     OperatorKind.Not => UnaryNode.UnaryKind.BooleanNot,
                     OperatorKind.BitwiseNegate => UnaryNode.UnaryKind.BitwiseNegate,
@@ -723,7 +728,7 @@ internal static class Expressions
                 });
             case TokenKeyword { Kind: KeywordKind.Not } tokenUnaryNotKeyword:
                 context.Position++;
-                return new UnaryNode(context, tokenUnaryNotKeyword, UnaryNode.UnaryKind.BooleanNot);
+                return UnaryNode.Parse(context, tokenUnaryNotKeyword, UnaryNode.UnaryKind.BooleanNot);
             // TODO: structs, function declarations, new, delete
         }
                 

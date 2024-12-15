@@ -4,7 +4,6 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -52,34 +51,47 @@ internal sealed class AccessorNode : IAssignableASTNode
         Struct
     }
 
-    /// <summary>
-    /// Creates and parses an accessor node, given the provided expression and accessor kind.
-    /// </summary>
-    public AccessorNode(ParseContext context, TokenSeparator token, IASTNode expression, AccessorKind kind)
+    private AccessorNode(IToken? token, IASTNode expression, AccessorKind kind, IASTNode accessorExpression, IASTNode? accessorExpression2 = null)
     {
         NearbyToken = token;
         Expression = expression;
         Kind = kind;
+        AccessorExpression = accessorExpression;
+        AccessorExpression2 = accessorExpression2;
+    }
 
+    /// <summary>
+    /// Creates and parses an accessor node, given the provided expression and accessor kind.
+    /// </summary>
+    public static AccessorNode? Parse(ParseContext context, TokenSeparator token, IASTNode expression, AccessorKind kind)
+    {
         // Strings are not allowed for these specific accessor kinds
         bool disallowStrings = kind is AccessorKind.Array or AccessorKind.ArrayDirect or
                                        AccessorKind.List or AccessorKind.Grid;
 
         // Parse the main accessor expression
-        AccessorExpression = Expressions.ParseExpression(context);
-        if (disallowStrings && AccessorExpression is StringNode)
+        if (Expressions.ParseExpression(context) is not IASTNode accessorExpression)
         {
-            context.CompileContext.PushError("String used in accessor that does not support strings", AccessorExpression.NearbyToken);
+            return null;
+        }
+        if (disallowStrings && accessorExpression is StringNode)
+        {
+            context.CompileContext.PushError("String used in accessor that does not support strings", accessorExpression.NearbyToken);
         }
 
         // Parse 2D array / grid secondary accessor expression
+        IASTNode? accessorExpression2 = null;
         if (kind is AccessorKind.Array or AccessorKind.Grid && context.IsCurrentToken(SeparatorKind.Comma))
         {
             context.Position++;
-            AccessorExpression2 = Expressions.ParseExpression(context);
-            if (disallowStrings && AccessorExpression2 is StringNode)
+            accessorExpression2 = Expressions.ParseExpression(context);
+            if (accessorExpression2 is null)
             {
-                context.CompileContext.PushError("String used in accessor that does not support strings", AccessorExpression2.NearbyToken);
+                return null;
+            }
+            if (disallowStrings && accessorExpression2 is StringNode)
+            {
+                context.CompileContext.PushError("String used in accessor that does not support strings", accessorExpression2.NearbyToken);
             }
         }
         else if (kind is AccessorKind.Grid)
@@ -87,15 +99,11 @@ internal sealed class AccessorNode : IAssignableASTNode
             context.CompileContext.PushError("Expected two arguments to grid accessor", token);
         }
 
+        // All accessors end in "]"
         context.EnsureToken(SeparatorKind.ArrayClose);
-    }
 
-    private AccessorNode(IToken? token, IASTNode expression, AccessorKind kind, IASTNode accessorExpression)
-    {
-        NearbyToken = token;
-        Expression = expression;
-        Kind = kind;
-        AccessorExpression = accessorExpression;
+        // Create final node
+        return new AccessorNode(token, expression, kind, accessorExpression, accessorExpression2);
     }
 
     /// <summary>

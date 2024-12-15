@@ -18,7 +18,7 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <summary>
     /// Expression being pre-incremented/pre-decremented.
     /// </summary>
-    public IASTNode? Expression { get; private set; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Whether this prefix is an increment (++) or a decrement (--).
@@ -31,21 +31,33 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
+    private PrefixNode(TokenOperator token, bool isIncrement, IASTNode expression)
+    {
+        NearbyToken = token;
+        IsIncrement = isIncrement;
+        Expression = expression;
+    }
+
     /// <summary>
     /// Creates a prefix node, parsing from the given context's current position,
     /// and given whether or not the prefix is an increment.
     /// </summary>
-    public PrefixNode(ParseContext context, TokenOperator token, bool isIncrement)
+    public static PrefixNode? Parse(ParseContext context, TokenOperator token, bool isIncrement)
     {
-        NearbyToken = token;
-        Expression = Expressions.ParseChainExpression(context);
-        IsIncrement = isIncrement;
+        // Parse expression after ++/--
+        if (Expressions.ParseChainExpression(context) is not IASTNode expression)
+        {
+            return null;
+        }
+
+        // Create final node
+        return new PrefixNode(token, isIncrement, expression);
     }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        Expression = Expression?.PostProcess(context);
+        Expression = Expression.PostProcess(context);
         return this;
     }
 

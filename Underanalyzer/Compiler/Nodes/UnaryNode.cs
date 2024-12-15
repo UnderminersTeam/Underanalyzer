@@ -18,7 +18,7 @@ internal sealed class UnaryNode : IASTNode
     /// <summary>
     /// Expression being pre-incremented/pre-decremented.
     /// </summary>
-    public IASTNode? Expression { get; private set; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Whether this prefix is an increment (++) or a decrement (--).
@@ -39,21 +39,33 @@ internal sealed class UnaryNode : IASTNode
         Negative        // -
     }
 
+    private UnaryNode(IToken token, UnaryKind kind, IASTNode expression)
+    {
+        NearbyToken = token;
+        Kind = kind;
+        Expression = expression;
+    }
+
     /// <summary>
     /// Creates a prefix node, parsing from the given context's current position,
     /// and given whether or not the prefix is an increment.
     /// </summary>
-    public UnaryNode(ParseContext context, IToken token, UnaryKind kind)
+    public static UnaryNode? Parse(ParseContext context, IToken token, UnaryKind kind)
     {
-        NearbyToken = token;
-        Expression = Expressions.ParseChainExpression(context);
-        Kind = kind;
+        // Parse expression after token
+        if (Expressions.ParseChainExpression(context) is not IASTNode expression)
+        {
+            return null;
+        }
+
+        // Create final node
+        return new UnaryNode(token, kind, expression);
     }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        Expression = Expression?.PostProcess(context);
+        Expression = Expression.PostProcess(context);
         return this;
     }
 

@@ -18,12 +18,12 @@ internal sealed class IfNode : IASTNode
     /// <summary>
     /// Condition of the if statement node.
     /// </summary>
-    public IASTNode? Condition { get; }
+    public IASTNode Condition { get; }
 
     /// <summary>
     /// True statement/block of the if statement node.
     /// </summary>
-    public IASTNode? TrueStatement { get; }
+    public IASTNode TrueStatement { get; }
 
     /// <summary>
     /// False/else statement/block of the if statement node.
@@ -33,24 +33,58 @@ internal sealed class IfNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
+    private IfNode(TokenKeyword token, IASTNode condition, IASTNode trueStatement, IASTNode? falseStatement)
+    {
+        NearbyToken = token;
+        Condition = condition;
+        TrueStatement = trueStatement;
+        FalseStatement = falseStatement;
+    }
+
     /// <summary>
     /// Creates an if statement node, parsing from the given context's current position.
     /// </summary>
-    public IfNode(ParseContext context)
+    public static IfNode? Parse(ParseContext context)
     {
-        NearbyToken = context.EnsureToken(KeywordKind.If);
-        Condition = Expressions.ParseExpression(context);
+        // Parse "if" keyword
+        if (context.EnsureToken(KeywordKind.If) is not TokenKeyword tokenKeyword)
+        {
+            return null;
+        }
+
+        // Parse if condition
+        if (Expressions.ParseExpression(context) is not IASTNode condition)
+        {
+            return null;
+        }
+
+        // Skip "then" keyword, if present
         if (context.IsCurrentToken(KeywordKind.Then))
         {
             context.Position++;
         }
-        TrueStatement = Statements.ParseStatement(context);
+
+        // Parse true block
+        if (Statements.ParseStatement(context) is not IASTNode trueStatement)
+        {
+            return null;
+        }
+
+        // Parse else/false block, if present
+        IASTNode? falseStatement = null;
         context.SkipSemicolons();
         if (context.IsCurrentToken(KeywordKind.Else))
         {
             context.Position++;
-            FalseStatement = Statements.ParseStatement(context);
+            falseStatement = Statements.ParseStatement(context);
+            if (falseStatement is null)
+            {
+                return null;
+            }
         }
+
+        // Create final statement node
+        return new IfNode(tokenKeyword, condition, trueStatement, falseStatement);
     }
 
     /// <inheritdoc/>

@@ -19,22 +19,30 @@ internal sealed class BlockNode : IASTNode
     /// <summary>
     /// List of statements belonging to this block node.
     /// </summary>
-    public List<IASTNode> Children { get; } = new(32);
+    public List<IASTNode> Children { get; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; private set; } = null;
+    public IToken? NearbyToken { get; set; }
+
+    private BlockNode(List<IASTNode> children, IToken? nearbyToken)
+    {
+        Children = children;
+        NearbyToken = nearbyToken;
+    }
 
     /// <summary>
-    /// Parses statements into this block node, as the root block of the code entry.
+    /// Creates a new block node, parsing statements as the root block of the code entry.
     /// </summary>
-    public void ParseRoot(ParseContext context)
+    public static BlockNode ParseRoot(ParseContext context)
     {
+        // Parse statements
+        List<IASTNode> children = new(32);
         context.SkipSemicolons();
         while (!context.EndOfCode)
         {
             if (Statements.ParseStatement(context) is IASTNode node)
             {
-                Children.Add(node);
+                children.Add(node);
             }
             else
             {
@@ -43,24 +51,34 @@ internal sealed class BlockNode : IASTNode
             }
             context.SkipSemicolons();
         }
-        if (Children.Count > 0)
+
+        // Get nearby token from first child statement
+        IToken? nearbyToken = null;
+        if (children.Count > 0)
         {
-            NearbyToken = Children[0].NearbyToken;
+            nearbyToken = children[0].NearbyToken;
         }
+
+        // Create final block node
+        return new BlockNode(children, nearbyToken);
     }
 
     /// <summary>
-    /// Parses statements into this block node, as a regular block, which expects opening/closing braces.
+    /// Creates a new block node, parsing statements as a regular block, which expects opening/closing braces.
     /// </summary>
-    public void ParseRegular(ParseContext context)
+    public static BlockNode ParseRegular(ParseContext context)
     {
-        NearbyToken = context.EnsureToken(SeparatorKind.BlockOpen, KeywordKind.Begin);
+        // Attempt to parse opening
+        IToken? tokenOpen = context.EnsureToken(SeparatorKind.BlockOpen, KeywordKind.Begin);
+
+        // Parse statements
+        List<IASTNode> children = new(32);
         context.SkipSemicolons();
         while (!context.EndOfCode && !context.IsCurrentToken(SeparatorKind.BlockClose, KeywordKind.End))
         {
             if (Statements.ParseStatement(context) is IASTNode node)
             {
-                Children.Add(node);
+                children.Add(node);
             }
             else
             {
@@ -69,7 +87,20 @@ internal sealed class BlockNode : IASTNode
             }
             context.SkipSemicolons();
         }
+
+        // Attempt to parse closing
         context.EnsureToken(SeparatorKind.BlockClose, KeywordKind.End);
+
+        // Create final block node
+        return new BlockNode(children, tokenOpen);
+    }
+
+    /// <summary>
+    /// Creates an empty block node, given a nearby token.
+    /// </summary>
+    public static BlockNode CreateEmpty(IToken? nearbyToken)
+    {
+        return new BlockNode([], nearbyToken);
     }
 
     /// <inheritdoc/>
