@@ -23,8 +23,10 @@ internal sealed class LocalVarDeclNode : IASTNode
 
     /// <summary>
     /// List of values being assigned by this node, or null for locals with no assignment.
-    /// Corresponds 1-to-1 with <see cref="DeclaredLocals"/> in order.
     /// </summary>
+    /// <remarks>
+    /// Corresponds 1-to-1 with <see cref="DeclaredLocals"/> in order.
+    /// </remarks>
     public List<IASTNode?> AssignedValues { get; }
 
     /// <inheritdoc/>

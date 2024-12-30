@@ -98,9 +98,9 @@ internal sealed class BlockNode : IASTNode
     /// <summary>
     /// Creates an empty block node, given a nearby token.
     /// </summary>
-    public static BlockNode CreateEmpty(IToken? nearbyToken)
+    public static BlockNode CreateEmpty(IToken? nearbyToken, int capacity = 0)
     {
-        return new BlockNode([], nearbyToken);
+        return new BlockNode(new(capacity), nearbyToken);
     }
 
     /// <inheritdoc/>

@@ -729,7 +729,16 @@ internal static class Expressions
             case TokenKeyword { Kind: KeywordKind.Not } tokenUnaryNotKeyword:
                 context.Position++;
                 return UnaryNode.Parse(context, tokenUnaryNotKeyword, UnaryNode.UnaryKind.BooleanNot);
-            // TODO: structs, function declarations, new, delete
+            case TokenKeyword { Kind: KeywordKind.Function } tokenFunction:
+                context.Position++;
+                return FunctionDeclNode.Parse(context, tokenFunction);
+            case TokenSeparator { Kind: SeparatorKind.BlockOpen } tokenBlockOpen:
+                context.Position++;
+                return FunctionDeclNode.ParseStruct(context, tokenBlockOpen);
+            case TokenKeyword { Kind: KeywordKind.Begin } tokenBegin:
+                context.Position++;
+                return FunctionDeclNode.ParseStruct(context, tokenBegin);
+            // TODO: new, delete
         }
                 
         context.Position++;

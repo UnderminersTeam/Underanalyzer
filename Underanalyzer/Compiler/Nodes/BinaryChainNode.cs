@@ -103,7 +103,7 @@ internal sealed class BinaryChainNode : IASTNode
     /// <summary>
     /// Creates a binary chain node, given the provided token and expressions for the arguments and corresponding operations.
     /// </summary>
-    public BinaryChainNode(IToken token, List<IASTNode> arguments, List<BinaryOperation> operations)
+    public BinaryChainNode(IToken? token, List<IASTNode> arguments, List<BinaryOperation> operations)
     {
         Arguments = arguments;
         Operations = operations;

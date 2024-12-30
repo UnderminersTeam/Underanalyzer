@@ -83,7 +83,7 @@ internal sealed class ParseContext
     /// Pushes an error if unsuccessful.
     /// </summary>
     /// <returns>The matching token, or null if unsuccessful.</returns>
-    public IToken? EnsureToken(SeparatorKind kind)
+    public TokenSeparator? EnsureToken(SeparatorKind kind)
     {
         if (EndOfCode)
         {
@@ -98,7 +98,7 @@ internal sealed class ParseContext
             return null;
         }
 
-        return token;
+        return separator;
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ internal sealed class ParseContext
     /// Pushes an error if unsuccessful.
     /// </summary>
     /// <returns>True if successful; false otherwise.</returns>
-    public IToken? EnsureToken(KeywordKind kind)
+    public TokenKeyword? EnsureToken(KeywordKind kind)
     {
         if (EndOfCode)
         {
@@ -145,7 +145,7 @@ internal sealed class ParseContext
             return null;
         }
 
-        return token;
+        return separator;
     }
 
     /// <summary>

@@ -33,7 +33,7 @@ internal sealed class IfNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private IfNode(TokenKeyword token, IASTNode condition, IASTNode trueStatement, IASTNode? falseStatement)
+    public IfNode(IToken? token, IASTNode condition, IASTNode trueStatement, IASTNode? falseStatement)
     {
         NearbyToken = token;
         Condition = condition;

@@ -28,7 +28,7 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// <summary>
     /// Expression inside of the accessor itself.
     /// </summary>
-    public IASTNode? AccessorExpression { get; }
+    public IASTNode AccessorExpression { get; }
 
     /// <summary>
     /// Second expression inside of the accessor itself, if applicable.
@@ -51,7 +51,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         Struct
     }
 
-    private AccessorNode(IToken? token, IASTNode expression, AccessorKind kind, IASTNode accessorExpression, IASTNode? accessorExpression2 = null)
+    public AccessorNode(IToken? token, IASTNode expression, AccessorKind kind, IASTNode accessorExpression, IASTNode? accessorExpression2 = null)
     {
         NearbyToken = token;
         Expression = expression;

@@ -52,7 +52,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <summary>
     /// Creates an expression function call directly, without any parsing.
     /// </summary>
-    private SimpleFunctionCallNode(string functionName, IBuiltinFunction? builtinFunction, List<IASTNode> arguments)
+    public SimpleFunctionCallNode(string functionName, IBuiltinFunction? builtinFunction, List<IASTNode> arguments)
     {
         FunctionName = functionName;
         BuiltinFunction = builtinFunction;

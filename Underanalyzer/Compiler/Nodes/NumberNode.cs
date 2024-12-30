@@ -13,15 +13,27 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a constant 64-bit floating point (or integer) number in the AST.
 /// </summary>
-internal sealed class NumberNode(TokenNumber token) : IConstantASTNode
+internal sealed class NumberNode : IConstantASTNode
 {
     /// <summary>
     /// Number being used as a value for this node.
     /// </summary>
-    public double Value { get; } = token.Value;
+    public double Value { get; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; } = token;
+    public IToken? NearbyToken { get; }
+
+    public NumberNode(TokenNumber token)
+    {
+        Value = token.Value;
+        NearbyToken = token;
+    }
+
+    public NumberNode(double value, IToken? nearbyToken)
+    {
+        Value = value;
+        NearbyToken = nearbyToken;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
