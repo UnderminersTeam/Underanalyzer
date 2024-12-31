@@ -68,6 +68,7 @@ internal sealed class LocalVarDeclNode : IASTNode
             }
 
             // Add to this scope's local list
+            // TODO: check for duplicates and conflicts with named arguments/statics?
             context.CurrentScope.DeclareLocal(tokenVariable.Text);
 
             // Check for assignment

@@ -54,7 +54,7 @@ internal sealed class ParseContext
     {
         CompileContext = context;
         Tokens = tokens;
-        RootScope = new();
+        RootScope = new(false);
         CurrentScope = RootScope;
     }
 

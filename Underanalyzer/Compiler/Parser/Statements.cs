@@ -76,7 +76,10 @@ internal static class Statements
             case TokenKeyword { Kind: KeywordKind.Continue } tokenContinue:
                 context.Position++;
                 return new ContinueNode(tokenContinue);
-            // TODO: try/catch/finally, static, enums
+            case TokenKeyword { Kind: KeywordKind.Static } tokenStatic:
+                StaticDeclarations.Parse(context);
+                return BlockNode.CreateEmpty(tokenStatic);
+            // TODO: try/catch/finally, enums
             default:
                 if (ParseAssignmentOrExpressionStatement(context) is IASTNode stmt)
                 {

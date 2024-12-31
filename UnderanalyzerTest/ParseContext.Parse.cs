@@ -579,7 +579,6 @@ public class ParseContext_Parse
     [Fact]
     public void TestBranchStatements()
     {
-
         ParseContext context = TestUtil.Parse(
             """
             switch (a)
@@ -700,6 +699,255 @@ public class ParseContext_Parse
                 Assert.Equal(1, ((Int64Node)forLoopNode.Condition).Value);
                 Assert.Empty(((BlockNode)forLoopNode.Incrementor).Children);
                 Assert.Empty(((BlockNode)forLoopNode.Body).Children);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestFunctionDeclarations()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            function test(arg1, arg2 = "default value")
+            {
+                show_message(arg1);
+            }
+
+            function ctor(arg1) constructor {}
+            function ctor_inherited(arg1, arg2) : ctor(arg1) constructor {}
+
+            expr = function named() {};
+            expr_anon = function() {};
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                FunctionDeclNode decl = (FunctionDeclNode)node;
+                Assert.Equal("test", decl.FunctionName);
+                Assert.False(decl.IsStruct);
+                Assert.True(decl.IsStatement);
+                Assert.False(decl.IsConstructor);
+                Assert.Equal(["arg1", "arg2"], decl.ArgumentNames);
+                BlockNode defaultBlock = decl.DefaultValueBlock!;
+                IfNode ifCheck = (IfNode)defaultBlock.Children[0];
+                BinaryChainNode binaryCheck = (BinaryChainNode)ifCheck.Condition;
+                Assert.Equal("arg2", ((SimpleVariableNode)binaryCheck.Arguments[0]).VariableName);
+                Assert.Equal("undefined", ((SimpleVariableNode)binaryCheck.Arguments[1]).VariableName);
+                Assert.Equal([BinaryChainNode.BinaryOperation.CompareEqual], binaryCheck.Operations);
+                AssignNode assign = (AssignNode)ifCheck.TrueStatement;
+                Assert.Equal("arg2", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal("default value", ((StringNode)assign.Expression).Value);
+                Assert.Equal(AssignNode.AssignKind.Normal, assign.Kind);
+                Assert.Null(ifCheck.FalseStatement);
+                Assert.Equal("show_message", ((SimpleFunctionCallNode)decl.Body.Children[0]).FunctionName);
+                Assert.Null(decl.InheritanceCall);
+            },
+            (node) =>
+            {
+                FunctionDeclNode decl = (FunctionDeclNode)node;
+                Assert.Equal("ctor", decl.FunctionName);
+                Assert.False(decl.IsStruct);
+                Assert.True(decl.IsStatement);
+                Assert.True(decl.IsConstructor);
+                Assert.Equal(["arg1"], decl.ArgumentNames);
+                Assert.Empty(decl.Body.Children);
+                Assert.Null(decl.InheritanceCall);
+            },
+            (node) =>
+            {
+                FunctionDeclNode decl = (FunctionDeclNode)node;
+                Assert.Equal("ctor_inherited", decl.FunctionName);
+                Assert.False(decl.IsStruct);
+                Assert.True(decl.IsStatement);
+                Assert.True(decl.IsConstructor);
+                Assert.Equal(["arg1", "arg2"], decl.ArgumentNames);
+                Assert.Empty(decl.Body.Children);
+                SimpleFunctionCallNode inheritance = decl.InheritanceCall!;
+                Assert.Equal("ctor", inheritance.FunctionName);
+                Assert.Equal("arg1", ((SimpleVariableNode)inheritance.Arguments[0]).VariableName);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                FunctionDeclNode decl = (FunctionDeclNode)assign.Expression;
+                Assert.Equal("named", decl.FunctionName);
+                Assert.False(decl.IsStruct);
+                Assert.False(decl.IsStatement);
+                Assert.False(decl.IsConstructor);
+                Assert.Equal([], decl.ArgumentNames);
+                Assert.Empty(decl.Body.Children);
+                Assert.Null(decl.InheritanceCall);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                FunctionDeclNode decl = (FunctionDeclNode)assign.Expression;
+                Assert.Null(decl.FunctionName);
+                Assert.False(decl.IsStruct);
+                Assert.False(decl.IsStatement);
+                Assert.False(decl.IsConstructor);
+                Assert.Equal([], decl.ArgumentNames);
+                Assert.Empty(decl.Body.Children);
+                Assert.Null(decl.InheritanceCall);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestStructs()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            basic = { a: 123, b: 456 };
+            reuse_name = { a, b };
+            hoist = { a: func(123), b: [1, 2, func(456)] };
+            nested =
+            {
+                a:
+                {
+                    inner: 123,
+                    hoist: func(789)
+                },
+                b:
+                {
+                    c:
+                    {
+                        complex: func(0)
+                    }
+                }
+            };
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                SimpleFunctionCallNode call = (SimpleFunctionCallNode)assign.Expression;
+                Assert.Equal(VMConstants.NewObjectFunction, call.FunctionName);
+                FunctionDeclNode structDecl1 = (FunctionDeclNode)call.Arguments[0];
+                Assert.True(structDecl1.IsStruct);
+                Assert.False(structDecl1.IsStatement);
+                Assert.True(structDecl1.IsConstructor);
+                Assert.Equal("a", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[0]).Destination).VariableName);
+                Assert.Equal(123, ((NumberNode)((AssignNode)structDecl1.Body.Children[0]).Expression).Value);
+                Assert.Equal("b", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[1]).Destination).VariableName);
+                Assert.Equal(456, ((NumberNode)((AssignNode)structDecl1.Body.Children[1]).Expression).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                SimpleFunctionCallNode call = (SimpleFunctionCallNode)assign.Expression;
+                Assert.Equal(VMConstants.NewObjectFunction, call.FunctionName);
+                FunctionDeclNode structDecl1 = (FunctionDeclNode)call.Arguments[0];
+                Assert.True(structDecl1.IsStruct);
+                Assert.False(structDecl1.IsStatement);
+                Assert.True(structDecl1.IsConstructor);
+                Assert.Equal("a", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[0]).Destination).VariableName);
+                Assert.Equal(0, ((NumberNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[0]).Expression).AccessorExpression).Value);
+                Assert.Equal("argument", ((SimpleVariableNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[0]).Expression).Expression).VariableName);
+                Assert.Equal("b", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[1]).Destination).VariableName);
+                Assert.Equal(1, ((NumberNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[1]).Expression).AccessorExpression).Value);
+                Assert.Equal("argument", ((SimpleVariableNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[1]).Expression).Expression).VariableName);
+                Assert.Equal("a", ((SimpleVariableNode)call.Arguments[1]).VariableName);
+                Assert.Equal("b", ((SimpleVariableNode)call.Arguments[2]).VariableName);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                SimpleFunctionCallNode call = (SimpleFunctionCallNode)assign.Expression;
+                Assert.Equal(VMConstants.NewObjectFunction, call.FunctionName);
+                FunctionDeclNode structDecl1 = (FunctionDeclNode)call.Arguments[0];
+                Assert.True(structDecl1.IsStruct);
+                Assert.False(structDecl1.IsStatement);
+                Assert.True(structDecl1.IsConstructor);
+                Assert.Equal("a", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[0]).Destination).VariableName);
+                Assert.Equal(0, ((NumberNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[0]).Expression).AccessorExpression).Value);
+                Assert.Equal("argument", ((SimpleVariableNode)((AccessorNode)((AssignNode)structDecl1.Body.Children[0]).Expression).Expression).VariableName);
+                Assert.Equal("b", ((SimpleVariableNode)((AssignNode)structDecl1.Body.Children[1]).Destination).VariableName);
+                SimpleFunctionCallNode arrayCall = (SimpleFunctionCallNode)((AssignNode)structDecl1.Body.Children[1]).Expression;
+                Assert.Equal(VMConstants.NewArrayFunction, arrayCall.FunctionName);
+                Assert.Equal(1, ((NumberNode)arrayCall.Arguments[0]).Value);
+                Assert.Equal(2, ((NumberNode)arrayCall.Arguments[1]).Value);
+                Assert.Equal(1, ((NumberNode)((AccessorNode)arrayCall.Arguments[2]).AccessorExpression).Value);
+                Assert.Equal("argument", ((SimpleVariableNode)((AccessorNode)arrayCall.Arguments[2]).Expression).VariableName);
+                Assert.Equal("func", ((SimpleFunctionCallNode)call.Arguments[1]).FunctionName);
+                Assert.Equal(123, ((NumberNode)((SimpleFunctionCallNode)call.Arguments[1]).Arguments[0]).Value);
+                Assert.Equal("func", ((SimpleFunctionCallNode)call.Arguments[2]).FunctionName);
+                Assert.Equal(456, ((NumberNode)((SimpleFunctionCallNode)call.Arguments[2]).Arguments[0]).Value);
+            },
+            (node) =>
+            {
+                // TODO: finish test for this
+            }
+        );
+    }
+
+    [Fact]
+    public void TestLocalAndStaticDeclarations()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            function test()
+            {
+                static a = 123;
+                static b = 456, c = 789;
+
+                var localA = 123;
+                var localB = 456, localUnassigned, localC = 789;
+
+                if (d)
+                {
+                    static e = 0;
+                    var localE = 0;
+                }
+            }
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Single(((BlockNode)context.Root!).Children);
+        FunctionDeclNode decl = (FunctionDeclNode)((BlockNode)context.Root!).Children[0];
+        Assert.Equal("test", decl.FunctionName);
+        Assert.True(decl.Scope.IsStaticDeclared("a"));
+        Assert.True(decl.Scope.IsStaticDeclared("b"));
+        Assert.True(decl.Scope.IsStaticDeclared("c"));
+        Assert.False(decl.Scope.IsStaticDeclared("d"));
+        Assert.True(decl.Scope.IsStaticDeclared("e"));
+        Assert.True(decl.Scope.IsLocalDeclared("localA"));
+        Assert.True(decl.Scope.IsLocalDeclared("localB"));
+        Assert.True(decl.Scope.IsLocalDeclared("localUnassigned"));
+        Assert.True(decl.Scope.IsLocalDeclared("localC"));
+        Assert.False(decl.Scope.IsLocalDeclared("localD"));
+        Assert.True(decl.Scope.IsLocalDeclared("localE"));
+        Assert.Collection(decl.Scope.StaticInitializerBlock!.Children,
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("a", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal(123, ((NumberNode)assign.Expression).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("b", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal(456, ((NumberNode)assign.Expression).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("c", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal(789, ((NumberNode)assign.Expression).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("e", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal(0, ((NumberNode)assign.Expression).Value);
             }
         );
     }

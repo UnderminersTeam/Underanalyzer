@@ -115,7 +115,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
 
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
-        FunctionScope newScope = new();
+        FunctionScope newScope = new(true);
         context.CurrentScope = newScope;
 
         // Parse arguments and default values
@@ -258,7 +258,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     {
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
-        FunctionScope newScope = new();
+        FunctionScope newScope = new(true);
         context.CurrentScope = newScope;
 
         // Create new function declaration node
