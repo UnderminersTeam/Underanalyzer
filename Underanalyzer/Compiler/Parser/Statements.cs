@@ -38,6 +38,8 @@ internal static class Statements
                 return IfNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Switch }:
                 return SwitchNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Try }:
+                return TryCatchNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.While }:
                 return WhileLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.For }:
@@ -50,6 +52,9 @@ internal static class Statements
                 return WithLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Var }:
                 return LocalVarDeclNode.Parse(context);
+            case TokenKeyword { Kind: KeywordKind.Static } tokenStatic:
+                StaticDeclarations.Parse(context);
+                return BlockNode.CreateEmpty(tokenStatic);
             case TokenKeyword { Kind: KeywordKind.Exit } tokenExit:
                 context.Position++;
                 return new ExitNode(tokenExit);
@@ -76,10 +81,7 @@ internal static class Statements
             case TokenKeyword { Kind: KeywordKind.Continue } tokenContinue:
                 context.Position++;
                 return new ContinueNode(tokenContinue);
-            case TokenKeyword { Kind: KeywordKind.Static } tokenStatic:
-                StaticDeclarations.Parse(context);
-                return BlockNode.CreateEmpty(tokenStatic);
-            // TODO: try/catch/finally, enums
+            // TODO: enums
             default:
                 if (ParseAssignmentOrExpressionStatement(context) is IASTNode stmt)
                 {

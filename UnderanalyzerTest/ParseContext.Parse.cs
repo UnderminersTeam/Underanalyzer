@@ -951,4 +951,49 @@ public class ParseContext_Parse
             }
         );
     }
+
+    [Fact]
+    public void TestTryCatchFinally()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            try a = 123;
+            try { } catch (ex1) { }
+            try { } finally { }
+            try { } catch (ex2) { } finally { }
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.True(context.RootScope.IsLocalDeclared("ex1"));
+        Assert.True(context.RootScope.IsLocalDeclared("ex2"));
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                Assert.Equal("a", ((SimpleVariableNode)((AssignNode)node).Destination).VariableName);
+                Assert.Equal(123, ((NumberNode)((AssignNode)node).Expression).Value);
+            },
+            (node) =>
+            {
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Try);
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Catch);
+                Assert.Equal("ex1", ((TryCatchNode)node).CatchVariableName);
+                Assert.Null(((TryCatchNode)node).Finally);
+            },
+            (node) =>
+            {
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Try);
+                Assert.Null(((TryCatchNode)node).Catch);
+                Assert.Null(((TryCatchNode)node).CatchVariableName);
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Finally);
+            },
+            (node) =>
+            {
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Try);
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Catch);
+                Assert.Equal("ex2", ((TryCatchNode)node).CatchVariableName);
+                Assert.IsType<BlockNode>(((TryCatchNode)node).Finally);
+            }
+        );
+    }
 }
