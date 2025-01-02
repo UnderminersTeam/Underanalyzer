@@ -13,15 +13,27 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a constant string in the AST.
 /// </summary>
-internal sealed class StringNode(TokenString token) : IConstantASTNode
+internal sealed class StringNode : IConstantASTNode
 {
     /// <summary>
     /// String being used as a value for this node.
     /// </summary>
-    public string Value { get; } = token.Value;
+    public string Value { get; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; } = token;
+    public IToken? NearbyToken { get; }
+
+    public StringNode(TokenString token)
+    {
+        Value = token.Value;
+        NearbyToken = token;
+    }
+
+    public StringNode(string value, IToken? nearbyToken)
+    {
+        Value = value;
+        NearbyToken = nearbyToken;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)

@@ -13,15 +13,27 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a constant boolean in the AST.
 /// </summary>
-internal sealed class BooleanNode(TokenBoolean token) : IConstantASTNode
+internal sealed class BooleanNode : IConstantASTNode
 {
     /// <summary>
     /// Boolean being used as a value for this node.
     /// </summary>
-    public bool Value { get; } = token.Value;
+    public bool Value { get; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; } = token;
+    public IToken? NearbyToken { get; }
+
+    public BooleanNode(TokenBoolean token)
+    {
+        Value = token.Value;
+        NearbyToken = token;
+    }
+    
+    public BooleanNode(bool value, IToken? nearbyToken)
+    {
+        Value = value;
+        NearbyToken = nearbyToken;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)

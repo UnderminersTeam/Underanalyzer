@@ -73,4 +73,29 @@ public class ParseContext_ParseAndPostProcess
             (node) => Assert.IsType<EmptyNode>(node)
         );
     }
+
+    [Fact]
+    public void TestCalculator()
+    {
+        ParseContext context = TestUtil.ParseAndPostProcess(
+            """
+            a = 2 + 2;
+            b = 1 + 2 + 3;
+            c = 1 + 2 + 3 + 4;
+            d = (5 * 4) + (6 / 2) + (5 % 4.5);
+            e = (true && 1) || false;
+            f = (((123 << 32) | 456) >> 32) & 0xFFFFFFFF;
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) => Assert.Equal(4, ((NumberNode)((AssignNode)node).Expression).Value),
+            (node) => Assert.Equal(6, ((NumberNode)((AssignNode)node).Expression).Value),
+            (node) => Assert.Equal(10, ((NumberNode)((AssignNode)node).Expression).Value),
+            (node) => Assert.Equal((5.0 * 4.0) + (6.0 / 2.0) + (5.0 % 4.5), ((NumberNode)((AssignNode)node).Expression).Value),
+            (node) => Assert.Equal(1, ((NumberNode)((AssignNode)node).Expression).Value),
+            (node) => Assert.Equal(123, ((Int64Node)((AssignNode)node).Expression).Value)
+        );
+    }
 }
