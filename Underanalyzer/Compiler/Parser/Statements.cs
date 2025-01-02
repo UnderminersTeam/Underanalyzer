@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Xml.Linq;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Nodes;
 
@@ -39,7 +40,13 @@ internal static class Statements
             case TokenKeyword { Kind: KeywordKind.Switch }:
                 return SwitchNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Try }:
-                return TryCatchNode.Parse(context);
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return TryCatchNode.Parse(context);
+                }
+                context.Position++;
+                context.CompileContext.PushError("Cannot use try/catch/finally before GMLv2 (GameMaker 2.3+)", token);
+                return null;
             case TokenKeyword { Kind: KeywordKind.While }:
                 return WhileLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.For }:
@@ -52,9 +59,20 @@ internal static class Statements
                 return WithLoopNode.Parse(context);
             case TokenKeyword { Kind: KeywordKind.Var }:
                 return LocalVarDeclNode.Parse(context);
-            case TokenKeyword { Kind: KeywordKind.Static } tokenStatic:
-                StaticDeclarations.Parse(context);
-                return BlockNode.CreateEmpty(tokenStatic);
+            case TokenKeyword { Kind: KeywordKind.Enum }:
+                // Enum declarations don't directly create a statement, so parse and return empty node
+                EnumDeclaration.Parse(context);
+                return EmptyNode.Create();
+            case TokenKeyword { Kind: KeywordKind.Static }:
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    // Static declarations don't directly create a statement, so parse and return empty node
+                    StaticDeclarations.Parse(context);
+                    return EmptyNode.Create();
+                }
+                context.Position++;
+                context.CompileContext.PushError("Cannot use static variables before GMLv2 (GameMaker 2.3+)", token);
+                return null;
             case TokenKeyword { Kind: KeywordKind.Exit } tokenExit:
                 context.Position++;
                 return new ExitNode(tokenExit);
@@ -63,6 +81,7 @@ internal static class Statements
                     context.Position++;
                     if (!context.EndOfCode)
                     {
+                        // Parse expression for return value, if one exists
                         IToken nextToken = context.Tokens[context.Position];
                         if (nextToken is not TokenSeparator { Kind: SeparatorKind.Semicolon } and
                                          not TokenKeyword { Kind: not KeywordKind.Function })
@@ -81,7 +100,28 @@ internal static class Statements
             case TokenKeyword { Kind: KeywordKind.Continue } tokenContinue:
                 context.Position++;
                 return new ContinueNode(tokenContinue);
-            // TODO: enums
+            case TokenKeyword { Kind: KeywordKind.Throw }:
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return ThrowNode.Parse(context);
+                }
+                context.Position++;
+                context.CompileContext.PushError("Cannot throw before GMLv2 (GameMaker 2.3+)", token);
+                return null;
+            case TokenKeyword { Kind: KeywordKind.Delete }:
+                context.Position++;
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    // Transform into assignment statement
+                    if (Expressions.ParseChainExpression(context) is IAssignableASTNode deleteTarget)
+                    {
+                        return new AssignNode(AssignNode.AssignKind.Normal, deleteTarget, SimpleVariableNode.CreateUndefined(context));
+                    }
+                    context.CompileContext.PushError("Failed to find valid expression to delete", token);
+                    return null;
+                }
+                context.CompileContext.PushError("Cannot delete before GMLv2 (GameMaker 2.3+)", token);
+                return null;
             default:
                 if (ParseAssignmentOrExpressionStatement(context) is IASTNode stmt)
                 {
@@ -94,6 +134,9 @@ internal static class Statements
         return null;
     }
 
+    /// <summary>
+    /// Parses an assignment statement, or alternatively any expression which also works as a standalone statement.
+    /// </summary>
     private static IASTNode? ParseAssignmentOrExpressionStatement(ParseContext context)
     {
         // Parse expression (destination of assignment, or chain function call)

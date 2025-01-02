@@ -18,7 +18,7 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
     /// <summary>
     /// Expression on the left side of the dot.
     /// </summary>
-    public IASTNode LeftExpression { get; }
+    public IASTNode LeftExpression { get; private set; }
 
     /// <inheritdoc/>
     public string VariableName { get; }
@@ -53,7 +53,29 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        LeftExpression = LeftExpression.PostProcess(context);
+
+        // Resolve enum values to a constant, if possible
+        if (LeftExpression is SimpleVariableNode { VariableName: string enumName })
+        {
+            // Check parse enums for a constant value first
+            if (context.ParseEnums.TryGetValue(enumName, out EnumDeclaration? parseDecl) &&
+                parseDecl.IntegerValues.TryGetValue(VariableName, out long parseValue))
+            {
+                return new Int64Node(parseValue, NearbyToken);
+            }
+
+            // Check fully-resolved enums as well (and enforce error checking here)
+            if (context.CompileContext.Enums.TryGetValue(enumName, out GMEnum? decl))
+            {
+                if (decl.TryGetValue(VariableName, out long value))
+                {
+                    return new Int64Node(value, NearbyToken);
+                }
+                context.CompileContext.PushError($"Failed to find enum value for '{enumName}.{VariableName}'", NearbyToken);
+            }
+        }
+
         return this;
     }
 

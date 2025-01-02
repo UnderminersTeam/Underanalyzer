@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.ControlFlow;
-using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler;
 

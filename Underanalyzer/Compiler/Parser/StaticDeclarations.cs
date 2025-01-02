@@ -9,6 +9,9 @@ using Underanalyzer.Compiler.Nodes;
 
 namespace Underanalyzer.Compiler.Parser;
 
+/// <summary>
+/// Helper to parse static variable declarations.
+/// </summary>
 internal static class StaticDeclarations
 {
     /// <summary>

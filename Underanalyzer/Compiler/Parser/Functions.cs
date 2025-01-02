@@ -28,8 +28,7 @@ internal static class Functions
             // If there's a comma here, that means an argument is skipped (and should be "undefined")
             if (context.IsCurrentToken(SeparatorKind.Comma))
             {
-                arguments.Add(new SimpleVariableNode("undefined", 
-                    context.CompileContext.GameContext.Builtins.LookupBuiltinVariable("undefined")));
+                arguments.Add(SimpleVariableNode.CreateUndefined(context));
                 context.Position++;
                 continue;
             }

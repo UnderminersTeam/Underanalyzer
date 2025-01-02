@@ -19,7 +19,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
     /// <summary>
     /// Expression being called.
     /// </summary>
-    public IASTNode Expression { get; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Arguments being used for this function call, in order.
@@ -46,7 +46,11 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        Expression = Expression.PostProcess(context);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostProcess(context);
+        }
         return this;
     }
 

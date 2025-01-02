@@ -34,7 +34,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <summary>
     /// Block that checks and assigns default argument values, if any are present.
     /// </summary>
-    public BlockNode? DefaultValueBlock { get; }
+    public BlockNode? DefaultValueBlock { get; private set; }
 
     /// <summary>
     /// Main body of the function declaration.
@@ -84,7 +84,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     private static IfNode GenerateDefaultCheckAndAssign(ParseContext context, string argumentName, IASTNode value)
     {
         // Create condition
-        SimpleVariableNode undefined = new("undefined", context.CompileContext.GameContext.Builtins.LookupBuiltinVariable("undefined"));
+        SimpleVariableNode undefined = SimpleVariableNode.CreateUndefined(context);
         BinaryChainNode condition = new(value.NearbyToken, [new SimpleVariableNode(argumentName, null), undefined], [BinaryChainNode.BinaryOperation.CompareEqual]);
 
         // Create assignment statement
@@ -347,7 +347,17 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        // Enter a new function scope
+        FunctionScope oldScope = context.CurrentScope;
+        context.CurrentScope = Scope;
+
+        DefaultValueBlock?.PostProcessChildrenOnly(context);
+        Body.PostProcessChildrenOnly(context);
+        InheritanceCall?.PostProcessChildrenOnly(context);
+
+        // Exit function scope
+        context.CurrentScope = oldScope;
+
         return this;
     }
 

@@ -536,7 +536,7 @@ internal static class Expressions
     /// Attempts to parse a chain expression from the current parse position of the context.
     /// A chain expression is any leftmost expression followed by ".", a variable/function/accessor, and repeating.
     /// </summary>
-    public static IASTNode? ParseChainExpression(ParseContext context)
+    public static IASTNode? ParseChainExpression(ParseContext context, bool stopAtFunctionCall = false)
     {
         IASTNode? lhs = ParseLeftmostExpression(context);
         if (lhs is null)
@@ -589,7 +589,8 @@ internal static class Expressions
             }
 
             // Check for a function call not assigned to any specific variable name
-            if (currentToken is TokenSeparator { Kind: SeparatorKind.GroupOpen } tokenOpen)
+            if (!stopAtFunctionCall &&
+                currentToken is TokenSeparator { Kind: SeparatorKind.GroupOpen } tokenOpen)
             {
                 context.Position++;
 
@@ -621,15 +622,18 @@ internal static class Expressions
                     context.Position++;
                     lhs = new DotVariableNode(lhs, tokenFunction);
 
-                    // Parse function call here as well
-                    if (!context.EndOfCode && context.Tokens[context.Position] is TokenSeparator { Kind: SeparatorKind.GroupOpen } tokenDotOpen)
+                    if (!stopAtFunctionCall)
                     {
-                        lhs = new FunctionCallNode(context, tokenDotOpen, lhs);
-                    }
-                    else
-                    {
-                        // Throw error (this should really never happen, though)
-                        context.EnsureToken(SeparatorKind.GroupOpen);
+                        // Parse function call here as well
+                        if (!context.EndOfCode && context.Tokens[context.Position] is TokenSeparator { Kind: SeparatorKind.GroupOpen } tokenDotOpen)
+                        {
+                            lhs = new FunctionCallNode(context, tokenDotOpen, lhs);
+                        }
+                        else
+                        {
+                            // Throw error (this should really never happen, though)
+                            context.EnsureToken(SeparatorKind.GroupOpen);
+                        }
                     }
                 }
                 else
@@ -702,16 +706,13 @@ internal static class Expressions
                     return groupedExpression;
                 }
             case TokenSeparator { Kind: SeparatorKind.ArrayOpen }:
+                context.Position++;
+                if (context.CompileContext.GameContext.UsingGMS2OrLater)
                 {
-                    context.Position++;
-                    if (context.CompileContext.GameContext.UsingGMS2OrLater)
-                    {
-                        return SimpleFunctionCallNode.ParseArrayLiteral(context);
-                    }
-
-                    context.CompileContext.PushError("Cannot use array literals before GMS2", token);
-                    return null;
+                    return SimpleFunctionCallNode.ParseArrayLiteral(context);
                 }
+                context.CompileContext.PushError("Cannot use array literals before GMS2", token);
+                return null;
             case TokenOperator { Kind: OperatorKind.Increment or OperatorKind.Decrement } tokenPrefix:
                 context.Position++;
                 return PrefixNode.Parse(context, tokenPrefix, tokenPrefix.Kind == OperatorKind.Increment);
@@ -731,14 +732,35 @@ internal static class Expressions
                 return UnaryNode.Parse(context, tokenUnaryNotKeyword, UnaryNode.UnaryKind.BooleanNot);
             case TokenKeyword { Kind: KeywordKind.Function } tokenFunction:
                 context.Position++;
-                return FunctionDeclNode.Parse(context, tokenFunction);
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return FunctionDeclNode.Parse(context, tokenFunction);
+                }
+                context.CompileContext.PushError("Cannot declare functions before GMLv2 (GameMaker 2.3+)", token);
+                return null;
             case TokenSeparator { Kind: SeparatorKind.BlockOpen } tokenBlockOpen:
                 context.Position++;
-                return FunctionDeclNode.ParseStruct(context, tokenBlockOpen);
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return FunctionDeclNode.ParseStruct(context, tokenBlockOpen);
+                }
+                context.CompileContext.PushError("Cannot use structs before GMLv2 (GameMaker 2.3+)", token);
+                return null;
             case TokenKeyword { Kind: KeywordKind.Begin } tokenBegin:
                 context.Position++;
-                return FunctionDeclNode.ParseStruct(context, tokenBegin);
-            // TODO: new, delete
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return FunctionDeclNode.ParseStruct(context, tokenBegin);
+                }
+                context.CompileContext.PushError("Cannot use structs before GMLv2 (GameMaker 2.3+)", token);
+                return null;
+            case TokenKeyword { Kind: KeywordKind.New }:
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    return NewObjectNode.Parse(context);
+                }
+                context.CompileContext.PushError("Cannot use new before GMLv2 (GameMaker 2.3+)", token);
+                return null;
         }
                 
         context.Position++;

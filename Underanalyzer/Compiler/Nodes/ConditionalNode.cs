@@ -18,17 +18,17 @@ internal sealed class ConditionalNode : IASTNode
     /// <summary>
     /// Condition of the conditional node.
     /// </summary>
-    public IASTNode Condition { get; }
+    public IASTNode Condition { get; private set; }
 
     /// <summary>
     /// True expression of the conditional node.
     /// </summary>
-    public IASTNode TrueExpression { get; }
+    public IASTNode TrueExpression { get; private set; }
 
     /// <summary>
     /// False expression of the conditional node.
     /// </summary>
-    public IASTNode FalseExpression { get; }
+    public IASTNode FalseExpression { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -47,7 +47,9 @@ internal sealed class ConditionalNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        Condition = Condition.PostProcess(context);
+        TrueExpression = TrueExpression.PostProcess(context);
+        FalseExpression = FalseExpression.PostProcess(context);
         return this;
     }
 

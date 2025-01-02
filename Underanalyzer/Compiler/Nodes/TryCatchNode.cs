@@ -4,7 +4,6 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -106,6 +105,7 @@ internal sealed class TryCatchNode : IASTNode
         return new TryCatchNode(tokenKeyword, @try, @catch, catchVariableName, @finally);
     }
 
+    /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
         Try = Try.PostProcess(context);
@@ -117,6 +117,7 @@ internal sealed class TryCatchNode : IASTNode
         return this;
     }
 
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         throw new System.NotImplementedException();

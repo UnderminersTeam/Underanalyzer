@@ -98,7 +98,7 @@ internal sealed class BlockNode : IASTNode
     /// <summary>
     /// Creates an empty block node, given a nearby token.
     /// </summary>
-    public static BlockNode CreateEmpty(IToken? nearbyToken, int capacity = 0)
+    public static BlockNode CreateEmpty(IToken? nearbyToken, int capacity = 4)
     {
         return new BlockNode(new(capacity), nearbyToken);
     }
@@ -111,6 +111,17 @@ internal sealed class BlockNode : IASTNode
             Children[i] = Children[i].PostProcess(context);
         }
         return this;
+    }
+
+    /// <summary>
+    /// Post-processes this block, only modifying children, rather than potentially returning a new instance.
+    /// </summary>
+    public void PostProcessChildrenOnly(ParseContext context)
+    {
+        for (int i = 0; i < Children.Count; i++)
+        {
+            Children[i] = Children[i].PostProcess(context);
+        }
     }
 
     /// <inheritdoc/>

@@ -11,7 +11,7 @@ using Underanalyzer.Compiler.Parser;
 namespace Underanalyzer.Compiler.Nodes;
 
 /// <summary>
-/// Represents an accessor/array index in the AST
+/// Represents an accessor/array index in the AST.
 /// </summary>
 internal sealed class AccessorNode : IAssignableASTNode
 {

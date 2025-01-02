@@ -18,12 +18,12 @@ internal sealed class RepeatLoopNode : IASTNode
     /// <summary>
     /// Expression used for the number of times this repeat loop node repeats.
     /// </summary>
-    public IASTNode TimesToRepeat { get; }
+    public IASTNode TimesToRepeat { get; private set; }
 
     /// <summary>
     /// Body of the repeat loop node.
     /// </summary>
-    public IASTNode Body { get; }
+    public IASTNode Body { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -65,6 +65,8 @@ internal sealed class RepeatLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        TimesToRepeat = TimesToRepeat.PostProcess(context);
+        Body = Body.PostProcess(context);
         return this;
     }
 

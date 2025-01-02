@@ -4,7 +4,6 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -47,7 +46,6 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
         return this;
     }
 
@@ -55,5 +53,13 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public void GenerateCode(BytecodeContext context)
     {
         // TODO
+    }
+
+    /// <summary>
+    /// Creates a simple variable node for the "undefined" GML keyword, which is implemented as a variable.
+    /// </summary>
+    public static SimpleVariableNode CreateUndefined(ParseContext context)
+    {
+        return new SimpleVariableNode("undefined", context.CompileContext.GameContext.Builtins.LookupBuiltinVariable("undefined"));
     }
 }

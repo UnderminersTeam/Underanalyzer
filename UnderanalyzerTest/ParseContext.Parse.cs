@@ -4,11 +4,9 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Xml.Linq;
 using Underanalyzer;
 using Underanalyzer.Compiler.Nodes;
 using Underanalyzer.Compiler.Parser;
-using Underanalyzer.Mock;
 
 namespace UnderanalyzerTest;
 
@@ -695,9 +693,9 @@ public class ParseContext_Parse
             (node) =>
             {
                 ForLoopNode forLoopNode = (ForLoopNode)node;
-                Assert.Empty(((BlockNode)forLoopNode.Initializer).Children);
+                Assert.IsType<EmptyNode>(forLoopNode.Initializer);
                 Assert.Equal(1, ((Int64Node)forLoopNode.Condition).Value);
-                Assert.Empty(((BlockNode)forLoopNode.Incrementor).Children);
+                Assert.IsType<EmptyNode>(forLoopNode.Incrementor);
                 Assert.Empty(((BlockNode)forLoopNode.Body).Children);
             }
         );
@@ -993,6 +991,104 @@ public class ParseContext_Parse
                 Assert.IsType<BlockNode>(((TryCatchNode)node).Catch);
                 Assert.Equal("ex2", ((TryCatchNode)node).CatchVariableName);
                 Assert.IsType<BlockNode>(((TryCatchNode)node).Finally);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestThrow()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            throw a;
+            throw "test";
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                Assert.Equal("a", ((SimpleVariableNode)((ThrowNode)node).Expression).VariableName);
+            },
+            (node) =>
+            {
+                Assert.Equal("test", ((StringNode)((ThrowNode)node).Expression).Value);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestNewObject()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            new A(123);
+            b = new A(456);
+            c = new global.D(789);
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                NewObjectNode newObject = (NewObjectNode)node;
+                Assert.True(newObject.IsStatement);
+                Assert.Equal("A", ((SimpleVariableNode)newObject.Expression).VariableName);
+                Assert.Single(newObject.Arguments);
+                Assert.Equal(123, ((NumberNode)newObject.Arguments[0]).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("b", ((SimpleVariableNode)assign.Destination).VariableName);
+                NewObjectNode newObject = (NewObjectNode)assign.Expression;
+                Assert.False(newObject.IsStatement);
+                Assert.Equal("A", ((SimpleVariableNode)newObject.Expression).VariableName);
+                Assert.Single(newObject.Arguments);
+                Assert.Equal(456, ((NumberNode)newObject.Arguments[0]).Value);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("c", ((SimpleVariableNode)assign.Destination).VariableName);
+                NewObjectNode newObject = (NewObjectNode)assign.Expression;
+                Assert.False(newObject.IsStatement);
+                Assert.Equal("global", ((SimpleVariableNode)((DotVariableNode)newObject.Expression).LeftExpression).VariableName);
+                Assert.Equal("D", ((DotVariableNode)newObject.Expression).VariableName);
+                Assert.Single(newObject.Arguments);
+                Assert.Equal(789, ((NumberNode)newObject.Arguments[0]).Value);
+            }
+        );
+    }
+
+    [Fact]
+    public void TestDelete()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            delete a;
+            delete a.b[0];
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                Assert.Equal("a", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal("undefined", ((SimpleVariableNode)assign.Expression).VariableName);
+            },
+            (node) =>
+            {
+                AssignNode assign = (AssignNode)node;
+                AccessorNode accessor = (AccessorNode)assign.Destination;
+                Assert.Equal(0, ((NumberNode)accessor.AccessorExpression).Value);
+                Assert.Equal("b", ((DotVariableNode)accessor.Expression).VariableName);
+                Assert.Equal("a", ((SimpleVariableNode)((DotVariableNode)accessor.Expression).LeftExpression).VariableName);
+                Assert.Equal("undefined", ((SimpleVariableNode)assign.Expression).VariableName);
             }
         );
     }

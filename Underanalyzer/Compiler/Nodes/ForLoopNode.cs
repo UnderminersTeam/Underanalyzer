@@ -18,22 +18,22 @@ internal sealed class ForLoopNode : IASTNode
     /// <summary>
     /// Initializer of the for loop node.
     /// </summary>
-    public IASTNode Initializer { get; }
+    public IASTNode Initializer { get; private set; }
 
     /// <summary>
     /// Condition of the for loop node.
     /// </summary>
-    public IASTNode Condition { get; }
+    public IASTNode Condition { get; private set; }
 
     /// <summary>
     /// Incrementor of the for loop node.
     /// </summary>
-    public IASTNode Incrementor { get; }
+    public IASTNode Incrementor { get; private set; }
 
     /// <summary>
     /// Body of the while loop node.
     /// </summary>
-    public IASTNode Body { get; }
+    public IASTNode Body { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -65,8 +65,8 @@ internal sealed class ForLoopNode : IASTNode
         IASTNode initializer;
         if (context.IsCurrentToken(SeparatorKind.Semicolon))
         {
-            // No initializer; make an empty block
-            initializer = BlockNode.CreateEmpty(context.Tokens[context.Position]);
+            // No initializer; make an empty node
+            initializer = EmptyNode.Create(context.Tokens[context.Position]);
             context.Position++;
         }
         else
@@ -113,7 +113,7 @@ internal sealed class ForLoopNode : IASTNode
         if (context.IsCurrentToken(SeparatorKind.GroupClose))
         {
             // No incrementor; make an empty block
-            incrementor = BlockNode.CreateEmpty(context.Tokens[context.Position]);
+            incrementor = EmptyNode.Create(context.Tokens[context.Position]);
         }
         else
         {
@@ -144,6 +144,10 @@ internal sealed class ForLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        Initializer = Initializer.PostProcess(context);
+        Condition = Condition.PostProcess(context);
+        Incrementor = Incrementor.PostProcess(context);
+        Body = Body.PostProcess(context);
         return this;
     }
 

@@ -36,6 +36,11 @@ internal sealed class ParseContext
     public FunctionScope RootScope { get; set; }
 
     /// <summary>
+    /// Enum declarations parsed by this context.
+    /// </summary>
+    public Dictionary<string, EnumDeclaration> ParseEnums { get; } = new(4);
+
+    /// <summary>
     /// List of tokens to be parsed by this context.
     /// </summary>
     public int Position { get; set; } = 0;
@@ -65,6 +70,19 @@ internal sealed class ParseContext
     public void Parse()
     {
         Root = BlockNode.ParseRoot(this);
+    }
+
+    /// <summary>
+    /// Performs post-processing of the entire tree produced by parsing,
+    /// preparing for bytecode generation.
+    /// </summary>
+    public void PostProcessTree()
+    {
+        // Resolve enum declaration values
+        EnumDeclaration.ResolveValues(this);
+        
+        // General post-processing and optimization
+        Root = Root?.PostProcess(this);
     }
 
     /// <summary>

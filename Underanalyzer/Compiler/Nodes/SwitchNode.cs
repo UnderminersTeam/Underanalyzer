@@ -19,7 +19,7 @@ internal sealed class SwitchNode : IASTNode
     /// <summary>
     /// Expression to be used for matching in the switch statement node.
     /// </summary>
-    public IASTNode Expression { get; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Contents of the switch statement.
@@ -101,6 +101,11 @@ internal sealed class SwitchNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        Expression = Expression.PostProcess(context);
+        for (int i = 0; i < Children.Count; i++)
+        {
+            Children[i] = Children[i].PostProcess(context);
+        }
         return this;
     }
 

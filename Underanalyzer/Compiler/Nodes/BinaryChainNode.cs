@@ -113,7 +113,10 @@ internal sealed class BinaryChainNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostProcess(context);
+        }
         return this;
     }
 

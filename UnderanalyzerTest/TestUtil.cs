@@ -120,4 +120,14 @@ internal static class TestUtil
         parseContext.Parse();
         return parseContext;
     }
+
+    /// <summary>
+    /// Utility function to parse and post-process GML code with the compiler, for testing.
+    /// </summary>
+    public static ParseContext ParseAndPostProcess(string code, GameContextMock? gameContext = null)
+    {
+        ParseContext parseContext = Parse(code, gameContext);
+        parseContext.PostProcessTree();
+        return parseContext;
+    }
 }

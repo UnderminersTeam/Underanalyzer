@@ -116,8 +116,25 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostProcess(context);
+        }
+
+        // TODO: specific function optimizations
+
         return this;
+    }
+
+    /// <summary>
+    /// Post-processes this node, only modifying children, rather than potentially returning a new instance.
+    /// </summary>
+    public void PostProcessChildrenOnly(ParseContext context)
+    {
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            Arguments[i] = Arguments[i].PostProcess(context);
+        }
     }
 
     /// <inheritdoc/>

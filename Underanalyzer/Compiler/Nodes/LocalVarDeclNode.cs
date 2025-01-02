@@ -109,7 +109,10 @@ internal sealed class LocalVarDeclNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        for (int i = 0; i < AssignedValues.Count; i++)
+        {
+            AssignedValues[i] = AssignedValues[i]?.PostProcess(context);
+        }
         return this;
     }
 

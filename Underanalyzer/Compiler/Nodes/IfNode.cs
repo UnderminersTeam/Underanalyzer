@@ -18,17 +18,17 @@ internal sealed class IfNode : IASTNode
     /// <summary>
     /// Condition of the if statement node.
     /// </summary>
-    public IASTNode Condition { get; }
+    public IASTNode Condition { get; private set; }
 
     /// <summary>
     /// True statement/block of the if statement node.
     /// </summary>
-    public IASTNode TrueStatement { get; }
+    public IASTNode TrueStatement { get; private set; }
 
     /// <summary>
     /// False/else statement/block of the if statement node.
     /// </summary>
-    public IASTNode? FalseStatement { get; }
+    public IASTNode? FalseStatement { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -90,6 +90,9 @@ internal sealed class IfNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        Condition = Condition.PostProcess(context);
+        TrueStatement = TrueStatement.PostProcess(context);
+        FalseStatement = FalseStatement?.PostProcess(context);
         return this;
     }
 

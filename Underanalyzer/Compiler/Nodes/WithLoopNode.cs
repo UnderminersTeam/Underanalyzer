@@ -18,12 +18,12 @@ internal sealed class WithLoopNode : IASTNode
     /// <summary>
     /// Expression used as an iterator for this with loop node.
     /// </summary>
-    public IASTNode Expression { get; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Body of the with loop node.
     /// </summary>
-    public IASTNode Body { get; }
+    public IASTNode Body { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -71,6 +71,8 @@ internal sealed class WithLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        Expression = Expression.PostProcess(context);
+        Body = Body.PostProcess(context);
         return this;
     }
 

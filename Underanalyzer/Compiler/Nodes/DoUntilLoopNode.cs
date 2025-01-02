@@ -18,12 +18,12 @@ internal sealed class DoUntilLoopNode : IASTNode
     /// <summary>
     /// Body of the do...until loop node.
     /// </summary>
-    public IASTNode Body { get; }
+    public IASTNode Body { get; private set; }
 
     /// <summary>
     /// Condition of the do...until loop node.
     /// </summary>
-    public IASTNode Condition { get; }
+    public IASTNode Condition { get; private set; }
 
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
@@ -72,6 +72,8 @@ internal sealed class DoUntilLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        Body = Body.PostProcess(context);
+        Condition = Condition.PostProcess(context);
         return this;
     }
 
