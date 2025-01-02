@@ -93,6 +93,19 @@ internal sealed class IfNode : IASTNode
         Condition = Condition.PostProcess(context);
         TrueStatement = TrueStatement.PostProcess(context);
         FalseStatement = FalseStatement?.PostProcess(context);
+
+        // Optimize if (true)
+        if (Condition is BooleanNode { Value: true } or NumberNode { Value: > 0.5 } or Int64Node { Value: >= 1 })
+        {
+            return TrueStatement;
+        }
+
+        // Optimize if (false)
+        if (Condition is BooleanNode { Value: false } or NumberNode { Value: <= 0.5 } or Int64Node { Value: < 1 })
+        {
+            return FalseStatement ?? EmptyNode.Create();
+        }
+
         return this;
     }
 

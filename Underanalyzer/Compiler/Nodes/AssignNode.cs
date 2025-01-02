@@ -61,9 +61,17 @@ internal sealed class AssignNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
         Destination = Destination.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         Expression = Expression.PostProcess(context);
+
+        // Remove variable assignments to themselves
+        if (Destination is SimpleVariableNode { VariableName: string destName } && 
+            Expression is SimpleVariableNode { VariableName: string exprName } &&
+            destName == exprName)
+        {
+            return EmptyNode.Create();
+        }
+
         return this;
     }
 

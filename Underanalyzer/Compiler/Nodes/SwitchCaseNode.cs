@@ -27,6 +27,13 @@ internal sealed class SwitchCaseNode(TokenKeyword token, IASTNode? expression) :
     public IASTNode PostProcess(ParseContext context)
     {
         Expression = Expression?.PostProcess(context);
+
+        // Note: Official compiler logic here seems wrong, but probably designed to support legacy projects
+        if (Expression is not null && Expression is not (IConstantASTNode or SimpleVariableNode or DotVariableNode or AccessorNode))
+        {
+            context.CompileContext.PushError("Failed to resolve switch case to a constant value or variable", Expression?.NearbyToken);
+        }
+
         return this;
     }
 
