@@ -487,6 +487,7 @@ internal sealed class BlockSimulator
                     return;
                 case VMConstants.TryUnhookFunction:
                 case VMConstants.FinishCatchFunction:
+                case VMConstants.SetStaticFunction:
                     // We just ignore this call - no need to even put anything on the stack
                     return;
             }

@@ -27,6 +27,9 @@ internal static class VMConstants
     // Function name used to copy static information from an inherited constructor function in GML
     public const string CopyStaticFunction = "@@CopyStatic@@";
 
+    // Function name used upon entering constructor functions (in newer versions)
+    public const string SetStaticFunction = "@@SetStatic@@";
+
     // Instance type helpers used in GMLv2
     public const string SelfFunction = "@@This@@";
     public const string OtherFunction = "@@Other@@";
