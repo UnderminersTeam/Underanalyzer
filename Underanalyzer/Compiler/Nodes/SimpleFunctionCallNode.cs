@@ -4,7 +4,10 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -121,9 +124,246 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
             Arguments[i] = Arguments[i].PostProcess(context);
         }
 
-        // TODO: specific function optimizations
+        // Perform specific function optimizations
+        return FunctionName switch
+        {
+            "ord" => OptimizeOrd(),
+            "chr" => OptimizeChr(context),
+            "int64" => OptimizeInt64(),
+            "real" => OptimizeReal(context),
+            "string" => OptimizeString(),
+            _ => this,
+        };
+    }
 
-        return this;
+    /// <summary>
+    /// Optimizes an ord() function call if possible, returning an optimized node.
+    /// </summary>
+    private IASTNode OptimizeOrd()
+    {
+        // Can only optimize if a string is passed in
+        if (Arguments is not [StringNode str])
+        {
+            return this;
+        }
+
+        // Calculate numerical value and return number node
+        int value;
+        if (str.Value.Length == 0)
+        {
+            // Empty string defined as 0
+            value = 0;
+        }
+        else
+        {
+            // Convert string to UTF-8 byte(s)
+            Span<byte> bytes = stackalloc byte[4];
+            Encoding.UTF8.GetBytes(str.Value, bytes);
+
+            // Calculate value based on UTF-8 spec and GameMaker implementation
+            value = bytes[0];
+            if ((value & 0x80) != 0)
+            {
+                // More than 1 byte to parse
+                if ((value & 0xF8) != 0xF0)
+                {
+                    if ((value & 0x20) == 0)
+                    {
+                        // 2 bytes to parse
+                        value = ((value & 0x1F) << 6) | (bytes[1] & 0x3F);
+                    }
+                    else
+                    {
+                        // 3 bytes to parse
+                        value = ((value & 0xF) << 12) | ((bytes[1] & 0x3F) << 6) | (bytes[2] & 0x3F);
+                    }
+                }
+                else
+                {
+                    // 4 bytes to parse
+                    value = ((value & 0x7) << 18) | ((bytes[1] & 0x3F) << 12) | ((bytes[2] & 0x3F) << 6) | (bytes[3] & 0x3F);
+                }
+            }
+        }
+        return new NumberNode(value, NearbyToken);
+    }
+
+    /// <summary>
+    /// Optimizes a chr() function call if possible, returning an optimized node.
+    /// </summary>
+    private IASTNode OptimizeChr(ParseContext context)
+    {
+        // Can only optimize if a number is passed in
+        if (Arguments is not [IConstantASTNode constant])
+        {
+            return this;
+        }
+
+        // Get numerical value
+        int value;
+        if (constant is NumberNode numberNode)
+        {
+            value = (int)Math.Max(0, Convert.ToInt64(numberNode.Value));
+        }
+        else if (constant is Int64Node int64Node)
+        {
+            value = (int)Math.Max(0, int64Node.Value);
+        }
+        else
+        {
+            // No valid number
+            return this;
+        }
+
+        // Convert to a character (as a string node)
+        string str;
+        try
+        {
+            str = char.ConvertFromUtf32(value);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            str = "X";
+            // TODO: compiler warning or error?
+        }
+        return new StringNode(str, NearbyToken);
+    }
+
+    /// <summary>
+    /// Optimizes an int64() function call if possible, returning an optimized node.
+    /// </summary>
+    private IASTNode OptimizeInt64()
+    {
+        // Can only optimize if a number is passed in
+        if (Arguments is not [IConstantASTNode constant])
+        {
+            return this;
+        }
+
+        // Get numerical value
+        long value;
+        if (constant is NumberNode numberNode)
+        {
+            value = (long)numberNode.Value;
+        }
+        else if (constant is Int64Node int64Node)
+        {
+            value = int64Node.Value;
+        }
+        else
+        {
+            // No valid number
+            return this;
+        }
+
+        // Return Int64Node version of number
+        return new Int64Node(value, NearbyToken);
+    }
+
+    /// <summary>
+    /// Optimizes a real() function call if possible, returning an optimized node.
+    /// </summary>
+    private IASTNode OptimizeReal(ParseContext context)
+    {
+        // Can only optimize if a number is passed in
+        if (Arguments is not [IConstantASTNode constant])
+        {
+            return this;
+        }
+
+        // Convert to double value
+        double value;
+        switch (constant)
+        {
+            case NumberNode numberNode:
+                value = numberNode.Value;
+                break;
+
+            case Int64Node int64Node:
+                value = int64Node.Value;
+                break;
+
+            case StringNode { Value: string str } stringNode:
+                // Attempt simple parse first
+                if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                {
+                    break;
+                }
+
+                // Remove underscores and trim string
+                str = str.Replace("_", "").Trim();
+
+                // Attempt hex literal parse
+                if (str.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (long.TryParse(str[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long hex))
+                    {
+                        // Value successfully parsed
+                        value = hex;
+                        break;
+                    }
+                    
+                    // Hex failed to parse
+                    context.CompileContext.PushError($"Failed to convert \"{stringNode.Value}\" to real number", NearbyToken);
+                    return this;
+                }
+
+                // Attempt binary literal parse
+                if (str.StartsWith("0b", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // Build number one binary digit at a time
+                    long binary = 0;
+                    for (int i = 2; i < str.Length; i++)
+                    {
+                        if (str[i] == '0')
+                        {
+                            binary <<= 1;
+                        }
+                        else if (str[i] == '1')
+                        {
+                            binary <<= 1;
+                            binary |= 1;
+                        }
+                        else
+                        {
+                            // Binary failed to parse
+                            context.CompileContext.PushError($"Failed to convert \"{stringNode.Value}\" to real number", NearbyToken);
+                            return this;
+                        }
+                    }
+
+                    // Value successfully parsed
+                    value = binary;
+                    break;
+                }
+
+                // No successful string -> real conversion found
+                context.CompileContext.PushError($"Failed to convert \"{stringNode.Value}\" to real number", NearbyToken);
+                return this;
+
+            default:
+                return this;
+        }
+
+        // Return NumberNode version of number
+        return new NumberNode(value, NearbyToken);
+    }
+
+    /// <summary>
+    /// Optimizes a string() function call if possible, returning an optimized node.
+    /// </summary>
+    private IASTNode OptimizeString()
+    {
+        // TODO: handle string interpolation here as well?
+
+        // Can only optimize if a string is passed in
+        if (Arguments is not [StringNode str])
+        {
+            return this;
+        }
+
+        // Simply return the inner string node
+        return str;
     }
 
     /// <summary>

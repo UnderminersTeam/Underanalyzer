@@ -166,4 +166,90 @@ public class ParseContext_ParseAndPostProcess
             }
         );
     }
+
+    [Fact]
+    public void TestBasicIntrinsicFunctions()
+    {
+
+        ParseContext context = TestUtil.ParseAndPostProcess(
+            """
+            a = ord("A");
+            a2 = ord(x);
+            a3 = ord("");
+            b = chr(0x41);
+            b2 = chr(x);
+            c = int64(123);
+            c2 = int64(x);
+            d = real(123);
+            d2 = real("123");
+            d3 = real(" 1000000 ");
+            d4 = real("0x1234");
+            d5 = real("0b1010_0101");
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.Collection(((BlockNode)context.Root!).Children,
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(0x41, number.Value);
+            },
+            (node) =>
+            {
+                SimpleFunctionCallNode func = (SimpleFunctionCallNode)((AssignNode)node).Expression;
+                Assert.Equal("ord", func.FunctionName);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(0, number.Value);
+            },
+            (node) =>
+            {
+                StringNode str = (StringNode)((AssignNode)node).Expression;
+                Assert.Equal("A", str.Value);
+            },
+            (node) =>
+            {
+                SimpleFunctionCallNode func = (SimpleFunctionCallNode)((AssignNode)node).Expression;
+                Assert.Equal("chr", func.FunctionName);
+            },
+            (node) =>
+            {
+                Int64Node number = (Int64Node)((AssignNode)node).Expression;
+                Assert.Equal(123, number.Value);
+            },
+            (node) =>
+            {
+                SimpleFunctionCallNode func = (SimpleFunctionCallNode)((AssignNode)node).Expression;
+                Assert.Equal("int64", func.FunctionName);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(123, number.Value);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(123, number.Value);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(1000000, number.Value);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(0x1234, number.Value);
+            },
+            (node) =>
+            {
+                NumberNode number = (NumberNode)((AssignNode)node).Expression;
+                Assert.Equal(0b1010_0101, number.Value);
+            }
+        );
+    }
 }

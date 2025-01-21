@@ -18,7 +18,7 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// <summary>
     /// Expression being accessed/indexed by this accessor.
     /// </summary>
-    public IASTNode Expression { get; }
+    public IASTNode Expression { get; private set; }
 
     /// <summary>
     /// Kind of accessor.
@@ -28,7 +28,7 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// <summary>
     /// Expression inside of the accessor itself.
     /// </summary>
-    public IASTNode AccessorExpression { get; }
+    public IASTNode AccessorExpression { get; private set; }
 
     /// <summary>
     /// Second expression inside of the accessor itself, if applicable.
@@ -122,7 +122,9 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        // TODO
+        Expression = Expression.PostProcess(context);
+        AccessorExpression = AccessorExpression.PostProcess(context);
+        AccessorExpression2 = AccessorExpression2?.PostProcess(context);
         return this;
     }
 
