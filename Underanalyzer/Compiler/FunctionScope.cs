@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Nodes;
 
 namespace Underanalyzer.Compiler;
@@ -23,6 +24,11 @@ internal sealed class FunctionScope(bool isFunction)
     /// If not <see langword="null"/>, this is the block used for initializing static variables for this scope.
     /// </summary>
     public BlockNode? StaticInitializerBlock { get; set; } = null;
+
+    /// <summary>
+    /// Stack of control flow contexts used during bytecode generation.
+    /// </summary>
+    public Stack<IControlFlowContext>? ControlFlowContexts { get; set; } = null;
 
     // Set of local variables declared for this scope
     private readonly HashSet<string> _declaredLocals = new(8);

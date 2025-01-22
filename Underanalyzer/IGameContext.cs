@@ -95,6 +95,11 @@ public interface IGameContext
     public IBuiltins Builtins { get; }
 
     /// <summary>
+    /// Interface representing an implementation for building code entries and emitting instructions, during compilation.
+    /// </summary>
+    public ICodeBuilder CodeBuilder { get; }
+
+    /// <summary>
     /// Returns the string name of an asset, or <see langword="null"/> if no such asset exists.
     /// </summary>
     public string? GetAssetName(AssetType assetType, int assetIndex);

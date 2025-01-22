@@ -36,6 +36,8 @@ public class GameContextMock : IGameContext
     public GameSpecificRegistry GameSpecificRegistry { get; set; } = new();
     /// <inheritdoc/>
     public IBuiltins Builtins { get; } = new BuiltinsMock();
+    /// <inheritdoc/>
+    public ICodeBuilder CodeBuilder { get; } = new CodeBuilderMock();
 
     /// <summary>
     /// A Dictionary that mocks asset types and their contents.

@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -27,6 +28,10 @@ internal sealed class ExitNode(TokenKeyword token) : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Perform stack cleanup if required
+        context.GenerateControlFlowCleanup();
+
+        // Emit actual exit
+        context.Emit(Opcode.Exit, DataType.Int32);
     }
 }

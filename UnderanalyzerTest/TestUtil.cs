@@ -6,6 +6,7 @@
 
 using Underanalyzer;
 using Underanalyzer.Compiler;
+using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
 using Underanalyzer.Decompiler;
@@ -129,5 +130,72 @@ internal static class TestUtil
         ParseContext parseContext = Parse(code, gameContext);
         parseContext.PostProcessTree();
         return parseContext;
+    }
+
+    /// <summary>
+    /// Asserts that the given GML code is equivalent to the given bytecode assembly.
+    /// </summary>
+    public static void AssertBytecode(string code, string assembly, GameContextMock? gameContext = null)
+    {
+        ParseContext parseContext = ParseAndPostProcess(code, gameContext);
+        BytecodeContext bytecodeContext = new(parseContext.CompileContext, parseContext.Root!, parseContext.RootScope);
+        bytecodeContext.GenerateCode();
+        bytecodeContext.PostProcess();
+
+        // Generate comparison code
+        GMCode comparison = GetCode(assembly, gameContext);
+
+        // Compare the instructions
+        Assert.Equal(comparison.InstructionCount, bytecodeContext._instructions.Count);
+        for (int i = 0; i < comparison.InstructionCount; i++)
+        {
+            GMInstruction comparisonInstr = (GMInstruction)comparison.GetInstruction(i);
+            GMInstruction actualInstr = (GMInstruction)bytecodeContext._instructions[i];
+            Assert.Equal(comparisonInstr.Address, actualInstr.Address);
+            Assert.Equal(comparisonInstr.Kind, actualInstr.Kind);
+            Assert.Equal(comparisonInstr.Type1, actualInstr.Type1);
+            Assert.Equal(comparisonInstr.Type2, actualInstr.Type2);
+            Assert.Equal(comparisonInstr.InstType, actualInstr.InstType);
+            Assert.Equal(comparisonInstr.ReferenceVarType, actualInstr.ReferenceVarType);
+            Assert.Equal(comparisonInstr.ArgumentCount, actualInstr.ArgumentCount);
+            Assert.Equal(comparisonInstr.AssetReferenceId, actualInstr.AssetReferenceId);
+            Assert.Equal(comparisonInstr.AssetReferenceType, actualInstr.AssetReferenceType);
+            Assert.Equal(comparisonInstr.BranchOffset, actualInstr.BranchOffset);
+            Assert.Equal(comparisonInstr.ExtKind, actualInstr.ExtKind);
+            Assert.Equal(comparisonInstr.PopWithContextExit, actualInstr.PopWithContextExit);
+            Assert.Equal(comparisonInstr.PopSwapSize, actualInstr.PopSwapSize);
+            Assert.Equal(comparisonInstr.DuplicationSize, actualInstr.DuplicationSize);
+            Assert.Equal(comparisonInstr.DuplicationSize2, actualInstr.DuplicationSize2);
+            Assert.Equal(comparisonInstr.ValueInt, actualInstr.ValueInt);
+            Assert.Equal(comparisonInstr.ValueBool, actualInstr.ValueBool);
+            Assert.Equal(comparisonInstr.ValueDouble, actualInstr.ValueDouble);
+            Assert.Equal(comparisonInstr.ValueLong, actualInstr.ValueLong);
+            Assert.Equal(comparisonInstr.ValueShort, actualInstr.ValueShort);
+            if (comparisonInstr.ValueString is IGMString str)
+            {
+                Assert.Equal(str.Content, actualInstr.ValueString!.Content);
+            }
+            else
+            {
+                Assert.Null(actualInstr.ValueString);
+            }
+            if (comparisonInstr.Variable is IGMVariable variable)
+            {
+                Assert.Equal(variable.Name, actualInstr.Variable!.Name);
+                Assert.Equal(variable.InstanceType, actualInstr.Variable!.InstanceType);
+            }
+            else
+            {
+                Assert.Null(actualInstr.Variable);
+            }
+            if (comparisonInstr.Function is IGMFunction function)
+            {
+                Assert.Equal(function.Name, actualInstr.Function!.Name);
+            }
+            else
+            {
+                Assert.Null(actualInstr.Function);
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -44,6 +45,37 @@ internal sealed class NumberNode : IConstantASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        if ((long)Value == Value)
+        {
+            // Integer value
+            long integerValue = (long)Value;
+            if (integerValue <= int.MaxValue && integerValue >= int.MinValue)
+            {
+                if (integerValue <= short.MaxValue && integerValue >= short.MinValue)
+                {
+                    // 16-bit integer
+                    context.Emit(Opcode.PushImmediate, (short)integerValue, DataType.Int16);
+                    context.PushDataType(DataType.Int32);
+                }
+                else
+                {
+                    // 32-bit integer
+                    context.Emit(Opcode.Push, (int)integerValue, DataType.Int32);
+                    context.PushDataType(DataType.Int32);
+                }
+            }
+            else
+            {
+                // 64-bit integer
+                context.Emit(Opcode.Push, integerValue, DataType.Int64);
+                context.PushDataType(DataType.Int64);
+            }
+        }
+        else
+        {
+            // Double value
+            context.Emit(Opcode.Push, Value, DataType.Double);
+            context.PushDataType(DataType.Double);
+        }
     }
 }
