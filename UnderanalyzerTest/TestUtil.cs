@@ -91,8 +91,8 @@ internal static class TestUtil
     /// </summary>
     public static LexContext Lex(string code, GameContextMock? gameContext = null)
     {
-        CompileContext compileContext = new(gameContext ?? new());
-        LexContext rootLexContext = new(compileContext, code);
+        CompileContext compileContext = new(code, gameContext ?? new());
+        LexContext rootLexContext = new(compileContext, compileContext.Code);
         rootLexContext.Tokenize();
         rootLexContext.PostProcessTokens();
         return rootLexContext;
@@ -133,24 +133,64 @@ internal static class TestUtil
     }
 
     /// <summary>
+    /// Compiles the given GML code using the given game context.
+    /// </summary>
+    public static GMCode CompileCode(string code, GameContextMock? gameContext = null)
+    {
+        // Compile code
+        CompileContext context = new(code, gameContext ?? new());
+        context.Compile();
+
+        // TODO: resolve FunctionEntry instances
+
+        // Link instructions to data
+        context.Link();
+
+        // Create code entries
+        GMCode rootEntry = new("root", new(context.OutputInstructions!.Count));
+        foreach (IGMInstruction instr in context.OutputInstructions!)
+        {
+            GMInstruction castInstr = (GMInstruction)instr;
+            rootEntry.Instructions.Add(castInstr);
+            rootEntry.Length += castInstr.GetLength();
+        }
+        int childIndex = 0;
+        foreach (FunctionEntry func in context.OutputFunctionEntries!)
+        {
+            GMCode childEntry = new(
+                $"child_{childIndex}_" +
+                $"{func.FunctionName ?? (func.Kind == FunctionEntryKind.StructInstantiation ? "struct" : "anon")}", 
+                rootEntry.Instructions)
+            {
+                Parent = rootEntry,
+                StartOffset = func.BytecodeOffset,
+                LocalCount = func.LocalCount,
+                ArgumentCount = func.ArgumentCount,
+                Length = rootEntry.Length
+            };
+            rootEntry.Children.Add(childEntry);
+        }
+
+        return rootEntry;
+    }
+
+    /// <summary>
     /// Asserts that the given GML code is equivalent to the given bytecode assembly.
     /// </summary>
     public static void AssertBytecode(string code, string assembly, GameContextMock? gameContext = null)
     {
-        ParseContext parseContext = ParseAndPostProcess(code, gameContext);
-        BytecodeContext bytecodeContext = new(parseContext.CompileContext, parseContext.Root!, parseContext.RootScope);
-        bytecodeContext.GenerateCode();
-        bytecodeContext.PostProcess();
+        // Generate compiled code
+        GMCode generated = CompileCode(code, gameContext);
 
         // Generate comparison code
         GMCode comparison = GetCode(assembly, gameContext);
 
         // Compare the instructions
-        Assert.Equal(comparison.InstructionCount, bytecodeContext._instructions.Count);
+        Assert.Equal(comparison.InstructionCount, generated.Instructions.Count);
         for (int i = 0; i < comparison.InstructionCount; i++)
         {
             GMInstruction comparisonInstr = (GMInstruction)comparison.GetInstruction(i);
-            GMInstruction actualInstr = (GMInstruction)bytecodeContext._instructions[i];
+            GMInstruction actualInstr = generated.Instructions[i];
             Assert.Equal(comparisonInstr.Address, actualInstr.Address);
             Assert.Equal(comparisonInstr.Kind, actualInstr.Kind);
             Assert.Equal(comparisonInstr.Type1, actualInstr.Type1);
@@ -197,5 +237,23 @@ internal static class TestUtil
                 Assert.Null(actualInstr.Function);
             }
         }
+    }
+
+    /// <summary>
+    /// Compiles the given GML code, then decompiles it, ensuring the decompilation result is identical to the source.
+    /// </summary>
+    public static void VerifyRoundTrip(string code, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
+    {
+        gameContext ??= new();
+
+        // Compile code
+        GMCode generated = CompileCode(code, gameContext);
+
+        // Decompile generated code entry
+        DecompileContext decompilerContext = new(gameContext, generated, decompileSettings);
+        string decompileResult = decompilerContext.DecompileToString();
+
+        // Ensure code is identical
+        Assert.Equal(code.Trim().ReplaceLineEndings("\n"), decompileResult.Trim());
     }
 }

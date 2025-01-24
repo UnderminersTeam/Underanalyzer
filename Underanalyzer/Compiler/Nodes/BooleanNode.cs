@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -44,6 +45,7 @@ internal sealed class BooleanNode : IConstantASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        context.Emit(Opcode.PushImmediate, (short)(Value ? 1 : 0), DataType.Int16);
+        context.PushDataType(context.CompileContext.GameContext.UsingTypedBooleans ? DataType.Boolean : DataType.Int32);
     }
 }

@@ -52,4 +52,9 @@ public interface ICodeBuilder
     /// Patches an existing instruction with a variable reference.
     /// </summary>
     public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin);
+
+    /// <summary>
+    /// Patches an existing instruction with a string reference.
+    /// </summary>
+    public void PatchInstruction(IGMInstruction instruction, string stringContent);
 }

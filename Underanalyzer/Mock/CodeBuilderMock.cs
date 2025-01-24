@@ -109,4 +109,13 @@ public class CodeBuilderMock : ICodeBuilder
             mockInstruction.ReferenceVarType = variableType;
         }
     }
+
+    /// <inheritdoc/>
+    public void PatchInstruction(IGMInstruction instruction, string stringContent)
+    {
+        if (instruction is GMInstruction mockInstruction)
+        {
+            mockInstruction.ValueString = new GMString(stringContent);
+        }
+    }
 }

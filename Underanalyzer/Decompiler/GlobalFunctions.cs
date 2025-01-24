@@ -13,18 +13,19 @@ using static Underanalyzer.IGMInstruction;
 namespace Underanalyzer.Decompiler;
 
 /// <summary>
-/// Interface that can be used to supply global function information to the decompiler,
-/// particularly for GMLv2 and above.
+/// Interface that can be used to supply global function information to the compiler/decompiler.
 /// </summary>
 public interface IGlobalFunctions
 {
     /// <summary>
-    /// Lookup of function reference to name. Should be the same references that are supplied to the decompiler.
+    /// Lookup of function reference to name. 
+    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
     /// </summary>
     public Dictionary<IGMFunction, string> FunctionToName { get; }
 
     /// <summary>
-    /// Lookup of function name to reference. Should be the same references that are supplied to the decompiler.
+    /// Lookup of function name to reference. 
+    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
     /// </summary>
     public Dictionary<string, IGMFunction> NameToFunction { get; }
 }
@@ -34,8 +35,10 @@ public interface IGlobalFunctions
 /// </summary>
 public class GlobalFunctions : IGlobalFunctions
 {
+    /// <inheritdoc/>
     public Dictionary<IGMFunction, string> FunctionToName { get; }
 
+    /// <inheritdoc/>
     public Dictionary<string, IGMFunction> NameToFunction { get; }
 
     /// <summary>

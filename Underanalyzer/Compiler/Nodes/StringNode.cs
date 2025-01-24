@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -44,6 +45,7 @@ internal sealed class StringNode : IConstantASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        context.Emit(Opcode.Push, new StringPatch(Value), DataType.String);
+        context.PushDataType(DataType.String);
     }
 }
