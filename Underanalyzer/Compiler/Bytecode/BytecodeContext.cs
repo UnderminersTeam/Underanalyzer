@@ -41,14 +41,9 @@ internal sealed class BytecodeContext
     public List<FunctionEntry> FunctionEntries { get; } = new(4);
 
     /// <summary>
-    /// List of variable patches generated during code generation.
+    /// List of instruction patches generated during code generation.
     /// </summary>
-    internal List<VariablePatch> VariablePatches { get; } = new(32);
-
-    /// <summary>
-    /// List of string patches generated during code generation.
-    /// </summary>
-    internal List<StringPatch> StringPatches { get; } = new(16);
+    internal InstructionPatches Patches { get; } = InstructionPatches.Create();
 
     // Current instruction writing position.
     private int _position = 0;
@@ -80,18 +75,18 @@ internal sealed class BytecodeContext
     /// <summary>
     /// Performs post-processing on generated code, resolving references and patches.
     /// </summary>
-    public static void PatchInstructions(CompileContext context, List<VariablePatch> variablePatches, List<StringPatch> stringPatches)
+    public static void PatchInstructions(CompileContext context, InstructionPatches patches)
     {
         ICodeBuilder codeBuilder = context.GameContext.CodeBuilder;
 
         // Resolve variable patches
-        foreach (VariablePatch variablePatch in variablePatches)
+        foreach (VariablePatch variablePatch in patches.VariablePatches!)
         {
             codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.VariableType, variablePatch.IsBuiltin);
         }
 
         // Resolve string patches
-        foreach (StringPatch stringPatch in stringPatches)
+        foreach (StringPatch stringPatch in patches.StringPatches!)
         {
             codeBuilder.PatchInstruction(stringPatch.Instruction!, stringPatch.Content);
         }
@@ -184,7 +179,7 @@ internal sealed class BytecodeContext
         _position += 8;
 
         variable.Instruction = instr;
-        VariablePatches.Add(variable);
+        Patches.VariablePatches!.Add(variable);
 
         return instr;
     }
@@ -199,7 +194,7 @@ internal sealed class BytecodeContext
         _position += 8;
 
         stringPatch.Instruction = instr;
-        StringPatches.Add(stringPatch);
+        Patches.StringPatches!.Add(stringPatch);
 
         return instr;
     }

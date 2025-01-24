@@ -68,8 +68,7 @@ public sealed class CompileContext(string code, IGameContext gameContext)
     private IASTNode? _parseRootNode = null;
     private FunctionScope? _parseRootScope = null;
     private bool _startedCompile = false;
-    private List<VariablePatch>? _compileVariablePatches = null;
-    private List<StringPatch>? _compileStringPatches = null;
+    private InstructionPatches _compilePatches;
     private bool _startedLink = false;
 
     /// <summary>
@@ -162,8 +161,7 @@ public sealed class CompileContext(string code, IGameContext gameContext)
         // Successful code generation! Store results.
         OutputInstructions = bytecodeContext.Instructions;
         OutputFunctionEntries = bytecodeContext.FunctionEntries;
-        _compileVariablePatches = bytecodeContext.VariablePatches;
-        _compileStringPatches = bytecodeContext.StringPatches;
+        _compilePatches = bytecodeContext.Patches;
 
         // Remove references that we no longer need
         _parseRootNode = null;
@@ -186,17 +184,16 @@ public sealed class CompileContext(string code, IGameContext gameContext)
         _startedLink = true;
 
         // Ensure compile successfully finished
-        if (!_startedCompile || _compileVariablePatches is null || _compileStringPatches is null)
+        if (!_startedCompile || OutputInstructions is null)
         {
             throw new InvalidOperationException("Code compile was not completed; linking may not occur");
         }
 
         // Post-process bytecode
-        BytecodeContext.PatchInstructions(this, _compileVariablePatches, _compileStringPatches);
+        BytecodeContext.PatchInstructions(this, _compilePatches);
 
         // Remove references that we no longer need
-        _compileVariablePatches = null;
-        _compileStringPatches = null;
+        _compilePatches = default;
     }
 
     /// <summary>

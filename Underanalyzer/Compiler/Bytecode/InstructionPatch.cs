@@ -4,9 +4,38 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Bytecode;
+
+/// <summary>
+/// Struct containing references to lists of instruction patches, to be easily copied around.
+/// </summary>
+internal readonly struct InstructionPatches
+{
+    /// <summary>
+    /// List of variable patches generated during code generation.
+    /// </summary>
+    public List<VariablePatch>? VariablePatches { get; init; }
+
+    /// <summary>
+    /// List of string patches generated during code generation.
+    /// </summary>
+    public List<StringPatch>? StringPatches { get; init; }
+
+    /// <summary>
+    /// Creates an instruction patch struct, initialized with list capacity for patches.
+    /// </summary>
+    public static InstructionPatches Create()
+    {
+        return new InstructionPatches()
+        {
+            VariablePatches = new(32),
+            StringPatches = new(16)
+        };
+    }
+}
 
 /// <summary>
 /// Instruction patch base interface.
