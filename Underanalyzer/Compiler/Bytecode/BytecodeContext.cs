@@ -346,4 +346,51 @@ internal sealed class BytecodeContext
         // Do a general global function lookup (depending on ICodeBuilder's implementation)
         return _codeBuilder.IsGlobalFunctionName(name);
     }
+
+    /// <summary>
+    /// Pushes a control flow context onto the control flow context stack.
+    /// </summary>
+    public void PushControlFlowContext(IControlFlowContext context)
+    {
+        CurrentScope.ControlFlowContexts!.Push(context);
+    }
+
+    /// <summary>
+    /// Pops a control flow context from the control flow context stack.
+    /// </summary>
+    public void PopControlFlowContext()
+    {
+        CurrentScope.ControlFlowContexts!.Pop();
+    }
+
+    /// <summary>
+    /// Returns whether there are any control flow contexts on the control flow context stack.
+    /// </summary>
+    public bool AnyControlFlowContexts()
+    {
+        return CurrentScope.ControlFlowContexts!.Count > 0;
+    }
+
+    /// <summary>
+    /// Returns whether there are any loop contexts on the control flow context stack.
+    /// </summary>
+    public bool AnyLoopContexts()
+    {
+        foreach (IControlFlowContext context in CurrentScope.ControlFlowContexts!)
+        {
+            if (context.IsLoop)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the top control flow context from the control flow context stack.
+    /// </summary>
+    public IControlFlowContext GetTopControlFlowContext()
+    {
+        return CurrentScope.ControlFlowContexts!.Peek();
+    }
 }

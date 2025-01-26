@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -27,6 +28,14 @@ internal sealed class BreakNode(TokenKeyword token) : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Need at least one control flow context outside of this statement
+        if (!context.AnyControlFlowContexts())
+        {
+            context.CompileContext.PushError($"Break used outside of any loop or switch statement", NearbyToken);
+            return;
+        }
+
+        // Use control flow context's break branch
+        context.GetTopControlFlowContext().UseBreak(context, context.Emit(Opcode.Branch));
     }
 }

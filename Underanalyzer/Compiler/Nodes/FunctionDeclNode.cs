@@ -378,6 +378,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     public void GenerateCode(BytecodeContext context)
     {
         // TODO: register FunctionEntry instance
+        // TODO: when entering, make sure to enter new FunctionScope, and create ControlFlowContexts for it
         // TODO: generate actual code
     }
 }

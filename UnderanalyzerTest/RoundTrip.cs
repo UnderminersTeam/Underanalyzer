@@ -51,4 +51,26 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestWhileIfContinueBreak()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            top = 1;
+            while (a)
+            {
+                if (b)
+                {
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            bottom = 2;
+            """
+        );
+    }
 }

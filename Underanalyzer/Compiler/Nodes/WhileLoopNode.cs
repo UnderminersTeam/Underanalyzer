@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -79,6 +80,24 @@ internal sealed class WhileLoopNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Branch target at the head and tail of the loop
+        MultiBackwardBranchPatch headPatch = new(context);
+        MultiForwardBranchPatch tailPatch = new();
+
+        // Loop condition
+        Condition.GenerateCode(context);
+        context.ConvertDataType(DataType.Boolean);
+
+        // Jump based on condition
+        tailPatch.AddInstruction(context, context.Emit(Opcode.BranchFalse));
+
+        // Enter loop context, and generate body
+        context.PushControlFlowContext(new BasicLoopContext(tailPatch, headPatch));
+        Body.GenerateCode(context);
+        context.PopControlFlowContext();
+
+        // Loop tail
+        headPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+        tailPatch.Patch(context);
     }
 }

@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -27,6 +28,14 @@ internal sealed class ContinueNode(TokenKeyword token) : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Need at least one loop outside of this statement
+        if (!context.AnyLoopContexts())
+        {
+            context.CompileContext.PushError($"Continue used outside of any loop", NearbyToken);
+            return;
+        }
+
+        // Use control flow context's continue branch
+        context.GetTopControlFlowContext().UseContinue(context, context.Emit(Opcode.Branch));
     }
 }

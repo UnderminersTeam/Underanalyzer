@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer.Compiler.Bytecode;
 
 /// <summary>
@@ -14,7 +16,49 @@ internal interface IMultiBranchPatch
     /// <summary>
     /// Adds an instruction to be patched.
     /// </summary>
-    public void AddInstruction(IGMInstruction instruction);
+    public void AddInstruction(BytecodeContext context, IGMInstruction instruction);
+}
+
+/// <summary>
+/// Branch patch for an arbitrary number of forward branches.
+/// </summary>
+internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
+{
+    // Address that will be branched to by all patched instructions
+    private readonly List<IGMInstruction> _instructions = new(4);
+
+    /// <inheritdoc/>
+    public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
+    {
+        _instructions.Add(instruction);
+    }
+
+    /// <summary>
+    /// Patches all added instructions, based on the current bytecode position.
+    /// </summary>
+    public void Patch(BytecodeContext context)
+    {
+        int destAddress = context.Position;
+        foreach (IGMInstruction instruction in _instructions)
+        {
+            context.PatchBranch(instruction, destAddress - instruction.Address);
+        }
+    }
+}
+
+/// <summary>
+/// Branch patch for an arbitrary number of backward branches.
+/// </summary>
+internal readonly struct MultiBackwardBranchPatch(BytecodeContext context) : IMultiBranchPatch
+{
+    // Address that will be branched to by all patched instructions
+    private readonly int _destAddress = context.Position;
+
+    /// <inheritdoc/>
+    public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
+    {
+        context.PatchBranch(instruction, _destAddress - instruction.Address);
+    }
 }
 
 /// <summary>
@@ -22,6 +66,9 @@ internal interface IMultiBranchPatch
 /// </summary>
 internal readonly ref struct SingleForwardBranchPatch(IGMInstruction instruction)
 {
+    /// <summary>
+    /// Patches the single instruction, based on the current bytecode position.
+    /// </summary>
     public void Patch(BytecodeContext context)
     {
         context.PatchBranch(instruction, context.Position - instruction.Address);
