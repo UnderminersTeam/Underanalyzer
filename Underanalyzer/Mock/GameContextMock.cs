@@ -37,7 +37,7 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public IBuiltins Builtins { get; } = new BuiltinsMock();
     /// <inheritdoc/>
-    public ICodeBuilder CodeBuilder { get; } = new CodeBuilderMock();
+    public ICodeBuilder CodeBuilder { get; }
 
     /// <summary>
     /// A Dictionary that mocks asset types and their contents.
@@ -48,6 +48,16 @@ public class GameContextMock : IGameContext
     /// A Dictionary that mocks assets by their name.
     /// </summary>
     private Dictionary<string, int> _mockAssetsByName { get; set; } = [];
+
+    /// <summary>
+    /// A Dictionary that mocks script assets by their name.
+    /// </summary>
+    private Dictionary<string, int> _mockScriptsByName { get; set; } = [];
+
+    public GameContextMock()
+    {
+        CodeBuilder = new CodeBuilderMock((GlobalFunctions)GlobalFunctions, (BuiltinsMock)Builtins);
+    }
 
     /// <summary>
     /// Define a new mock asset that gets added to <see cref="_mockAssetsByType"/>.
@@ -63,7 +73,13 @@ public class GameContextMock : IGameContext
             _mockAssetsByType.Add(assetType, assets);
         }
         assets[assetIndex] = assetName;
-        _mockAssetsByName[assetName] = assetIndex | (UsingAssetReferences ? ((int)assetType << 24) : 0);
+
+        int id = assetIndex | (UsingAssetReferences ? ((int)assetType << 24) : 0);
+        _mockAssetsByName[assetName] = id;
+        if (assetType == AssetType.Script)
+        {
+            _mockScriptsByName[assetName] = id;
+        }
     }
     
     /// <summary>
@@ -100,5 +116,11 @@ public class GameContextMock : IGameContext
     public bool GetAssetId(string assetName, out int assetId)
     {
         return _mockAssetsByName.TryGetValue(assetName, out assetId);
+    }
+
+    /// <inheritdoc/>
+    public bool GetScriptId(string scriptName, out int assetId)
+    {
+        return _mockScriptsByName.TryGetValue(scriptName, out assetId);
     }
 }

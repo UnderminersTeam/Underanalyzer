@@ -4,7 +4,9 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using Underanalyzer.Compiler;
+using Underanalyzer.Decompiler;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Mock;
@@ -12,8 +14,9 @@ namespace Underanalyzer.Mock;
 /// <summary>
 /// A default implementation of <see cref="ICodeBuilder"/>.
 /// </summary>
-public class CodeBuilderMock : ICodeBuilder
+public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock builtins) : ICodeBuilder
 {
+
     /// <inheritdoc/>
     public IGMInstruction CreateInstruction(int address, Opcode opcode)
     {
@@ -100,13 +103,48 @@ public class CodeBuilderMock : ICodeBuilder
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateCallInstruction(int address, int argumentCount)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Call,
+            Type1 = DataType.Int32,
+            ArgumentCount = argumentCount
+        };
+    }
+
+    /// <inheritdoc/>
     public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin)
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            mockInstruction.Variable = new GMVariable(new GMString(variableName));
+            mockInstruction.Variable = new GMVariable(new GMString(variableName))
+            {
+                InstanceType = isBuiltin ? InstanceType.Builtin : instanceType,
+            };
             mockInstruction.InstType = instanceType;
             mockInstruction.ReferenceVarType = variableType;
+        }
+    }
+
+    /// <inheritdoc/>
+    public void PatchInstruction(IGMInstruction instruction, string functionName, IBuiltinFunction? builtinFunction)
+    {
+        if (instruction is GMInstruction mockInstruction)
+        {
+            if (builtins.LookupBuiltinFunction(functionName) is not null)
+            {
+                mockInstruction.Function = new GMFunction(functionName);
+            }
+            else if (globalFunctions.TryGetFunction(functionName, out IGMFunction? function))
+            {
+                mockInstruction.Function = function;
+            }
+            else
+            {
+                throw new Exception($"Failed to look up function \"{functionName}\"");
+            }
         }
     }
 
@@ -117,5 +155,11 @@ public class CodeBuilderMock : ICodeBuilder
         {
             mockInstruction.ValueString = new GMString(stringContent);
         }
+    }
+
+    /// <inheritdoc/>
+    public bool IsGlobalFunctionName(string name)
+    {
+        return globalFunctions.FunctionNameExists(name);
     }
 }

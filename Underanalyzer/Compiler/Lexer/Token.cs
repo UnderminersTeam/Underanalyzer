@@ -301,7 +301,8 @@ internal sealed record TokenIdentifier(LexContext Context, int TextPosition, str
 /// </summary>
 /// <param name="Text">Verbatim text used for the token.</param>
 /// <param name="Value">64-bit floating point value.</param>
-internal sealed record TokenNumber(LexContext Context, int TextPosition, string Text, double Value) : IToken
+/// <param name="IsConstant">Whether this token came from a constant.</param>
+internal sealed record TokenNumber(LexContext Context, int TextPosition, string Text, double Value, bool IsConstant = false) : IToken
 {
     public override string ToString()
     {

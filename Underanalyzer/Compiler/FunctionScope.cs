@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Nodes;
@@ -38,6 +39,9 @@ internal sealed class FunctionScope(bool isFunction)
 
     // Set of static variables declared for this scope
     private readonly HashSet<string> _declaredStatics = new(8);
+
+    // Lookup of argument names to argument indices
+    private readonly Dictionary<string, int> _declaredArguments = new(8);
 
     /// <summary>
     /// Declares a local variable for this function scope.
@@ -82,5 +86,28 @@ internal sealed class FunctionScope(bool isFunction)
     public bool IsStaticDeclared(string name)
     {
         return _declaredStatics.Contains(name);
+    }
+
+    /// <summary>
+    /// Declares argument names for this function scope.
+    /// </summary>
+    /// <param name="argumentNames">List of arguments, in order, to declare.</param>
+    public void DeclareArguments(List<string> argumentNames)
+    {
+        // Map argument names to corresponding index
+        for (int i = 0; i < argumentNames.Count; i++)
+        {
+            _declaredArguments[argumentNames[i]] = i;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to look up an argument index from a variable name.
+    /// </summary>
+    /// <param name="name">Name of the variable to look up.</param>
+    /// <returns>True if an argument index was found; false otherwise.</returns>
+    public bool TryGetArgumentIndex(string name, out int index)
+    {
+        return _declaredArguments.TryGetValue(name, out index);
     }
 }

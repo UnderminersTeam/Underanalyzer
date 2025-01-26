@@ -112,4 +112,13 @@ public interface IGameContext
     /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
     /// <returns><see langword="true"/> if an asset ID was found; <see langword="false"/> otherwise.</returns>
     public bool GetAssetId(string assetName, out int assetId);
+
+    /// <summary>
+    /// Returns the asset ID of a script, if one exists. If <see cref="UsingAssetReferences"/> is <see langword="true"/>, 
+    /// this ID encodes the correct script asset type as well.
+    /// </summary>
+    /// <param name="scriptName">Script name to look up</param>
+    /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if an asset ID for the script name was found; <see langword="false"/> otherwise.</returns>
+    public bool GetScriptId(string scriptName, out int assetId);
 }

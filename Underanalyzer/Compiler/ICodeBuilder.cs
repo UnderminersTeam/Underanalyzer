@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Diagnostics.CodeAnalysis;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler;
@@ -49,12 +50,33 @@ public interface ICodeBuilder
     public IGMInstruction CreateInstruction(int address, Opcode opcode, double value, DataType dataType1, DataType dataType2);
 
     /// <summary>
+    /// Creates an instruction with an address and an argument count.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.Call"/>, with data type 1 being <see cref="DataType.Int32"/>.
+    /// </remarks>
+    public IGMInstruction CreateCallInstruction(int address, int argumentCount);
+
+    /// <summary>
     /// Patches an existing instruction with a variable reference.
     /// </summary>
     public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin);
 
     /// <summary>
+    /// Patches an existing instruction with a function reference.
+    /// </summary>
+    public void PatchInstruction(IGMInstruction instruction, string functionName, IBuiltinFunction? builtinFunction);
+
+    /// <summary>
     /// Patches an existing instruction with a string reference.
     /// </summary>
     public void PatchInstruction(IGMInstruction instruction, string stringContent);
+
+    /// <summary>
+    /// Returns whether a global function name of any kind exists with the given name.
+    /// </summary>
+    /// <remarks>
+    /// This should return true if the function either already exists, or can be created during (or before) instruction patching.
+    /// </remarks>
+    public bool IsGlobalFunctionName(string name);
 }

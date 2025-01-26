@@ -255,7 +255,7 @@ public sealed class ASTPrinter(DecompileContext context)
     /// </summary>
     public string LookupFunction(IGMFunction function)
     {
-        if (Context.GameContext.GlobalFunctions.FunctionToName.TryGetValue(function, out string? name))
+        if (Context.GameContext.GlobalFunctions.TryGetFunctionName(function, out string? name))
         {
             // We found a global function name!
             return name;

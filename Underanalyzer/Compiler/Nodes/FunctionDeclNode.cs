@@ -184,6 +184,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             return null;
         }
 
+        // Assign arguments to function scope
+        newScope.DeclareArguments(argumentNames);
+
         // Check for inheritance
         SimpleFunctionCallNode? inheritanceCall = null;
         if (context.IsCurrentToken(SeparatorKind.Colon))
@@ -347,6 +350,16 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Register function name if in the root scope of a global script, and not anonymous
+        if (context.CurrentScope == context.RootScope && context.ParseGlobalFunctions is not null && FunctionName is not null)
+        {
+            if (!context.ParseGlobalFunctions.Add(FunctionName))
+            {
+                // Can't declare global functions with the same name twice...
+                context.CompileContext.PushError($"Global function \"{FunctionName}\" declared more than once", NearbyToken);
+            }
+        }
+
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
         context.CurrentScope = Scope;
@@ -364,6 +377,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // TODO: register FunctionEntry instance
+        // TODO: generate actual code
     }
 }

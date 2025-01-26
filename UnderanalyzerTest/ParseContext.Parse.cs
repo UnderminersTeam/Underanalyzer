@@ -1055,7 +1055,7 @@ public class ParseContext_Parse
                 Assert.Equal("c", ((SimpleVariableNode)assign.Destination).VariableName);
                 NewObjectNode newObject = (NewObjectNode)assign.Expression;
                 Assert.False(newObject.IsStatement);
-                Assert.Equal("global", ((SimpleVariableNode)((DotVariableNode)newObject.Expression).LeftExpression).VariableName);
+                Assert.Equal("global", ((NumberNode)((DotVariableNode)newObject.Expression).LeftExpression).ConstantName);
                 Assert.Equal("D", ((DotVariableNode)newObject.Expression).VariableName);
                 Assert.Single(newObject.Arguments);
                 Assert.Equal(789, ((NumberNode)newObject.Arguments[0]).Value);

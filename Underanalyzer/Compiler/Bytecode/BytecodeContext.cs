@@ -31,6 +31,11 @@ internal sealed class BytecodeContext
     public FunctionScope CurrentScope { get; set; }
 
     /// <summary>
+    /// Set of global functions defined locally in the code entry being compiled.
+    /// </summary>
+    public HashSet<string>? LocalGlobalFunctions { get; }
+
+    /// <summary>
     /// Current list of written instructions, in order by address.
     /// </summary>
     public List<IGMInstruction> Instructions { get; } = new(64);
@@ -43,7 +48,7 @@ internal sealed class BytecodeContext
     /// <summary>
     /// List of instruction patches generated during code generation.
     /// </summary>
-    internal InstructionPatches Patches { get; } = InstructionPatches.Create();
+    public InstructionPatches Patches { get; } = InstructionPatches.Create();
 
     // Current instruction writing position.
     private int _position = 0;
@@ -54,14 +59,19 @@ internal sealed class BytecodeContext
     // Code builder used for creating instructions, modifying them, and creating code entries.
     private readonly ICodeBuilder _codeBuilder;
 
-    public BytecodeContext(CompileContext context, IASTNode rootNode, FunctionScope rootScope)
+    // Reference to the game context for quick access.
+    private readonly IGameContext _gameContext;
+
+    public BytecodeContext(CompileContext context, IASTNode rootNode, FunctionScope rootScope, HashSet<string>? localGlobalFunctions)
     {
         CompileContext = context;
         RootNode = rootNode;
         CurrentScope = rootScope;
+        LocalGlobalFunctions = localGlobalFunctions;
 
         rootScope.ControlFlowContexts = new(8);
-        _codeBuilder = context.GameContext.CodeBuilder;
+        _gameContext = context.GameContext;
+        _codeBuilder = _gameContext.CodeBuilder;
     }
 
     /// <summary>
@@ -83,6 +93,12 @@ internal sealed class BytecodeContext
         foreach (VariablePatch variablePatch in patches.VariablePatches!)
         {
             codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.VariableType, variablePatch.IsBuiltin);
+        }
+
+        // Resolve function patches
+        foreach (FunctionPatch functionPatch in patches.FunctionPatches!)
+        {
+            codeBuilder.PatchInstruction(functionPatch.Instruction!, functionPatch.Name, functionPatch.BuiltinFunction);
         }
 
         // Resolve string patches
@@ -185,6 +201,36 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Emits an instruction with the given opcode, data types, and given function, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(Opcode opcode, FunctionPatch function, DataType dataType1, DataType dataType2 = DataType.Double)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType1, dataType2);
+        Instructions.Add(instr);
+        _position += 8;
+
+        function.Instruction = instr;
+        Patches.FunctionPatches!.Add(function);
+
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a <see cref="Opcode.Call"/> instruction with the given argument count, and given function, at the current position.
+    /// </summary>
+    public IGMInstruction EmitCall(FunctionPatch function, int argumentCount)
+    {
+        IGMInstruction instr = _codeBuilder.CreateCallInstruction(_position, argumentCount);
+        Instructions.Add(instr);
+        _position += 8;
+
+        function.Instruction = instr;
+        Patches.FunctionPatches!.Add(function);
+
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given opcode, data types, and given string, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, StringPatch stringPatch, DataType dataType1, DataType dataType2 = DataType.Double)
@@ -205,6 +251,14 @@ internal sealed class BytecodeContext
     public void PushDataType(DataType dataType)
     {
         _dataTypeStack.Push(dataType);
+    }
+
+    /// <summary>
+    /// Pops a data type from the data type stack.
+    /// </summary>
+    public DataType PopDataType()
+    {
+        return _dataTypeStack.Pop();
     }
 
     /// <summary>
@@ -254,5 +308,32 @@ internal sealed class BytecodeContext
                 context.GenerateCleanupCode(this);
             }
         }
+    }
+
+    /// <summary>
+    /// Returns whether the given name is a global function name of any kind.
+    /// </summary>
+    public bool IsGlobalFunctionName(string name)
+    {
+        // Check if it's a locally-declared global function
+        if (LocalGlobalFunctions?.Contains(name) ?? false)
+        {
+            return true;
+        }
+
+        // Check builtin functions
+        if (_gameContext.Builtins.LookupBuiltinFunction(name) is not null)
+        {
+            return true;
+        }
+
+        // Check script assets
+        if (_gameContext.GetScriptId(name, out int _))
+        {
+            return true;
+        }
+
+        // Do a general global function lookup (depending on ICodeBuilder's implementation)
+        return _codeBuilder.IsGlobalFunctionName(name);
     }
 }

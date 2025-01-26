@@ -41,6 +41,11 @@ internal sealed class ParseContext
     public Dictionary<string, EnumDeclaration> ParseEnums { get; } = new(4);
 
     /// <summary>
+    /// Set of function declaration names parsed by this context, if in a global script.
+    /// </summary>
+    public HashSet<string>? ParseGlobalFunctions { get; } = null;
+
+    /// <summary>
     /// List of tokens to be parsed by this context.
     /// </summary>
     public int Position { get; set; } = 0;
@@ -59,8 +64,14 @@ internal sealed class ParseContext
     {
         CompileContext = context;
         Tokens = tokens;
+
         RootScope = new(false);
         CurrentScope = RootScope;
+
+        if (context.IsGlobalScript)
+        {
+            ParseGlobalFunctions = new(8);
+        }
     }
 
     /// <summary>

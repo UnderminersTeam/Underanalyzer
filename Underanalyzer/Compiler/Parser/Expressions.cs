@@ -679,7 +679,7 @@ internal static class Expressions
         {
             case TokenNumber tokenNumber:
                 context.Position++;
-                return new NumberNode(tokenNumber);
+                return new NumberNode(tokenNumber, tokenNumber.IsConstant ? tokenNumber.Text : null);
             case TokenInt64 tokenInt64:
                 context.Position++;
                 return new Int64Node(tokenInt64);

@@ -20,6 +20,11 @@ internal readonly struct InstructionPatches
     public List<VariablePatch>? VariablePatches { get; init; }
 
     /// <summary>
+    /// List of function patches generated during code generation.
+    /// </summary>
+    public List<FunctionPatch>? FunctionPatches { get; init; }
+
+    /// <summary>
     /// List of string patches generated during code generation.
     /// </summary>
     public List<StringPatch>? StringPatches { get; init; }
@@ -32,6 +37,7 @@ internal readonly struct InstructionPatches
         return new InstructionPatches()
         {
             VariablePatches = new(32),
+            FunctionPatches = new(32),
             StringPatches = new(16)
         };
     }
@@ -57,7 +63,14 @@ internal record struct VariablePatch(string Name, InstanceType InstanceType, Var
     public IGMInstruction? Instruction { get; set; }
 }
 
-// TODO: function patch
+/// <summary>
+/// A function patch used during bytecode generation, to assign functions to instructions.
+/// </summary>
+internal record struct FunctionPatch(string Name, IBuiltinFunction? BuiltinFunction = null) : IInstructionPatch
+{
+    /// <inheritdoc/>
+    public IGMInstruction? Instruction { get; set; }
+}
 
 /// <summary>
 /// A string patch used during bytecode generation, to link to strings.
@@ -68,4 +81,3 @@ internal record struct StringPatch(string Content) : IInstructionPatch
     public IGMInstruction? Instruction { get; set; }
 }
 
-// TODO: branch patch

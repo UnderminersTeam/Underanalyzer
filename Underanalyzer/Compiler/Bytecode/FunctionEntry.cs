@@ -9,7 +9,7 @@ namespace Underanalyzer.Compiler.Bytecode;
 /// <summary>
 /// Represents a function entry produced during code generation.
 /// </summary>
-public sealed class FunctionEntry
+public sealed record FunctionEntry
 {
     /// <summary>
     /// Byte offset of the function entry in the bytecode.
@@ -32,30 +32,23 @@ public sealed class FunctionEntry
     public string? FunctionName { get; }
 
     /// <summary>
+    /// Whether the function entry was declared in the root function scope of the code entry.
+    /// </summary>
+    public bool DeclaredInRootScope { get; }
+
+    /// <summary>
     /// Kind of function entry. Useful for generating a final code entry name.
     /// </summary>
     public FunctionEntryKind Kind { get; }
 
-    /// <summary>
-    /// Function object that this function entry resolves to.
-    /// </summary>
-    public IGMFunction? ResolvedFunction { get; private set; } = null;
-
-    internal FunctionEntry(int bytecodeOffset, int localCount, int argumentCount, string? functionName, FunctionEntryKind kind)
+    internal FunctionEntry(int bytecodeOffset, int localCount, int argumentCount, string? functionName, bool declaredInRootScope, FunctionEntryKind kind)
     {
         BytecodeOffset = bytecodeOffset;
         LocalCount = localCount;
         ArgumentCount = argumentCount;
         FunctionName = functionName;
+        DeclaredInRootScope = declaredInRootScope;
         Kind = kind;
-    }
-
-    /// <summary>
-    /// Resolves this function entry to a specific function object, old or new.
-    /// </summary>
-    public void Resolve(IGMFunction function)
-    {
-        ResolvedFunction = function;
     }
 }
 

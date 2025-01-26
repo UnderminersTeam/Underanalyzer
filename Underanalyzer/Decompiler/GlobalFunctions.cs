@@ -18,16 +18,34 @@ namespace Underanalyzer.Decompiler;
 public interface IGlobalFunctions
 {
     /// <summary>
-    /// Lookup of function reference to name. 
-    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
+    /// Returns whether a global function name exists.
     /// </summary>
-    public Dictionary<IGMFunction, string> FunctionToName { get; }
+    /// <param name="name">Name to look up.</param>
+    /// <returns><see langword="true"/> if the global function name exists; <see langword="false"/> otherwise.</returns>
+    public bool FunctionNameExists(string name);
 
     /// <summary>
-    /// Lookup of function name to reference. 
-    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
+    /// Returns whether a global function exists.
     /// </summary>
-    public Dictionary<string, IGMFunction> NameToFunction { get; }
+    /// <param name="function">Function to look up.</param>
+    /// <returns><see langword="true"/> if the global function exists; <see langword="false"/> otherwise.</returns>
+    public bool FunctionExists(IGMFunction function);
+
+    /// <summary>
+    /// Attempts to look up a global function by name.
+    /// </summary>
+    /// <param name="name">Name to look up.</param>
+    /// <param name="function">Output function, if found.</param>
+    /// <returns><see langword="true"/> if the global function was successfully looked up; <see langword="false"/> otherwise.</returns>
+    public bool TryGetFunction(string name, [NotNullWhen(true)] out IGMFunction? function);
+
+    /// <summary>
+    /// Attempts to look up a global function name by function.
+    /// </summary>
+    /// <param name="function">Function to look up.</param>
+    /// <param name="name">Output name, if found.</param>
+    /// <returns><see langword="true"/> if the name was successfully looked up; <see langword="false"/> otherwise.</returns>
+    public bool TryGetFunctionName(IGMFunction function, [NotNullWhen(true)] out string? name);
 }
 
 /// <summary>
@@ -35,11 +53,17 @@ public interface IGlobalFunctions
 /// </summary>
 public class GlobalFunctions : IGlobalFunctions
 {
-    /// <inheritdoc/>
-    public Dictionary<IGMFunction, string> FunctionToName { get; }
+    /// <summary>
+    /// Lookup of function reference to name. 
+    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
+    /// </summary>
+    protected Dictionary<IGMFunction, string> FunctionToName { get; }
 
-    /// <inheritdoc/>
-    public Dictionary<string, IGMFunction> NameToFunction { get; }
+    /// <summary>
+    /// Lookup of function name to reference. 
+    /// <see cref="IGMFunction"/> references should be the same as those input to the compiler/decompiler.
+    /// </summary>
+    protected Dictionary<string, IGMFunction> NameToFunction { get; }
 
     /// <summary>
     /// Initializes an empty instance of this class. Useful for pre-GMLv2.
@@ -95,6 +119,55 @@ public class GlobalFunctions : IGlobalFunctions
 
         FunctionToName = functionToName;
         NameToFunction = nameToFunction;
+    }
+
+    /// <inheritdoc/>
+    public bool FunctionNameExists(string name)
+    {
+        return NameToFunction.ContainsKey(name);
+    }
+
+    /// <inheritdoc/>
+    public bool FunctionExists(IGMFunction function)
+    {
+        return FunctionToName.ContainsKey(function);
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetFunction(string name, [NotNullWhen(true)] out IGMFunction? function)
+    {
+        return NameToFunction.TryGetValue(name, out function);
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetFunctionName(IGMFunction function, [NotNullWhen(true)] out string? name)
+    {
+        return FunctionToName.TryGetValue(function, out name);
+    }
+
+    /// <summary>
+    /// Adds an additional function to the lookup.
+    /// </summary>
+    public void DefineFunction(string functionName, IGMFunction function)
+    {
+        FunctionToName[function] = functionName;
+        NameToFunction[functionName] = function;
+    }
+
+    /// <summary>
+    /// Returns the full list of defined functions.
+    /// </summary>
+    public IEnumerable<IGMFunction> GetFunctions()
+    {
+        return FunctionToName.Keys;
+    }
+
+    /// <summary>
+    /// Returns the full list of defined function names.
+    /// </summary>
+    public IEnumerable<string> GetFunctionNames()
+    {
+        return NameToFunction.Keys;
     }
 
     /// <summary>

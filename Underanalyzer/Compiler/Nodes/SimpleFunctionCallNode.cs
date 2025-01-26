@@ -11,6 +11,7 @@ using System.Text;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -380,6 +381,30 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        if (context.IsGlobalFunctionName(FunctionName))
+        {
+            // Push arguments in reverse order (so they get popped in normal order)
+            for (int i = Arguments.Count - 1; i >= 0; i--)
+            {
+                Arguments[i].GenerateCode(context);
+                context.ConvertDataType(DataType.Variable);
+            }
+
+            // Emit actual call instruction
+            FunctionPatch funcPatch = new(FunctionName, BuiltinFunction);
+            context.EmitCall(funcPatch, Arguments.Count);
+            context.PushDataType(DataType.Variable);
+        }
+        else
+        {
+            // Not a global function name - ensure it's at least GMLv2
+            if (!context.CompileContext.GameContext.UsingGMLv2)
+            {
+                context.CompileContext.PushError($"Failed to find function \"{FunctionName}\"", NearbyToken);
+            }
+
+            // TODO
+            throw new NotImplementedException();
+        }
     }
 }

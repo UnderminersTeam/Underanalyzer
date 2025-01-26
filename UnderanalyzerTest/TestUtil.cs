@@ -91,7 +91,7 @@ internal static class TestUtil
     /// </summary>
     public static LexContext Lex(string code, GameContextMock? gameContext = null)
     {
-        CompileContext compileContext = new(code, gameContext ?? new());
+        CompileContext compileContext = new(code, false, gameContext ?? new());
         LexContext rootLexContext = new(compileContext, compileContext.Code);
         rootLexContext.Tokenize();
         rootLexContext.PostProcessTokens();
@@ -135,13 +135,24 @@ internal static class TestUtil
     /// <summary>
     /// Compiles the given GML code using the given game context.
     /// </summary>
-    public static GMCode CompileCode(string code, GameContextMock? gameContext = null)
+    public static GMCode CompileCode(string code, bool isGlobalScript = false, GameContextMock? gameContext = null)
     {
         // Compile code
-        CompileContext context = new(code, gameContext ?? new());
+        gameContext ??= new();
+        CompileContext context = new(code, isGlobalScript, gameContext);
         context.Compile();
 
-        // TODO: resolve FunctionEntry instances
+        // Resolve global FunctionEntry instances
+        if (isGlobalScript)
+        {
+            foreach (FunctionEntry functionEntry in context.OutputFunctionEntries!)
+            {
+                if (functionEntry is { FunctionName: string functionName, DeclaredInRootScope: true })
+                {
+                    ((GlobalFunctions)gameContext.GlobalFunctions).DefineFunction(functionName, new GMFunction($"global_func_{functionName}"));
+                }
+            }
+        }
 
         // Link instructions to data
         context.Link();
@@ -177,10 +188,10 @@ internal static class TestUtil
     /// <summary>
     /// Asserts that the given GML code is equivalent to the given bytecode assembly.
     /// </summary>
-    public static void AssertBytecode(string code, string assembly, GameContextMock? gameContext = null)
+    public static void AssertBytecode(string code, string assembly, bool isGlobalScript = false, GameContextMock? gameContext = null)
     {
         // Generate compiled code
-        GMCode generated = CompileCode(code, gameContext);
+        GMCode generated = CompileCode(code, isGlobalScript, gameContext);
 
         // Generate comparison code
         GMCode comparison = GetCode(assembly, gameContext);
@@ -221,7 +232,7 @@ internal static class TestUtil
             }
             if (comparisonInstr.Variable is IGMVariable variable)
             {
-                Assert.Equal(variable.Name, actualInstr.Variable!.Name);
+                Assert.Equal(variable.Name.Content, actualInstr.Variable!.Name.Content);
                 Assert.Equal(variable.InstanceType, actualInstr.Variable!.InstanceType);
             }
             else
@@ -230,7 +241,7 @@ internal static class TestUtil
             }
             if (comparisonInstr.Function is IGMFunction function)
             {
-                Assert.Equal(function.Name, actualInstr.Function!.Name);
+                Assert.Equal(function.Name.Content, actualInstr.Function!.Name.Content);
             }
             else
             {
@@ -242,12 +253,12 @@ internal static class TestUtil
     /// <summary>
     /// Compiles the given GML code, then decompiles it, ensuring the decompilation result is identical to the source.
     /// </summary>
-    public static void VerifyRoundTrip(string code, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
+    public static void VerifyRoundTrip(string code, bool isGlobalScript = false, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
     {
         gameContext ??= new();
 
         // Compile code
-        GMCode generated = CompileCode(code, gameContext);
+        GMCode generated = CompileCode(code, isGlobalScript, gameContext);
 
         // Decompile generated code entry
         DecompileContext decompilerContext = new(gameContext, generated, decompileSettings);

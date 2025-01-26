@@ -78,6 +78,15 @@ internal sealed class AssignNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        switch (Kind)
+        {
+            case AssignKind.Normal:
+                Expression.GenerateCode(context);
+                Assignments.GenerateAssignCode(context, Destination);
+                break;
+            default:
+                // TODO
+                throw new NotImplementedException();
+        }
     }
 }

@@ -79,7 +79,7 @@ public static class VMAssembly
         HashSet<GMFunction> functions = new(new GMFunctionComparer());
         if (context is not null)
         {
-            foreach (GMFunction func in context.GlobalFunctions.FunctionToName.Keys.Cast<GMFunction>())
+            foreach (GMFunction func in ((Decompiler.GlobalFunctions)context.GlobalFunctions).GetFunctions().Cast<GMFunction>())
             {
                 functions.Add(func);
             }

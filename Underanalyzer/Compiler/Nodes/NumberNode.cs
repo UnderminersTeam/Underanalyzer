@@ -21,13 +21,19 @@ internal sealed class NumberNode : IConstantASTNode
     /// </summary>
     public double Value { get; }
 
+    /// <summary>
+    /// Name of the constant that created this number, or <see langword="null"/> if none was used.
+    /// </summary>
+    public string? ConstantName { get; }
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    public NumberNode(TokenNumber token)
+    public NumberNode(TokenNumber token, string? constantName)
     {
         Value = token.Value;
         NearbyToken = token;
+        ConstantName = constantName;
     }
 
     public NumberNode(double value, IToken? nearbyToken)
@@ -39,7 +45,20 @@ internal sealed class NumberNode : IConstantASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        return this;
+        // No processing to do prior to GMLv2
+        if (!context.CompileContext.GameContext.UsingGMLv2)
+        {
+            return this;
+        }
+
+        // Handle special self/other/global cases in GMLv2
+        return ConstantName switch
+        {
+            "self" => new SimpleFunctionCallNode(VMConstants.SelfFunction, null, []),
+            "other" => new SimpleFunctionCallNode(VMConstants.OtherFunction, null, []),
+            "global" => new SimpleFunctionCallNode(VMConstants.GlobalFunction, null, []),
+            _ => this
+        };
     }
 
     /// <inheritdoc/>

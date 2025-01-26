@@ -199,7 +199,7 @@ internal sealed class LexContext
                 // Check if the identifier is a builtin constant double
                 if (CompileContext.GameContext.Builtins.LookupConstantDouble(text, out double constantDouble))
                 {
-                    Tokens[i] = new TokenNumber(identifier.Context, identifier.TextPosition, text, constantDouble);
+                    Tokens[i] = new TokenNumber(identifier.Context, identifier.TextPosition, text, constantDouble, true);
                     continue;
                 }
 

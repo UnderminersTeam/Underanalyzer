@@ -1922,8 +1922,7 @@ public class DecompileContext_DecompileToString
     {
         var context = new Underanalyzer.Mock.GameContextMock();
         var func = new Underanalyzer.Mock.GMFunction("gml_Script_TestA");
-        context.GlobalFunctions.FunctionToName[func] = "TestA";
-        context.GlobalFunctions.NameToFunction["TestA"] = func;
+        ((GlobalFunctions)context.GlobalFunctions).DefineFunction("TestA", func);
 
         TestUtil.VerifyDecompileResult(
             """

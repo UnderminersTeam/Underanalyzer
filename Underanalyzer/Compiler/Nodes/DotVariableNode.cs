@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -53,6 +54,15 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Combine numbers into instance type (before processing left side!)
+        if (LeftExpression is NumberNode { Value: double numberValue } && (int)numberValue == numberValue)
+        {
+            SimpleVariableNode combined = new(VariableName, BuiltinVariable);
+            combined.SetExplicitInstanceType((InstanceType)(int)numberValue);
+            return combined;
+        }
+
+        // Process left side
         LeftExpression = LeftExpression.PostProcess(context);
 
         // Resolve enum values to a constant, if possible

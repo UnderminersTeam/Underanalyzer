@@ -5,9 +5,11 @@
 */
 
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -119,6 +121,15 @@ internal sealed class LocalVarDeclNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate local variable initial assignments (for ones that have them)
+        for (int i = 0; i < AssignedValues.Count; i++)
+        {
+            if (AssignedValues[i] is IASTNode expression)
+            {
+                expression.GenerateCode(context);
+                VariablePatch varPatch = new(DeclaredLocals[i], InstanceType.Local);
+                context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
+            }
+        }
     }
 }
