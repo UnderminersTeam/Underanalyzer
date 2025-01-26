@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -115,6 +116,27 @@ internal sealed class IfNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate loop condition, and convert to boolean
+        Condition.GenerateCode(context);
+        context.ConvertDataType(DataType.Boolean);
+
+        // Jump based on condition
+        SingleForwardBranchPatch conditionBranch = new(context.Emit(Opcode.BranchFalse));
+
+        // True statement
+        TrueStatement.GenerateCode(context);
+
+        // False statement, if present
+        if (FalseStatement is not null)
+        {
+            SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
+            conditionBranch.Patch(context);
+            FalseStatement.GenerateCode(context);
+            skipElseBranch.Patch(context);
+        }
+        else
+        {
+            conditionBranch.Patch(context);
+        }
     }
 }

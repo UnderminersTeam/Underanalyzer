@@ -158,6 +158,15 @@ public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock built
     }
 
     /// <inheritdoc/>
+    public void PatchInstruction(IGMInstruction instruction, int branchOffset)
+    {
+        if (instruction is GMInstruction mockInstruction)
+        {
+            mockInstruction.BranchOffset = branchOffset;
+        }
+    }
+
+    /// <inheritdoc/>
     public bool IsGlobalFunctionName(string name)
     {
         return globalFunctions.FunctionNameExists(name);

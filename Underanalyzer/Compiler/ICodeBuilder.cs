@@ -73,6 +73,11 @@ public interface ICodeBuilder
     public void PatchInstruction(IGMInstruction instruction, string stringContent);
 
     /// <summary>
+    /// Patches an existing instruction with a branch offset.
+    /// </summary>
+    public void PatchInstruction(IGMInstruction instruction, int branchOffset);
+
+    /// <summary>
     /// Returns whether a global function name of any kind exists with the given name.
     /// </summary>
     /// <remarks>

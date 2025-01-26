@@ -50,8 +50,10 @@ internal sealed class BytecodeContext
     /// </summary>
     public InstructionPatches Patches { get; } = InstructionPatches.Create();
 
-    // Current instruction writing position.
-    private int _position = 0;
+    /// <summary>
+    /// Current instruction writing position.
+    /// </summary>
+    public int Position { get; private set; } = 0;
 
     // Stack used for storing data types as on the VM data stack.
     private readonly Stack<DataType> _dataTypeStack = new(16);
@@ -113,9 +115,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode);
         Instructions.Add(instr);
-        _position += 4;
+        Position += 4;
         return instr;
     }
 
@@ -124,9 +126,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, DataType dataType)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType);
         Instructions.Add(instr);
-        _position += 4;
+        Position += 4;
         return instr;
     }
 
@@ -135,9 +137,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, DataType dataType1, DataType dataType2)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 4;
+        Position += 4;
         return instr;
     }
 
@@ -146,9 +148,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, short value, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, value, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, value, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 4;
+        Position += 4;
         return instr;
     }
 
@@ -157,9 +159,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, int value, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, value, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, value, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 8;
+        Position += 8;
         return instr;
     }
 
@@ -168,9 +170,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, long value, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, value, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, value, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 12;
+        Position += 12;
         return instr;
     }
 
@@ -179,9 +181,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, double value, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, value, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, value, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 12;
+        Position += 12;
         return instr;
     }
 
@@ -190,9 +192,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, VariablePatch variable, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 8;
+        Position += 8;
 
         variable.Instruction = instr;
         Patches.VariablePatches!.Add(variable);
@@ -205,9 +207,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, FunctionPatch function, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 8;
+        Position += 8;
 
         function.Instruction = instr;
         Patches.FunctionPatches!.Add(function);
@@ -220,9 +222,9 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction EmitCall(FunctionPatch function, int argumentCount)
     {
-        IGMInstruction instr = _codeBuilder.CreateCallInstruction(_position, argumentCount);
+        IGMInstruction instr = _codeBuilder.CreateCallInstruction(Position, argumentCount);
         Instructions.Add(instr);
-        _position += 8;
+        Position += 8;
 
         function.Instruction = instr;
         Patches.FunctionPatches!.Add(function);
@@ -235,14 +237,22 @@ internal sealed class BytecodeContext
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, StringPatch stringPatch, DataType dataType1, DataType dataType2 = DataType.Double)
     {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(_position, opcode, dataType1, dataType2);
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
         Instructions.Add(instr);
-        _position += 8;
+        Position += 8;
 
         stringPatch.Instruction = instr;
         Patches.StringPatches!.Add(stringPatch);
 
         return instr;
+    }
+
+    /// <summary>
+    /// Patches a single instruction with the given branch offset.
+    /// </summary>
+    public void PatchBranch(IGMInstruction instruction, int branchOffset)
+    {
+        _codeBuilder.PatchInstruction(instruction, branchOffset);
     }
 
     /// <summary>

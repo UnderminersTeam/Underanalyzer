@@ -27,4 +27,28 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestIf()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            if (a)
+            {
+                if (d)
+                {
+                }
+                else
+                {
+                }
+            }
+            else if (b)
+            {
+                if (c)
+                {
+                }
+            }
+            """
+        );
+    }
 }
