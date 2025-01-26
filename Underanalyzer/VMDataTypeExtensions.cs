@@ -5,6 +5,7 @@
 */
 
 using System;
+using static Underanalyzer.Compiler.Nodes.BinaryChainNode;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer;
@@ -15,12 +16,37 @@ namespace Underanalyzer;
 internal static class VMDataTypeExtensions
 {
     /// <summary>
-    /// Given two <see cref="DataType"/> enumerations, this method returns the one that 
-    /// should be biased towards in a binary operation.
+    /// Given two <see cref="DataType"/> enumerations and an <see cref="Opcode"/>, this method returns the 
+    /// data type result from a binary operation of the two types, with the given opcode.
     /// </summary>
-    public static DataType BiasWith(this DataType type1, DataType type2)
+    public static DataType BinaryResultWith(this DataType type1, Opcode opcode, DataType type2)
     {
-        // Type 1 and type 2 represent the left and right data types on the stack.
+        // Depending on opcode being used, and given certain type combinations, choose specific result types.
+        switch (opcode)
+        {
+            case Opcode.Subtract:
+            case Opcode.Divide:
+            case Opcode.GMLModulo:
+            case Opcode.And:
+            case Opcode.Or:
+            case Opcode.Xor:
+            case Opcode.ShiftLeft:
+            case Opcode.ShiftRight:
+                if (type1 == DataType.String || type2 == DataType.String)
+                {
+                    return DataType.Double;
+                }
+                break;
+            case Opcode.GMLDivRemainder:
+                if ((type1 == DataType.String && type2 != DataType.Variable) || type2 == DataType.String)
+                {
+                    return DataType.Double;
+                }
+                break;
+            case Opcode.Compare:
+                return DataType.Boolean;
+        }
+
         // Choose whichever type has a higher bias, or if equal, the smaller numerical data type value.
         int bias1 = StackTypeBias(type1);
         int bias2 = StackTypeBias(type2);

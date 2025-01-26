@@ -42,16 +42,8 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         Right = right;  
         Instruction = instruction;
 
-        if (Instruction.Kind == Opcode.Compare)
-        {
-            // For comparison operations, the result is always a boolean.
-            StackType = DataType.Boolean;
-        }
-        else
-        {
-            // Bias stack type depending on instruction's types for Left and Right
-            StackType = instruction.Type1.BiasWith(instruction.Type2);
-        }
+        // Get resulting stack type depending on instruction's opcode and types for Left and Right
+        StackType = instruction.Type1.BinaryResultWith(instruction.Kind, instruction.Type2);
     }
 
     /// <summary>

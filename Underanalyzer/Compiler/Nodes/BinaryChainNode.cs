@@ -403,121 +403,53 @@ internal sealed class BinaryChainNode : IASTNode
             Arguments[i].GenerateCode(context);
             CoerceBinaryDataType(context, currentOperation);
 
-            // Get biased data type to push to type stack
+            // Determine opcode and data type to push to type stack
             DataType rightType = context.PopDataType();
             DataType leftType = context.PopDataType();
-            DataType biasedType = leftType.BiasWith(rightType);
+            Opcode opcode = currentOperation switch
+            {
+                BinaryOperation.Add => Opcode.Add,
+                BinaryOperation.Subtract => Opcode.Subtract,
+                BinaryOperation.Multiply => Opcode.Multiply,
+                BinaryOperation.Divide => Opcode.Divide,
+                BinaryOperation.GMLModulo => Opcode.GMLModulo,
+                BinaryOperation.GMLDivRemainder => Opcode.GMLDivRemainder,
+                BinaryOperation.CompareLesser => Opcode.Compare,
+                BinaryOperation.CompareLesserEqual => Opcode.Compare,
+                BinaryOperation.CompareEqual => Opcode.Compare,
+                BinaryOperation.CompareNotEqual => Opcode.Compare,
+                BinaryOperation.CompareGreater => Opcode.Compare,
+                BinaryOperation.CompareGreaterEqual => Opcode.Compare,
+                BinaryOperation.LogicalAnd => Opcode.And,
+                BinaryOperation.BitwiseAnd => Opcode.And,
+                BinaryOperation.LogicalOr => Opcode.Or,
+                BinaryOperation.BitwiseOr => Opcode.Or,
+                BinaryOperation.LogicalXor => Opcode.Xor,
+                BinaryOperation.BitwiseXor => Opcode.Xor,
+                BinaryOperation.BitwiseShiftLeft => Opcode.ShiftLeft,
+                BinaryOperation.BitwiseShiftRight => Opcode.ShiftRight,
+                _ => throw new Exception("Invalid binary operation")
+            };
+            context.PushDataType(leftType.BinaryResultWith(opcode, rightType));
 
             // Generate instruction
-            switch (currentOperation)
+            if (opcode == Opcode.Compare)
             {
-                case BinaryOperation.Add:
-                    context.Emit(Opcode.Add, rightType, leftType);
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.Subtract:
-                    context.Emit(Opcode.Subtract, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
+                context.Emit(Opcode.Compare, currentOperation switch
                     {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.Multiply:
-                    context.Emit(Opcode.Multiply, rightType, leftType);
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.Divide:
-                    context.Emit(Opcode.Divide, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.GMLModulo:
-                    context.Emit(Opcode.GMLModulo, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.GMLDivRemainder:
-                    context.Emit(Opcode.GMLDivRemainder, rightType, leftType);
-                    if ((rightType == DataType.String && leftType != DataType.Variable) || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.CompareLesser:
-                    context.Emit(Opcode.Compare, ComparisonType.LesserThan, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.CompareLesserEqual:
-                    context.Emit(Opcode.Compare, ComparisonType.LesserEqualThan, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.CompareEqual:
-                    context.Emit(Opcode.Compare, ComparisonType.EqualTo, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.CompareNotEqual:
-                    context.Emit(Opcode.Compare, ComparisonType.NotEqualTo, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.CompareGreater:
-                    context.Emit(Opcode.Compare, ComparisonType.GreaterThan, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.CompareGreaterEqual:
-                    context.Emit(Opcode.Compare, ComparisonType.GreaterEqualThan, rightType, leftType);
-                    context.PushDataType(DataType.Boolean);
-                    break;
-                case BinaryOperation.LogicalAnd:
-                case BinaryOperation.BitwiseAnd:
-                    context.Emit(Opcode.And, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.LogicalOr:
-                case BinaryOperation.BitwiseOr:
-                    context.Emit(Opcode.Or, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.LogicalXor:
-                case BinaryOperation.BitwiseXor:
-                    context.Emit(Opcode.Xor, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.BitwiseShiftLeft:
-                    context.Emit(Opcode.ShiftLeft, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
-                case BinaryOperation.BitwiseShiftRight:
-                    context.Emit(Opcode.ShiftRight, rightType, leftType);
-                    if (rightType == DataType.String || leftType == DataType.String)
-                    {
-                        biasedType = DataType.Double;
-                    }
-                    context.PushDataType(biasedType);
-                    break;
+                        BinaryOperation.CompareLesser => ComparisonType.LesserThan,
+                        BinaryOperation.CompareLesserEqual => ComparisonType.LesserEqualThan,
+                        BinaryOperation.CompareEqual => ComparisonType.EqualTo,
+                        BinaryOperation.CompareNotEqual => ComparisonType.NotEqualTo,
+                        BinaryOperation.CompareGreater => ComparisonType.GreaterThan,
+                        BinaryOperation.CompareGreaterEqual => ComparisonType.GreaterEqualThan,
+                        _ => throw new Exception("Invalid comparison type")
+                    },
+                    rightType, leftType);
+            }
+            else
+            {
+                context.Emit(opcode, rightType, leftType);
             }
         }
     }
