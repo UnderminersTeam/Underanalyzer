@@ -23,6 +23,8 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool Bytecode14OrLower { get; set; } = false;
     /// <inheritdoc/>
+    public bool UsingLogicalShortCircuit { get; set; } = true;
+    /// <inheritdoc/>
     public bool UsingFinallyBeforeThrow { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingTypedBooleans { get; set; } = true;

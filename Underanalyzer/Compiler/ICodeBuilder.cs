@@ -50,6 +50,11 @@ public interface ICodeBuilder
     public IGMInstruction CreateInstruction(int address, Opcode opcode, double value, DataType dataType1, DataType dataType2);
 
     /// <summary>
+    /// Creates an instruction with an address, an opcode, two data types, and a comparsion type.
+    /// </summary>
+    public IGMInstruction CreateInstruction(int address, Opcode opcode, ComparisonType comparisonType, DataType dataType1, DataType dataType2);
+
+    /// <summary>
     /// Creates an instruction with an address and an argument count.
     /// </summary>
     /// <remarks>

@@ -27,6 +27,11 @@ internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
     // Address that will be branched to by all patched instructions
     private readonly List<IGMInstruction> _instructions = new(4);
 
+    /// <summary>
+    /// Whether this branch patch has been used by any instructions.
+    /// </summary>
+    public bool Used => _instructions.Count > 0;
+
     /// <inheritdoc/>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {

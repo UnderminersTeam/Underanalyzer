@@ -188,6 +188,17 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Emits a double-type instruction with the given opcode and data types, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(Opcode opcode, ComparisonType comparisonType, DataType dataType1, DataType dataType2)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, comparisonType, dataType1, dataType2);
+        Instructions.Add(instr);
+        Position += 4;
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given opcode, data types, and given variable, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, VariablePatch variable, DataType dataType1, DataType dataType2 = DataType.Double)
@@ -261,6 +272,14 @@ internal sealed class BytecodeContext
     public void PushDataType(DataType dataType)
     {
         _dataTypeStack.Push(dataType);
+    }
+
+    /// <summary>
+    /// Peeks the top data type from the data type stack.
+    /// </summary>
+    public DataType PeekDataType()
+    {
+        return _dataTypeStack.Peek();
     }
 
     /// <summary>

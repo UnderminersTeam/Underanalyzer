@@ -10,6 +10,7 @@ using System.Text;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -377,6 +378,258 @@ internal sealed class BinaryChainNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate leftmost argument, and coerce depending on operation
+        Arguments[0].GenerateCode(context);
+        CoerceBinaryDataType(context, Operations[0]);
+
+        // Generate short-circuit logic if relevant
+        if (context.CompileContext.GameContext.UsingLogicalShortCircuit)
+        {
+            foreach (BinaryOperation operation in Operations)
+            {
+                if (operation is BinaryOperation.LogicalAnd or BinaryOperation.LogicalOr)
+                {
+                    GenerateShortCircuitCode(context);
+                    return;
+                }
+            }
+        }
+
+        // Otherwise, generate generic binary operations
+        for (int i = 1; i < Arguments.Count; i++)
+        {
+            // Generate current argument, and coerce depending on operation
+            BinaryOperation currentOperation = Operations[i - 1];
+            Arguments[i].GenerateCode(context);
+            CoerceBinaryDataType(context, currentOperation);
+
+            // Get biased data type to push to type stack
+            DataType rightType = context.PopDataType();
+            DataType leftType = context.PopDataType();
+            DataType biasedType = leftType.BiasWith(rightType);
+
+            // Generate instruction
+            switch (currentOperation)
+            {
+                case BinaryOperation.Add:
+                    context.Emit(Opcode.Add, rightType, leftType);
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.Subtract:
+                    context.Emit(Opcode.Subtract, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.Multiply:
+                    context.Emit(Opcode.Multiply, rightType, leftType);
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.Divide:
+                    context.Emit(Opcode.Divide, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.GMLModulo:
+                    context.Emit(Opcode.GMLModulo, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.GMLDivRemainder:
+                    context.Emit(Opcode.GMLDivRemainder, rightType, leftType);
+                    if ((rightType == DataType.String && leftType != DataType.Variable) || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.CompareLesser:
+                    context.Emit(Opcode.Compare, ComparisonType.LesserThan, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.CompareLesserEqual:
+                    context.Emit(Opcode.Compare, ComparisonType.LesserEqualThan, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.CompareEqual:
+                    context.Emit(Opcode.Compare, ComparisonType.EqualTo, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.CompareNotEqual:
+                    context.Emit(Opcode.Compare, ComparisonType.NotEqualTo, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.CompareGreater:
+                    context.Emit(Opcode.Compare, ComparisonType.GreaterThan, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.CompareGreaterEqual:
+                    context.Emit(Opcode.Compare, ComparisonType.GreaterEqualThan, rightType, leftType);
+                    context.PushDataType(DataType.Boolean);
+                    break;
+                case BinaryOperation.LogicalAnd:
+                case BinaryOperation.BitwiseAnd:
+                    context.Emit(Opcode.And, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.LogicalOr:
+                case BinaryOperation.BitwiseOr:
+                    context.Emit(Opcode.Or, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.LogicalXor:
+                case BinaryOperation.BitwiseXor:
+                    context.Emit(Opcode.Xor, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.BitwiseShiftLeft:
+                    context.Emit(Opcode.ShiftLeft, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+                case BinaryOperation.BitwiseShiftRight:
+                    context.Emit(Opcode.ShiftRight, rightType, leftType);
+                    if (rightType == DataType.String || leftType == DataType.String)
+                    {
+                        biasedType = DataType.Double;
+                    }
+                    context.PushDataType(biasedType);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Generates short-circuit logic for logical AND/OR operations.
+    /// </summary>
+    private void GenerateShortCircuitCode(BytecodeContext context)
+    {
+        // Branches for false short-circuit, true short-circuit, and no short-circuit
+        MultiForwardBranchPatch falseShortCircuitPatch = new();
+        MultiForwardBranchPatch trueShortCircuitPatch = new();
+        MultiForwardBranchPatch noShortCircuitPatch = new();
+
+        // Generate short-circuit chain
+        for (int i = 1; i < Arguments.Count; i++)
+        {
+            // Convert previous type in chain to a boolean
+            context.ConvertDataType(DataType.Boolean);
+
+            // Branch differently depending on operation with current argument and previous argument
+            if (Operations[i - 1] == BinaryOperation.LogicalAnd)
+            {
+                falseShortCircuitPatch.AddInstruction(context, context.Emit(Opcode.BranchFalse));
+            }
+            else
+            {
+                trueShortCircuitPatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
+            }
+
+            // Generate current argument
+            Arguments[i].GenerateCode(context);
+        }
+
+        // Convert final type in chain to boolean
+        context.ConvertDataType(DataType.Boolean);
+        context.PushDataType(DataType.Boolean);
+
+        // If false branch was used, generate short-circuit block for it
+        if (falseShortCircuitPatch.Used)
+        {
+            noShortCircuitPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+            falseShortCircuitPatch.Patch(context);
+            context.Emit(Opcode.Push, (short)0, DataType.Int16);
+        }
+
+        // If true branch was used, generate short-circuit block for it
+        if (trueShortCircuitPatch.Used)
+        {
+            noShortCircuitPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+            trueShortCircuitPatch.Patch(context);
+            context.Emit(Opcode.Push, (short)1, DataType.Int16);
+        }
+
+        // Branch destination if no short-circuit was performed
+        noShortCircuitPatch.Patch(context);
+    }
+
+    /// <summary>
+    /// Coerces the data type of a binary operation argument, depending on operation being performed.
+    /// </summary>
+    private static void CoerceBinaryDataType(BytecodeContext context, BinaryOperation operation)
+    {
+        DataType sourceType = context.PeekDataType();
+        switch ((operation, sourceType))
+        {
+            case (BinaryOperation.Add, DataType.Boolean):
+            case (BinaryOperation.Subtract, DataType.Boolean):
+            case (BinaryOperation.Multiply, DataType.Boolean):
+            case (BinaryOperation.GMLDivRemainder, DataType.Boolean):
+            case (BinaryOperation.GMLModulo, DataType.Boolean):
+                context.Emit(Opcode.Convert, DataType.Boolean, DataType.Int32);
+                context.PopDataType();
+                context.PushDataType(DataType.Int32);
+                break;
+
+            case (BinaryOperation.Divide, not (DataType.Double or DataType.Variable)):
+                context.Emit(Opcode.Convert, sourceType, DataType.Double);
+                context.PopDataType();
+                context.PushDataType(DataType.Double);
+                break;
+
+            case (BinaryOperation.LogicalAnd, not DataType.Boolean):
+            case (BinaryOperation.LogicalOr, not DataType.Boolean):
+            case (BinaryOperation.LogicalXor, not DataType.Boolean):
+                context.Emit(Opcode.Convert, sourceType, DataType.Boolean);
+                context.PopDataType();
+                context.PushDataType(DataType.Boolean);
+                break;
+
+            case (BinaryOperation.BitwiseShiftLeft, not DataType.Int64):
+            case (BinaryOperation.BitwiseShiftRight, not DataType.Int64):
+                context.Emit(Opcode.Convert, sourceType, DataType.Int64);
+                context.PopDataType();
+                context.PushDataType(DataType.Int64);
+                break;
+
+            case (BinaryOperation.BitwiseAnd, DataType.Variable or DataType.Double):
+            case (BinaryOperation.BitwiseOr, DataType.Variable or DataType.Double):
+            case (BinaryOperation.BitwiseXor, DataType.Variable or DataType.Double):
+                context.Emit(Opcode.Convert, sourceType, DataType.Int64);
+                context.PopDataType();
+                context.PushDataType(DataType.Int64);
+                break;
+
+            case (BinaryOperation.BitwiseAnd, DataType.Boolean or DataType.String):
+            case (BinaryOperation.BitwiseOr, DataType.Boolean or DataType.String):
+            case (BinaryOperation.BitwiseXor, DataType.Boolean or DataType.String):
+                context.Emit(Opcode.Convert, sourceType, DataType.Int32);
+                context.PopDataType();
+                context.PushDataType(DataType.Int32);
+                break;
+        }
     }
 }

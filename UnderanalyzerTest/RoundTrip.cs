@@ -73,4 +73,23 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestForIfContinueBreak()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            top = 1;
+            for (var i = 0; i < 10; i = i + 1)
+            {
+                if (a)
+                {
+                    break;
+                }
+                continue;
+            }
+            bottom = 2;
+            """
+        );
+    }
 }

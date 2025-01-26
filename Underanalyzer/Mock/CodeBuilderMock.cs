@@ -103,6 +103,19 @@ public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock built
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateInstruction(int address, Opcode opcode, ComparisonType comparisonType, DataType dataType1, DataType dataType2)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = opcode,
+            ComparisonKind = comparisonType,
+            Type1 = dataType1,
+            Type2 = dataType2
+        };
+    }
+
+    /// <inheritdoc/>
     public IGMInstruction CreateCallInstruction(int address, int argumentCount)
     {
         return new GMInstruction()

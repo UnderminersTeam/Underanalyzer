@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -154,6 +155,32 @@ internal sealed class ForLoopNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Initializer
+        Initializer.GenerateCode(context);
+
+        // Branch target at the head, tail, and incrementor of the loop
+        MultiBackwardBranchPatch headPatch = new(context);
+        MultiForwardBranchPatch tailPatch = new();
+        MultiForwardBranchPatch incrementorPatch = new();
+
+        // Loop condition
+        Condition.GenerateCode(context);
+        context.ConvertDataType(DataType.Boolean);
+
+        // Jump based on condition
+        tailPatch.AddInstruction(context, context.Emit(Opcode.BranchFalse));
+
+        // Enter loop context, and generate body
+        context.PushControlFlowContext(new BasicLoopContext(tailPatch, incrementorPatch));
+        Body.GenerateCode(context);
+
+        // Incrementor, then exit loop context
+        incrementorPatch.Patch(context);
+        Incrementor.GenerateCode(context);
+        context.PopControlFlowContext();
+
+        // Loop tail
+        headPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+        tailPatch.Patch(context);
     }
 }
