@@ -14,7 +14,7 @@ namespace Underanalyzer.Mock;
 /// <summary>
 /// A default implementation of <see cref="ICodeBuilder"/>.
 /// </summary>
-public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock builtins) : ICodeBuilder
+public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
 {
 
     /// <inheritdoc/>
@@ -116,6 +116,31 @@ public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock built
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode, int value)
+    {
+        if (extendedOpcode == ExtendedOpcode.PushReference)
+        {
+            return new GMInstruction()
+            {
+                Address = address,
+                Kind = Opcode.Extended,
+                ExtKind = extendedOpcode,
+                Type1 = DataType.Int32,
+                AssetReferenceId = value & 0xFFFFFF,
+                AssetReferenceType = (AssetType)(value >> 24)
+            };
+        }
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Extended,
+            ExtKind = extendedOpcode,
+            Type1 = DataType.Int32,
+            ValueInt = value
+        };
+    }
+
+    /// <inheritdoc/>
     public IGMInstruction CreateCallInstruction(int address, int argumentCount)
     {
         return new GMInstruction()
@@ -146,11 +171,11 @@ public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock built
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            if (builtins.LookupBuiltinFunction(functionName) is not null)
+            if (gameContext.Builtins.LookupBuiltinFunction(functionName) is not null)
             {
                 mockInstruction.Function = new GMFunction(functionName);
             }
-            else if (globalFunctions.TryGetFunction(functionName, out IGMFunction? function))
+            else if (gameContext.GlobalFunctions.TryGetFunction(functionName, out IGMFunction? function))
             {
                 mockInstruction.Function = function;
             }
@@ -182,6 +207,6 @@ public class CodeBuilderMock(GlobalFunctions globalFunctions, BuiltinsMock built
     /// <inheritdoc/>
     public bool IsGlobalFunctionName(string name)
     {
-        return globalFunctions.FunctionNameExists(name);
+        return gameContext.GlobalFunctions.FunctionNameExists(name);
     }
 }

@@ -199,6 +199,17 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Emits an instruction with the given extended opcode and integer value, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(ExtendedOpcode extendedOpcode, int extendedValue)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode, extendedValue);
+        Instructions.Add(instr);
+        Position += 8;
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given opcode, data types, and given variable, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, VariablePatch variable, DataType dataType1, DataType dataType2 = DataType.Double)

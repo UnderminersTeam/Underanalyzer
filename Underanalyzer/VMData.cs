@@ -191,7 +191,7 @@ public interface IGMInstruction
         Negate = 0x11,
 
         /// <summary>
-        /// Performs a boolean NOT operation on the top value of the stack (modifying it).
+        /// Performs a boolean or bitwise NOT operation on the top value of the stack (modifying it).
         /// Mnemonic: "not"
         /// </summary>
         [OpcodeInfo("not")]

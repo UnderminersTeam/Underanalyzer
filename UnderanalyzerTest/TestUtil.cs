@@ -267,4 +267,22 @@ internal static class TestUtil
         // Ensure code is identical
         Assert.Equal(code.Trim().ReplaceLineEndings("\n"), decompileResult.Trim());
     }
+
+    /// <summary>
+    /// Compiles the given GML code, then decompiles it, ensuring the decompilation result is identical to the expected result.
+    /// </summary>
+    public static void VerifyRoundTrip(string code, string expected, bool isGlobalScript = false, GameContextMock? gameContext = null, DecompileSettings? decompileSettings = null)
+    {
+        gameContext ??= new();
+
+        // Compile code
+        GMCode generated = CompileCode(code, isGlobalScript, gameContext);
+
+        // Decompile generated code entry
+        DecompileContext decompilerContext = new(gameContext, generated, decompileSettings);
+        string decompileResult = decompilerContext.DecompileToString();
+
+        // Ensure code is identical to expected decompilation
+        Assert.Equal(expected.Trim().ReplaceLineEndings("\n"), decompileResult.Trim());
+    }
 }

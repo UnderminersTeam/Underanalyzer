@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -56,6 +57,25 @@ internal sealed class ConditionalNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate condition, and convert to boolean
+        Condition.GenerateCode(context);
+        context.ConvertDataType(DataType.Boolean);
+
+        // Jump based on condition
+        SingleForwardBranchPatch conditionBranch = new(context.Emit(Opcode.BranchFalse));
+
+        // True expression (and convert to variable type)
+        TrueExpression.GenerateCode(context);
+        context.ConvertDataType(DataType.Variable);
+        SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
+
+        // False expression (and convert to variable type)
+        conditionBranch.Patch(context);
+        FalseExpression.GenerateCode(context);
+        context.ConvertDataType(DataType.Variable);
+
+        // Ending (result is always variable type)
+        skipElseBranch.Patch(context);
+        context.PushDataType(DataType.Variable);
     }
 }

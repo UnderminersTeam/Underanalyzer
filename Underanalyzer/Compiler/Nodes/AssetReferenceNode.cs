@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -26,12 +27,20 @@ internal sealed class AssetReferenceNode(TokenAssetReference token) : IConstantA
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // If not using typed asset references, just convert to numeric form
+        if (!context.CompileContext.GameContext.UsingAssetReferences)
+        {
+            return new NumberNode(AssetId, NearbyToken);
+        }
+
         return this;
     }
 
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Assume that typed asset references are being used by this point
+        context.Emit(ExtendedOpcode.PushReference, AssetId);
+        context.PushDataType(DataType.Variable);
     }
 }

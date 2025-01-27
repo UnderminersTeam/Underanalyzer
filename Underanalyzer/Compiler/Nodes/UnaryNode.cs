@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -92,6 +93,56 @@ internal sealed class UnaryNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Compile expression that operation is being performed on
+        Expression.GenerateCode(context);
+        DataType type = context.PeekDataType();
+
+        // Emit operation instruction (and possible conversion)
+        switch (Kind)
+        {
+            case UnaryKind.BooleanNot:
+                if (type == DataType.String)
+                {
+                    context.CompileContext.PushError("Cannot invert a string", NearbyToken);
+                }
+                else if (type != DataType.Boolean)
+                {
+                    context.PopDataType();
+                    context.Emit(Opcode.Convert, type, DataType.Boolean);
+                    context.PushDataType(DataType.Boolean);
+                }
+                context.Emit(Opcode.Not, DataType.Boolean);
+                break;
+            case UnaryKind.Negative:
+                if (type == DataType.String)
+                {
+                    context.CompileContext.PushError("Cannot negate a string", NearbyToken);
+                }
+                else if (type == DataType.Boolean)
+                {
+                    context.PopDataType();
+                    context.Emit(Opcode.Convert, DataType.Boolean, DataType.Int32);
+                    context.PushDataType(DataType.Int32);
+                    type = DataType.Int32;
+                }
+                context.Emit(Opcode.Negate, type);
+                break;
+            case UnaryKind.BitwiseNegate:
+                if (type == DataType.String)
+                {
+                    context.CompileContext.PushError("Cannot bitwise negate a string", NearbyToken);
+                }
+                else if (type is DataType.Double or DataType.Variable)
+                {
+                    context.PopDataType();
+                    // TODO: I think there's a verison difference here (need to figure out when this changed from Int32 to Int64)
+                    context.Emit(Opcode.Convert, type, DataType.Int64);
+                    context.PushDataType(DataType.Int64);
+                    type = DataType.Int64;
+                }
+                context.Emit(Opcode.Not, type);
+                break;
+            // Note: UnaryKind.Positive is a no-op apparently
+        }
     }
 }

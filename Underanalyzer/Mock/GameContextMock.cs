@@ -58,7 +58,7 @@ public class GameContextMock : IGameContext
 
     public GameContextMock()
     {
-        CodeBuilder = new CodeBuilderMock((GlobalFunctions)GlobalFunctions, (BuiltinsMock)Builtins);
+        CodeBuilder = new CodeBuilderMock(this);
     }
 
     /// <summary>

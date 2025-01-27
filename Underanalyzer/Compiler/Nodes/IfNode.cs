@@ -116,7 +116,7 @@ internal sealed class IfNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // Generate loop condition, and convert to boolean
+        // Generate condition, and convert to boolean
         Condition.GenerateCode(context);
         context.ConvertDataType(DataType.Boolean);
 
