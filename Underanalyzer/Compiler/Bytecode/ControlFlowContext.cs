@@ -48,12 +48,12 @@ internal interface IControlFlowContext
 }
 
 /// <summary>
-/// Control flow context for basic loops, such as while/for loops (with no cleanup, etc.).
+/// Control flow context for all types of loops.
 /// </summary>
-internal class BasicLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : IControlFlowContext
+internal abstract class LoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : IControlFlowContext
 {
     /// <inheritdoc/>
-    public bool RequiresCleanup => false;
+    public abstract bool RequiresCleanup { get; }
 
     /// <inheritdoc/>
     public bool IsLoop => true;
@@ -65,9 +65,7 @@ internal class BasicLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch 
     public bool ContinueUsed { get; private set; } = false;
 
     /// <inheritdoc/>
-    public void GenerateCleanupCode(BytecodeContext context)
-    {
-    }
+    public abstract void GenerateCleanupCode(BytecodeContext context);
 
     /// <inheritdoc/>
     public void UseBreak(BytecodeContext context, IGMInstruction instruction)
@@ -81,5 +79,34 @@ internal class BasicLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch 
     {
         ContinueUsed = true;
         continuePatch.AddInstruction(context, instruction);
+    }
+}
+
+/// <summary>
+/// Control flow context for basic loops, such as while/for loops (with no cleanup, etc.).
+/// </summary>
+internal sealed class BasicLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : LoopContext(breakPatch, continuePatch)
+{
+    /// <inheritdoc/>
+    public override bool RequiresCleanup => false;
+
+    /// <inheritdoc/>
+    public override void GenerateCleanupCode(BytecodeContext context)
+    {
+    }
+}
+
+/// <summary>
+/// Control flow context for with loops.
+/// </summary>
+internal sealed class WithLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : LoopContext(breakPatch, continuePatch)
+{
+    /// <inheritdoc/>
+    public override bool RequiresCleanup => true;
+
+    /// <inheritdoc/>
+    public override void GenerateCleanupCode(BytecodeContext context)
+    {
+        context.EmitPopWithExit();
     }
 }

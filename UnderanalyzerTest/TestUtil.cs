@@ -163,7 +163,7 @@ internal static class TestUtil
         {
             GMInstruction castInstr = (GMInstruction)instr;
             rootEntry.Instructions.Add(castInstr);
-            rootEntry.Length += castInstr.GetLength();
+            rootEntry.Length += IGMInstruction.GetSize(castInstr);
         }
         int childIndex = 0;
         foreach (FunctionEntry func in context.OutputFunctionEntries!)

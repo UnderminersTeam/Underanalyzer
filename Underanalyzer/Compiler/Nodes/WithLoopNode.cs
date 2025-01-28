@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -79,6 +80,54 @@ internal sealed class WithLoopNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate expression
+        Expression.GenerateCode(context);
+
+        // If expression type isn't an integer, convert to one
+        DataType exprDataType = context.PopDataType();
+        if (exprDataType != DataType.Int32)
+        {
+            if (exprDataType == DataType.Variable && context.CompileContext.GameContext.UsingGMLv2)
+            {
+                // In GMLv2, use magic stacktop integer to reference variable types
+                context.Emit(Opcode.PushImmediate, (short)InstanceType.StackTop, DataType.Int16);
+            }
+            else
+            {
+                // Otherwise, if either not GMLv2, or type is not a variable type, perform direct conversion
+                context.Emit(Opcode.Convert, exprDataType, DataType.Int32);
+            }
+        }
+
+        // Push with context, and set up branch target for popping with context
+        MultiForwardBranchPatch popWithContextPatch = new();
+        popWithContextPatch.AddInstruction(context, context.Emit(Opcode.PushWithContext));
+
+        // Branch target at pushing the with context, and if breaking out of the loop
+        MultiBackwardBranchPatch pushWithContextPatch = new(context);
+        MultiForwardBranchPatch breakPatch = new();
+
+        // Enter loop context, and generate body
+        context.PushControlFlowContext(new WithLoopContext(breakPatch, popWithContextPatch));
+        Body.GenerateCode(context);
+        context.PopControlFlowContext();
+
+        // Pop with context
+        popWithContextPatch.Patch(context);
+        pushWithContextPatch.AddInstruction(context, context.Emit(Opcode.PopWithContext));
+
+        // If break was used inside of the loop, generate block to handle it
+        if (breakPatch.Used)
+        {
+            // If code path doesn't take the break path, skip past the upcoming block
+            SingleForwardBranchPatch skipBreakBlockPatch = new(context.Emit(Opcode.Branch));
+
+            // Generate break block - simply pop with context
+            breakPatch.Patch(context);
+            context.EmitPopWithExit();
+
+            // Skip destination
+            skipBreakBlockPatch.Patch(context);
+        }
     }
 }

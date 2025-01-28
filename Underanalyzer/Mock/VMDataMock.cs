@@ -161,36 +161,6 @@ public class GMInstruction : IGMInstruction
     {
         return $"{nameof(GMInstruction)}: {Kind} (address {Address})";
     }
-
-    /// <summary>
-    /// Gets the byte length of this instruction.
-    /// </summary>
-    public int GetLength()
-    {
-        // If the instruction has a variable or function, it takes 4 extra bytes for the reference
-        if (Variable is not null || Function is not null)
-        {
-            return 8;
-        }
-
-        // Push instructions take extra space to store data (aside from 16-bit integers)
-        if (Kind is IGMInstruction.Opcode.Push or IGMInstruction.Opcode.PushLocal or 
-                    IGMInstruction.Opcode.PushGlobal or IGMInstruction.Opcode.PushBuiltin or 
-                    IGMInstruction.Opcode.PushImmediate)
-        {
-            if (Type1 is IGMInstruction.DataType.Double or IGMInstruction.DataType.Int64)
-            {
-                return 12;
-            }
-            if (Type1 != IGMInstruction.DataType.Int16)
-            {
-                return 8;
-            }
-        }
-
-        // All other instructions are just 4 bytes
-        return 4;
-    }
 }
 
 /// <summary>

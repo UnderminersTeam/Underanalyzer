@@ -141,6 +141,17 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateWithExitInstruction(int address)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.PopWithContext,
+            PopWithContextExit = true
+        };
+    }
+
+    /// <inheritdoc/>
     public IGMInstruction CreateCallInstruction(int address, int argumentCount)
     {
         return new GMInstruction()

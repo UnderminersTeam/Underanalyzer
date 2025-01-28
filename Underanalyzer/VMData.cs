@@ -731,34 +731,33 @@ public interface IGMInstruction
     /// </summary>
     internal static int GetSize(IGMInstruction instr)
     {
+        // If the instruction has a variable or function, it takes 4 extra bytes for the reference
         if (instr.Variable is not null || instr.Function is not null)
         {
             return 8;
         }
-        switch (instr.Kind)
+
+        // Push instructions take extra space to store data (aside from 16-bit integers)
+        if (instr.Kind is Opcode.Push or Opcode.PushLocal or Opcode.PushGlobal or 
+                          Opcode.PushBuiltin or Opcode.PushImmediate)
         {
-            case Opcode.Push or 
-                 Opcode.PushLocal or 
-                 Opcode.PushGlobal or
-                 Opcode.PushBuiltin or 
-                 Opcode.PushImmediate:
-                if (instr.Type1 is (DataType.Double or DataType.Int64))
-                {
-                    return 12;
-                }
-                if (instr.Type1 != DataType.Int16)
-                {
-                    return 8;
-                }
-                break;
-            
-            case Opcode.Extended:
-                if (instr.Type1 == DataType.Int32)
-                {
-                    return 8;
-                }
-                break;
+            if (instr.Type1 is DataType.Double or DataType.Int64)
+            {
+                return 12;
+            }
+            if (instr.Type1 != DataType.Int16)
+            {
+                return 8;
+            }
         }
+
+        // Extended opcodes with an integer argument take an extra 4 bytes
+        if (instr is { Kind: Opcode.Extended, Type1: DataType.Int32 })
+        {
+            return 8;
+        }
+
+        // All other instructions are just 4 bytes
         return 4;
     }
 }

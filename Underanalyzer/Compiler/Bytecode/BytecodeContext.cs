@@ -210,6 +210,17 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Emits an instruction with opcode <see cref="Opcode.PopWithContext"/>, and <see cref="IGMInstruction.PopWithContextExit"/> as <see langword="true"/>.
+    /// </summary>
+    public IGMInstruction EmitPopWithExit()
+    {
+        IGMInstruction instr = _codeBuilder.CreateWithExitInstruction(Position);
+        Instructions.Add(instr);
+        Position += 4;
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given opcode, data types, and given variable, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, VariablePatch variable, DataType dataType1, DataType dataType2 = DataType.Double)

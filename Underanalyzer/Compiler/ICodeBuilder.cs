@@ -60,6 +60,14 @@ public interface ICodeBuilder
     public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode, int value);
 
     /// <summary>
+    /// Creates an instruction with an address, which will exit early from within a with loop.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.PopWithContext"/>, and have <see cref="IGMInstruction.PopWithContextExit"/> as <see langword="true"/>.
+    /// </remarks>
+    public IGMInstruction CreateWithExitInstruction(int address);
+
+    /// <summary>
     /// Creates an instruction with an address and an argument count.
     /// </summary>
     /// <remarks>

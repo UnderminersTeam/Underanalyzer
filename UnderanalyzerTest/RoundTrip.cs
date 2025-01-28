@@ -191,4 +191,42 @@ public class RoundTrip
             false, mock
         );
     }
+
+    [Fact]
+    public void TestWithContinueBreakExit()
+    {
+        GameContextMock mock = new()
+        {
+            UsingAssetReferences = true,
+            UsingTypedBooleans = true
+        };
+        mock.DefineMockAsset(AssetType.Object, 8, "obj_test");
+
+        TestUtil.VerifyRoundTrip(
+            """
+            with (-3)
+            {
+                a = 123;
+                return 0;
+            }
+            with (abc)
+            {
+                b = 456;
+                exit;
+            }
+            with (obj_test)
+            {
+                if (c)
+                {
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            """,
+            false, mock
+        );
+    }
 }
