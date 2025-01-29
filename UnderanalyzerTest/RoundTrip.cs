@@ -253,4 +253,30 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestSwitchContinueBreakExit()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            repeat (a)
+            {
+                switch (b)
+                {
+                    case 123:
+                        c = 0;
+                        break;
+                    case 456:
+                        d = 0;
+                        break;
+                        return 123;
+                    case 789:
+                        continue;
+                    default:
+                        exit;
+                }
+            }
+            """
+        );
+    }
 }

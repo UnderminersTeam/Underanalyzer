@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -102,16 +103,106 @@ internal sealed class SwitchNode : IASTNode
     public IASTNode PostProcess(ParseContext context)
     {
         Expression = Expression.PostProcess(context);
-        for (int i = 0; i < Children.Count; i++)
+        if (Children.Count == 0)
         {
-            Children[i] = Children[i].PostProcess(context);
+            context.CompileContext.PushError("Switch statement is empty", NearbyToken);
+        }
+        else
+        {
+            if (Children[0] is not SwitchCaseNode)
+            {
+                context.CompileContext.PushError("Switch statement body must begin with \"case\" or \"default\"", NearbyToken);
+            }
+            for (int i = 0; i < Children.Count; i++)
+            {
+                Children[i] = Children[i].PostProcess(context);
+            }
+
+            // TODO: possibly check for duplicate cases here
         }
         return this;
     }
 
+    // Helper struct for generating switch case code
+    private readonly record struct SwitchCase(MultiForwardBranchPatch Branch, int ChildIndex);
+
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Expression being switched upon
+        Expression.GenerateCode(context);
+        DataType expressionType = context.PopDataType();
+
+        // Generate comparison and branch logic for all cases
+        MultiForwardBranchPatch tailPatch = new();
+        MultiForwardBranchPatch continuePatch = new();
+        MultiForwardBranchPatch defaultPatch = new();
+        bool defaultCaseExists = false;
+        List<SwitchCase> cases = new(16);
+        for (int i = 0; i < Children.Count; i++)
+        {
+            if (Children[i] is SwitchCaseNode caseNode)
+            {
+                if (caseNode.Expression is IASTNode caseExpression)
+                {
+                    // Normal case. Duplicate original expression, and compare to this expression
+                    context.Emit(Opcode.Duplicate, expressionType);
+                    caseExpression.GenerateCode(context);
+                    context.Emit(Opcode.Compare, ComparisonType.EqualTo, context.PopDataType(), expressionType);
+
+                    // Branch to actual case code
+                    MultiForwardBranchPatch casePatch = new();
+                    casePatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
+                    cases.Add(new SwitchCase(casePatch, i));
+                }
+                else
+                {
+                    // Default case
+                    defaultCaseExists = true;
+                    cases.Add(new SwitchCase(defaultPatch, i));
+                }
+            }
+        }
+
+        // At the end of the case branches, emit potential default branch, as well as general skip branch
+        if (defaultCaseExists)
+        {
+            defaultPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+        }
+        tailPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+
+        // Enter switch context, and generate actual body code
+        context.PushControlFlowContext(new SwitchContext(expressionType, tailPatch, continuePatch));
+        for (int i = 0; i < cases.Count; i++)
+        {
+            // Get range of children nodes to generate code for
+            SwitchCase currentCase = cases[i];
+            int startIndex = currentCase.ChildIndex + 1;
+            int endIndexExclusive = (i + 1 < cases.Count) ? cases[i + 1].ChildIndex : Children.Count;
+
+            // Generate code for case
+            currentCase.Branch.Patch(context);
+            for (int j = startIndex; j < endIndexExclusive; j++)
+            {
+                Children[j].GenerateCode(context);
+            }
+        }
+        context.PopControlFlowContext();
+
+        // Generate continue block, if used (applies to a surrounding loop - only if one exists)
+        if (continuePatch.Used)
+        {
+            // Branch to skip past this block if not taking continue path
+            tailPatch.AddInstruction(context, context.Emit(Opcode.Branch));
+
+            // Clean up stack, and branch to surrounding loop's continue destination
+            continuePatch.Patch(context);
+            context.Emit(Opcode.PopDelete, expressionType);
+            context.GetTopControlFlowContext().UseContinue(context, context.Emit(Opcode.Branch));
+        }
+
+        // Tail of statement, and clean up expression from stack
+        tailPatch.Patch(context);
+        context.Emit(Opcode.PopDelete, expressionType);
     }
 }

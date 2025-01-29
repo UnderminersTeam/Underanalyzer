@@ -24,16 +24,6 @@ internal interface IControlFlowContext
     public bool IsLoop { get; }
 
     /// <summary>
-    /// Whether a break statement has been used on this control flow context.
-    /// </summary>
-    public bool BreakUsed { get; }
-
-    /// <summary>
-    /// Whether a continue statement has been used on this control flow context.
-    /// </summary>
-    public bool ContinueUsed { get; }
-
-    /// <summary>
     /// Generates cleanup code for the control flow context, using the given bytecode context.
     /// </summary>
     public void GenerateCleanupCode(BytecodeContext context);
@@ -61,25 +51,17 @@ internal abstract class LoopContext(IMultiBranchPatch breakPatch, IMultiBranchPa
     public bool IsLoop => true;
 
     /// <inheritdoc/>
-    public bool BreakUsed { get; private set; } = false;
-
-    /// <inheritdoc/>
-    public bool ContinueUsed { get; private set; } = false;
-
-    /// <inheritdoc/>
     public abstract void GenerateCleanupCode(BytecodeContext context);
 
     /// <inheritdoc/>
     public void UseBreak(BytecodeContext context, IGMInstruction instruction)
     {
-        BreakUsed = true;
         breakPatch.AddInstruction(context, instruction);
     }
 
     /// <inheritdoc/>
     public void UseContinue(BytecodeContext context, IGMInstruction instruction)
     {
-        ContinueUsed = true;
         continuePatch.AddInstruction(context, instruction);
     }
 }
@@ -126,5 +108,36 @@ internal sealed class RepeatLoopContext(IMultiBranchPatch breakPatch, IMultiBran
     {
         // Clear loop counter from stack
         context.Emit(Opcode.PopDelete, DataType.Int32);
+    }
+}
+
+/// <summary>
+/// Control flow context for switch statements.
+/// </summary>
+internal sealed class SwitchContext(DataType expressionType, IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : IControlFlowContext
+{
+    /// <inheritdoc/>
+    public bool RequiresCleanup => true;
+
+    /// <inheritdoc/>
+    public bool IsLoop => false;
+
+    /// <inheritdoc/>
+    public void GenerateCleanupCode(BytecodeContext context)
+    {
+        // Clear original switch expression from stack
+        context.Emit(Opcode.PopDelete, expressionType);
+    }
+
+    /// <inheritdoc/>
+    public void UseBreak(BytecodeContext context, IGMInstruction instruction)
+    {
+        breakPatch.AddInstruction(context, instruction);
+    }
+
+    /// <inheritdoc/>
+    public void UseContinue(BytecodeContext context, IGMInstruction instruction)
+    {
+        continuePatch.AddInstruction(context, instruction);
     }
 }
