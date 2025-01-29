@@ -333,6 +333,58 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Possible instance conversion types. See <see cref="ConvertToInstanceId"/>.
+    /// </summary>
+    public enum InstanceConversionType
+    {
+        /// <summary>
+        /// No conversion performed.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Conversion directly to int32 performed.
+        /// </summary>
+        Int32,
+
+        /// <summary>
+        /// Magic stacktop ID used (<see cref="InstanceType.StackTop"/>).
+        /// </summary>
+        StacktopId
+    }
+
+    /// <summary>
+    /// Converts the data type on the top of the stack to an instance ID, depending on GameMaker version.
+    /// </summary>
+    /// <remarks>
+    /// Pops the top data type from the stack.
+    /// </remarks>
+    /// <returns>
+    /// <see cref="InstanceConversionType"/> enumeration representing what conversion was performed.
+    /// </returns>
+    public InstanceConversionType ConvertToInstanceId()
+    {
+        // If data type isn't an integer, convert to one
+        DataType dataType = PopDataType();
+        if (dataType != DataType.Int32)
+        {
+            if (dataType == DataType.Variable && CompileContext.GameContext.UsingGMLv2)
+            {
+                // In GMLv2, use magic stacktop integer to reference variable types
+                Emit(Opcode.PushImmediate, (short)InstanceType.StackTop, DataType.Int16);
+                return InstanceConversionType.StacktopId;
+            }
+
+            // Otherwise, if either not GMLv2, or type is not a variable type, perform direct conversion
+            Emit(Opcode.Convert, dataType, DataType.Int32);
+            return InstanceConversionType.Int32;
+        }
+
+        // No conversion was performed
+        return InstanceConversionType.None;
+    }
+
+    /// <summary>
     /// Returns whether any control flow contexts require cleanup currently, for early exits.
     /// </summary>
     public bool DoAnyControlFlowRequireCleanup()

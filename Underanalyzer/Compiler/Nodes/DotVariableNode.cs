@@ -92,6 +92,25 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate push for left side, and convert it to an instance ID
+        LeftExpression.GenerateCode(context);
+        context.ConvertToInstanceId();
+
+        // Emit instruction to push (and push data type)
+        VariablePatch varPatch = new(VariableName, InstanceType.Self, VariableType.StackTop, BuiltinVariable is not null);
+        context.Emit(Opcode.Push, varPatch, DataType.Variable);
+        context.PushDataType(DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public void GenerateAssignCode(BytecodeContext context)
+    {
+        // Generate push for left side, and convert it to an instance ID
+        LeftExpression.GenerateCode(context);
+        context.ConvertToInstanceId();
+
+        // Simple variable store
+        VariablePatch varPatch = new(VariableName, InstanceType.Self, VariableType.StackTop, BuiltinVariable is not null);
+        context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
     }
 }

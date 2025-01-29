@@ -83,21 +83,8 @@ internal sealed class WithLoopNode : IASTNode
         // Generate expression
         Expression.GenerateCode(context);
 
-        // If expression type isn't an integer, convert to one
-        DataType exprDataType = context.PopDataType();
-        if (exprDataType != DataType.Int32)
-        {
-            if (exprDataType == DataType.Variable && context.CompileContext.GameContext.UsingGMLv2)
-            {
-                // In GMLv2, use magic stacktop integer to reference variable types
-                context.Emit(Opcode.PushImmediate, (short)InstanceType.StackTop, DataType.Int16);
-            }
-            else
-            {
-                // Otherwise, if either not GMLv2, or type is not a variable type, perform direct conversion
-                context.Emit(Opcode.Convert, exprDataType, DataType.Int32);
-            }
-        }
+        // If expression type isn't an instance ID, convert to one
+        context.ConvertToInstanceId();
 
         // Push with context, and set up branch target for popping with context
         MultiForwardBranchPatch popWithContextPatch = new();

@@ -82,7 +82,7 @@ internal sealed class AssignNode : IASTNode
         {
             case AssignKind.Normal:
                 Expression.GenerateCode(context);
-                Assignments.GenerateAssignCode(context, Destination);
+                Destination.GenerateAssignCode(context);
                 break;
             default:
                 // TODO

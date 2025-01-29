@@ -279,4 +279,31 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestAssignments()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 0;
+            a.b = 0;
+            a.b.c = 0;
+            a[0] = 1;
+            a.b[0] = 1;
+            a.b.c[0] = 1;
+            a[0].b[1] = 2;
+            a[0].b[1].c = 2;
+            global.a = 0;
+            global.a.b = 0;
+            global.a.b.c = 0;
+            global.a[0] = 1;
+            global.a.b[0] = 1;
+            global.a.b.c[0] = 1;
+            global.a[0].b[1] = 2;
+            global.a[0].b[1].c = 2;
+            """
+        );
+    }
+
+    // TODO: test for @@Global@@ rewriting for things like global.a[0] = 1 becoming @@Global@@().a[0] = 1
 }

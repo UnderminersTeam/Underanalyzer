@@ -101,6 +101,14 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         context.PushDataType(DataType.Variable);
     }
 
+    /// <inheritdoc/>
+    public void GenerateAssignCode(BytecodeContext context)
+    {
+        // Simple variable store
+        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
+    }
+
     /// <summary>
     /// Resolves the final variable type (and scope in general) for a variable, given the current context, 
     /// the variable's name, and builtin variable information.

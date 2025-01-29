@@ -64,10 +64,18 @@ internal sealed class NumberNode : IConstantASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        if ((long)Value == Value)
+        GenerateCode(context, Value);
+    }
+
+    /// <summary>
+    /// Generates code to push a number, but without any specific node.
+    /// </summary>
+    public static void GenerateCode(BytecodeContext context, double value)
+    {
+        if ((long)value == value)
         {
             // Integer value
-            long integerValue = (long)Value;
+            long integerValue = (long)value;
             if (integerValue <= int.MaxValue && integerValue >= int.MinValue)
             {
                 if (integerValue <= short.MaxValue && integerValue >= short.MinValue)
@@ -93,7 +101,7 @@ internal sealed class NumberNode : IConstantASTNode
         else
         {
             // Double value
-            context.Emit(Opcode.Push, Value, DataType.Double);
+            context.Emit(Opcode.Push, value, DataType.Double);
             context.PushDataType(DataType.Double);
         }
     }

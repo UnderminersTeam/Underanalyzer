@@ -43,6 +43,10 @@ internal interface IConstantASTNode : IASTNode
 /// </summary>
 internal interface IAssignableASTNode : IASTNode
 {
+    /// <summary>
+    /// Generates assignment code for this node.
+    /// </summary>
+    public void GenerateAssignCode(BytecodeContext context);
 }
 
 /// <summary>

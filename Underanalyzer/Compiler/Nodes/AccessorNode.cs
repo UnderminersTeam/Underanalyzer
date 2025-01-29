@@ -4,9 +4,12 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
+using System.Reflection.Emit;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -125,12 +128,103 @@ internal sealed class AccessorNode : IAssignableASTNode
         Expression = Expression.PostProcess(context);
         AccessorExpression = AccessorExpression.PostProcess(context);
         AccessorExpression2 = AccessorExpression2?.PostProcess(context);
+
+        // TODO: perform post-processing to convert all non-Array accessors to function calls
+
         return this;
+    }
+
+    /// <summary>
+    /// Generates common code for generating array accessors on <see cref="IVariableASTNode"/> expressions.
+    /// </summary>
+    /// <returns>
+    /// The <see cref="InstanceType"/> to use for the corresponding <see cref="Opcode.Push"/> or <see cref="Opcode.Pop"/>.
+    /// </returns>
+    private InstanceType GenerateVariableCode(BytecodeContext context, IVariableASTNode variable)
+    {
+        // Generate instance code, and determine instance type to use for pushing/popping
+        InstanceType instanceType;
+        if (variable is SimpleVariableNode simpleVariable)
+        {
+            // Generate instance type
+            NumberNode.GenerateCode(context, (int)simpleVariable.ExplicitInstanceType);
+            context.ConvertToInstanceId();
+
+            // In GMLv2, instance type is always Self. Otherwise, use variable's type.
+            if (context.CompileContext.GameContext.UsingGMLv2)
+            {
+                instanceType = InstanceType.Self;
+            }
+            else
+            {
+                instanceType = simpleVariable.ExplicitInstanceType;
+            }
+        }
+        else if (variable is DotVariableNode dotVariable)
+        {
+            // Generate instance on left side of dot, and convert to instance ID
+            dotVariable.LeftExpression.GenerateCode(context);
+            context.ConvertToInstanceId();
+
+            // Self instance type is always used for stacktop
+            instanceType = InstanceType.Self;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+
+        // Generate array index
+        AccessorExpression.GenerateCode(context);
+        context.ConvertDataType(DataType.Int32);
+
+        return instanceType;
     }
 
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Generate differently depending on expression
+        if (Expression is IVariableASTNode variable)
+        {
+            // Generate common code to prepare for push
+            InstanceType pushInstanceType = GenerateVariableCode(context, variable);
+
+            // Simple variable push
+            VariablePatch varPatch = new(variable.VariableName, pushInstanceType, VariableType.Array, variable.BuiltinVariable is not null);
+            context.Emit(Opcode.Push, varPatch, DataType.Variable);
+            context.PushDataType(DataType.Variable);
+        }
+        else
+        {
+            // TODO: multiple accessors chained, and function calls
+        }
+    }
+
+    /// <inheritdoc/>
+    public void GenerateAssignCode(BytecodeContext context)
+    {
+        // In GMLv2, expression being assigned is converted to a variable type
+        DataType storeType = context.PopDataType();
+        if (storeType != DataType.Variable && context.CompileContext.GameContext.UsingGMLv2)
+        {
+            context.Emit(Opcode.Convert, storeType, DataType.Variable);
+            storeType = DataType.Variable;
+        }
+
+        // Generate differently depending on expression
+        if (Expression is IVariableASTNode variable)
+        {
+            // Generate common code to prepare for pop
+            InstanceType popInstanceType = GenerateVariableCode(context, variable);
+
+            // Simple variable store
+            VariablePatch varPatch = new(variable.VariableName, popInstanceType, VariableType.Array, variable.BuiltinVariable is not null);
+            context.Emit(Opcode.Pop, varPatch, DataType.Variable, storeType);
+        }
+        else
+        {
+            // TODO: multiple accessors chained, and function calls
+        }
     }
 }
