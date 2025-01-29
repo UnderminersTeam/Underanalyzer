@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using static Underanalyzer.IGMInstruction;
+
 namespace Underanalyzer.Compiler.Bytecode;
 
 /// <summary>
@@ -108,5 +110,21 @@ internal sealed class WithLoopContext(IMultiBranchPatch breakPatch, IMultiBranch
     public override void GenerateCleanupCode(BytecodeContext context)
     {
         context.EmitPopWithExit();
+    }
+}
+
+/// <summary>
+/// Control flow context for repeat loops.
+/// </summary>
+internal sealed class RepeatLoopContext(IMultiBranchPatch breakPatch, IMultiBranchPatch continuePatch) : LoopContext(breakPatch, continuePatch)
+{
+    /// <inheritdoc/>
+    public override bool RequiresCleanup => true;
+
+    /// <inheritdoc/>
+    public override void GenerateCleanupCode(BytecodeContext context)
+    {
+        // Clear loop counter from stack
+        context.Emit(Opcode.PopDelete, DataType.Int32);
     }
 }

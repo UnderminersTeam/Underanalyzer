@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -73,6 +74,41 @@ internal sealed class RepeatLoopNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Initial number of times to repeat
+        TimesToRepeat.GenerateCode(context);
+        context.ConvertDataType(DataType.Int32);
+
+        // Maintain a loop counter on the stack (rather than through any variable)
+        context.Emit(Opcode.Duplicate, DataType.Int32);
+        context.Emit(Opcode.Push, (int)0, DataType.Int32);
+        context.Emit(Opcode.Compare, ComparisonType.LesserEqualThan, DataType.Int32, DataType.Int32);
+
+        // Branch target at the tail and incrementor of the loop
+        MultiForwardBranchPatch tailPatch = new();
+        MultiForwardBranchPatch decrementorPatch = new();
+
+        // Jump based on loop counter
+        tailPatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
+
+        // Body
+        MultiBackwardBranchPatch bodyPatch = new(context);
+        context.PushControlFlowContext(new RepeatLoopContext(tailPatch, decrementorPatch));
+        Body.GenerateCode(context);
+        context.PopControlFlowContext();
+
+        // Decrement loop counter
+        decrementorPatch.Patch(context);
+        context.Emit(Opcode.Push, (int)1, DataType.Int32);
+        context.Emit(Opcode.Subtract, DataType.Int32, DataType.Int32);
+        context.Emit(Opcode.Duplicate, DataType.Int32);
+        if (context.CompileContext.GameContext.UsingExtraRepeatInstruction)
+        {
+            context.Emit(Opcode.Convert, DataType.Int32, DataType.Boolean);
+        }
+        bodyPatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
+
+        // Tail (clean up loop counter as well)
+        tailPatch.Patch(context);
+        context.Emit(Opcode.PopDelete, DataType.Int32);
     }
 }

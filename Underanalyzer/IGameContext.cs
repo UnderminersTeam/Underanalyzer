@@ -75,6 +75,11 @@ public interface IGameContext
     public bool UsingLogicalShortCircuit { get; }
 
     /// <summary>
+    /// <see langword="true"/> if this game uses the older repeat loop code generation (as of GM 2022.11); <see langword="false"/> otherwise.
+    /// </summary>
+    public bool UsingExtraRepeatInstruction { get; }
+
+    /// <summary>
     /// <see langword="true"/> if this game uses the old behavior of "throw" statements with finally blocks; <see langword="false"/> otherwise.
     /// As of writing, this is <see langword="true"/> before GameMaker version 2024.6, and <see langword="false"/> otherwise.
     /// </summary>

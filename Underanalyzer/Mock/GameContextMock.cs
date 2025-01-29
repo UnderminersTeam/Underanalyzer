@@ -27,6 +27,8 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingFinallyBeforeThrow { get; set; } = false;
     /// <inheritdoc/>
+    public bool UsingExtraRepeatInstruction { get; set; } = false;
+    /// <inheritdoc/>
     public bool UsingTypedBooleans { get; set; } = true;
     /// <inheritdoc/>
     public bool UsingAssetReferences { get; set; } = true;

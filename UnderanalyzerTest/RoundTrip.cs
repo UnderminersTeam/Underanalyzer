@@ -229,4 +229,28 @@ public class RoundTrip
             false, mock
         );
     }
+
+    [Fact]
+    public void TestRepeatContinueBreakExit()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            repeat (123)
+            {
+                if (a)
+                {
+                    continue;
+                }
+                else if (b)
+                {
+                    exit;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            """
+        );
+    }
 }

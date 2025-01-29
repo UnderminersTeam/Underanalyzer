@@ -188,7 +188,7 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
-    /// Emits a double-type instruction with the given opcode and data types, at the current position.
+    /// Emits a double-type instruction with the given opcode, comparison type, and data types, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, ComparisonType comparisonType, DataType dataType1, DataType dataType2)
     {
