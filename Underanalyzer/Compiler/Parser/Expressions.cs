@@ -649,14 +649,15 @@ internal static class Expressions
         }
 
         // Check for and parse postfix
-        if (!context.EndOfCode && context.Tokens[context.Position] is TokenOperator 
+        if (!context.EndOfCode && lhs is IAssignableASTNode lhsAssignable && 
+            context.Tokens[context.Position] is TokenOperator 
             { 
                 Kind: OperatorKind.Increment or OperatorKind.Decrement 
             } 
             tokenPostfix)
         {
             context.Position++;
-            lhs = new PostfixNode(tokenPostfix, lhs, tokenPostfix.Kind == OperatorKind.Increment);
+            lhs = new PostfixNode(tokenPostfix, lhsAssignable, tokenPostfix.Kind == OperatorKind.Increment);
         }
 
         return lhs;

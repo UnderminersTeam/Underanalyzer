@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -18,7 +19,7 @@ internal sealed class PostfixNode : IMaybeStatementASTNode
     /// <summary>
     /// Expression being post-incremented/post-decremented.
     /// </summary>
-    public IASTNode Expression { get; private set; }
+    public IAssignableASTNode Expression { get; private set; }
 
     /// <summary>
     /// Whether this postfix is an increment (++) or a decrement (--).
@@ -34,7 +35,7 @@ internal sealed class PostfixNode : IMaybeStatementASTNode
     /// <summary>
     /// Creates a postfix node, given whether or not the postfix is an increment.
     /// </summary>
-    public PostfixNode(TokenOperator token, IASTNode expression, bool isIncrement)
+    public PostfixNode(TokenOperator token, IAssignableASTNode expression, bool isIncrement)
     {
         NearbyToken = token;
         Expression = expression;
@@ -44,13 +45,13 @@ internal sealed class PostfixNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        Expression = Expression.PostProcess(context);
+        Expression = Expression.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         return this;
     }
 
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        Expression.GeneratePrePostAssignCode(context, IsIncrement, false, IsStatement);
     }
 }

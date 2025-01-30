@@ -5,10 +5,10 @@
 */
 
 using System;
-using System.Reflection.Emit;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.Compiler.Bytecode.BytecodeContext;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
@@ -138,33 +138,28 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// Generates common code for generating array accessors on <see cref="IVariableASTNode"/> expressions.
     /// </summary>
     /// <returns>
-    /// The <see cref="InstanceType"/> to use for the corresponding <see cref="Opcode.Push"/> or <see cref="Opcode.Pop"/>.
+    /// The <see cref="InstanceType"/> to use for the corresponding <see cref="Opcode.Push"/> or <see cref="Opcode.Pop"/>,
+    /// as well as the <see cref="InstanceConversionType"/> used to convert the instance to an instance ID.
     /// </returns>
-    private InstanceType GenerateVariableCode(BytecodeContext context, IVariableASTNode variable)
+    private (InstanceType, InstanceConversionType) GenerateVariableCode(BytecodeContext context, IVariableASTNode variable)
     {
         // Generate instance code, and determine instance type to use for pushing/popping
         InstanceType instanceType;
+        InstanceConversionType instanceConversionType;
         if (variable is SimpleVariableNode simpleVariable)
         {
             // Generate instance type
             NumberNode.GenerateCode(context, (int)simpleVariable.ExplicitInstanceType);
-            context.ConvertToInstanceId();
+            instanceConversionType = context.ConvertToInstanceId();
 
-            // In GMLv2, instance type is always Self. Otherwise, use variable's type.
-            if (context.CompileContext.GameContext.UsingGMLv2)
-            {
-                instanceType = InstanceType.Self;
-            }
-            else
-            {
-                instanceType = simpleVariable.ExplicitInstanceType;
-            }
+            // Use variable's instance type
+            instanceType = simpleVariable.ExplicitInstanceType;
         }
         else if (variable is DotVariableNode dotVariable)
         {
             // Generate instance on left side of dot, and convert to instance ID
             dotVariable.LeftExpression.GenerateCode(context);
-            context.ConvertToInstanceId();
+            instanceConversionType = context.ConvertToInstanceId();
 
             // Self instance type is always used for stacktop
             instanceType = InstanceType.Self;
@@ -178,7 +173,19 @@ internal sealed class AccessorNode : IAssignableASTNode
         AccessorExpression.GenerateCode(context);
         context.ConvertDataType(DataType.Int32);
 
-        return instanceType;
+        // Generate 2D array indices, if present
+        if (AccessorExpression2 is IASTNode secondIndex)
+        {
+            context.Emit(ExtendedOpcode.CheckArrayIndex);
+            context.Emit(Opcode.Push, (int)32000, DataType.Int32);
+            context.Emit(Opcode.Multiply, DataType.Int32, DataType.Int32);
+            secondIndex.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+            context.Emit(ExtendedOpcode.CheckArrayIndex);
+            context.Emit(Opcode.Add, DataType.Int32, DataType.Int32);
+        }
+
+        return (instanceType, instanceConversionType);
     }
 
     /// <inheritdoc/>
@@ -188,7 +195,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         if (Expression is IVariableASTNode variable)
         {
             // Generate common code to prepare for push
-            InstanceType pushInstanceType = GenerateVariableCode(context, variable);
+            (InstanceType pushInstanceType, _) = GenerateVariableCode(context, variable);
 
             // Simple variable push
             VariablePatch varPatch = new(variable.VariableName, pushInstanceType, VariableType.Array, variable.BuiltinVariable is not null);
@@ -216,11 +223,134 @@ internal sealed class AccessorNode : IAssignableASTNode
         if (Expression is IVariableASTNode variable)
         {
             // Generate common code to prepare for pop
-            InstanceType popInstanceType = GenerateVariableCode(context, variable);
+            (InstanceType popInstanceType, _) = GenerateVariableCode(context, variable);
 
             // Simple variable store
             VariablePatch varPatch = new(variable.VariableName, popInstanceType, VariableType.Array, variable.BuiltinVariable is not null);
             context.Emit(Opcode.Pop, varPatch, DataType.Variable, storeType);
+        }
+        else
+        {
+            // TODO: multiple accessors chained, and function calls
+        }
+    }
+
+    /// <inheritdoc/>
+    public void GenerateCompoundAssignCode(BytecodeContext context, IASTNode expression, Opcode operationOpcode)
+    {
+        // Generate differently depending on expression
+        if (Expression is IVariableASTNode variable)
+        {
+            // Generate common code to prepare for push and pop
+            (InstanceType instanceType, InstanceConversionType instanceConversionType) = GenerateVariableCode(context, variable);
+
+            // Duplicate instance ID and array index, so it can be stored back to later
+            if (instanceConversionType == InstanceConversionType.StacktopId)
+            {
+                // 32-bit integer ID, 32-bit integer array index, AND actual instance (as variable type).
+                // 8 bytes for two int32s, plus 16 bytes for RValue.
+                context.EmitDuplicate(DataType.Int32, 5);
+            }
+            else
+            {
+                // Just two 32-bit integers to duplicate
+                context.EmitDuplicate(DataType.Int32, 1);
+            }
+
+            // Simple variable push
+            VariablePatch varPatch = new(variable.VariableName, instanceType, VariableType.Array, variable.BuiltinVariable is not null);
+            context.Emit(Opcode.Push, varPatch, DataType.Variable);
+
+            // Push the expression
+            expression.GenerateCode(context);
+
+            // Perform operation
+            AssignNode.PerformCompoundOperation(context, operationOpcode);
+
+            // Simple variable store, but denote pop order using data types
+            context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
+        }
+        else
+        {
+            // TODO: multiple accessors chained, and function calls
+        }
+    }
+
+    /// <summary>
+    /// Helper function to duplicate a pre/post-increment/decrement value, and swap around the stack.
+    /// </summary>
+    private static void PrePostDuplicateAndSwap(BytecodeContext context, InstanceConversionType conversionType)
+    {
+        // Duplicate value
+        context.EmitDuplicate(DataType.Variable, 0);
+        context.PushDataType(DataType.Variable);
+
+        // Swap around stack to prepare for pop
+        if (context.CompileContext.GameContext.UsingGMLv2)
+        {
+            context.EmitDupSwap(DataType.Int32, 4, (conversionType == InstanceConversionType.StacktopId) ? (byte)10 : (byte)6);
+        }
+        else
+        {
+            context.EmitPopSwap((byte)6);
+        }
+    }
+
+    /// <inheritdoc/>
+    public void GeneratePrePostAssignCode(BytecodeContext context, bool isIncrement, bool isPre, bool isStatement)
+    {
+        // Generate differently depending on expression
+        if (Expression is IVariableASTNode variable)
+        {
+            // Generate common code to prepare for push and pop
+            (InstanceType instanceType, InstanceConversionType instanceConversionType) = GenerateVariableCode(context, variable);
+
+            // Duplicate instance ID and array index, so it can be stored back to later
+            if (instanceConversionType == InstanceConversionType.StacktopId)
+            {
+                // 32-bit integer ID, 32-bit integer array index, AND actual instance (as variable type).
+                // 8 bytes for two int32s, plus 16 bytes for RValue.
+                context.EmitDuplicate(DataType.Int32, 5);
+            }
+            else
+            {
+                // Just two 32-bit integers to duplicate
+                if (context.CompileContext.GameContext.UsingGMLv2)
+                {
+                    // New versions output this
+                    context.EmitDuplicate(DataType.Int32, 1);
+                }
+                else
+                {
+                    // Old versions output this
+                    context.EmitDuplicate(DataType.Int64, 0);
+                }
+            }
+
+            // Simple variable push
+            VariablePatch varPatch = new(variable.VariableName, instanceType, VariableType.Array, variable.BuiltinVariable is not null);
+            context.Emit(Opcode.Push, varPatch, DataType.Variable);
+
+            // Postfix expression: duplicate original value, and swap stack around for pop
+            if (!isStatement && !isPre)
+            {
+                PrePostDuplicateAndSwap(context, instanceConversionType);
+            }
+
+            // Push the expression
+            context.Emit(Opcode.Push, (short)1, DataType.Int16);
+
+            // Perform operation
+            context.Emit(isIncrement ? Opcode.Add : Opcode.Subtract, DataType.Int32, DataType.Variable);
+
+            // Prefix expression: duplicate new value, and swap stack around for pop
+            if (!isStatement && isPre)
+            {
+                PrePostDuplicateAndSwap(context, instanceConversionType);
+            }
+
+            // Simple variable store, but denote pop order using data types
+            context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
         }
         else
         {

@@ -44,19 +44,24 @@ public class GameContextMock : IGameContext
     public ICodeBuilder CodeBuilder { get; }
 
     /// <summary>
+    /// A Dictionary for maintaining the same variables throughout a compilation process.
+    /// </summary>
+    internal Dictionary<(string, IGMInstruction.InstanceType), GMVariable> MockVariables { get; } = [];
+
+    /// <summary>
     /// A Dictionary that mocks asset types and their contents.
     /// </summary>
-    private Dictionary<AssetType, Dictionary<int, string>> _mockAssetsByType { get; set; } = [];
+    private readonly Dictionary<AssetType, Dictionary<int, string>> _mockAssetsByType = [];
 
     /// <summary>
     /// A Dictionary that mocks assets by their name.
     /// </summary>
-    private Dictionary<string, int> _mockAssetsByName { get; set; } = [];
+    private readonly Dictionary<string, int> _mockAssetsByName = [];
 
     /// <summary>
     /// A Dictionary that mocks script assets by their name.
     /// </summary>
-    private Dictionary<string, int> _mockScriptsByName { get; set; } = [];
+    private readonly Dictionary<string, int> _mockScriptsByName = [];
 
     public GameContextMock()
     {

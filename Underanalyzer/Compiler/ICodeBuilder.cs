@@ -55,9 +55,40 @@ public interface ICodeBuilder
     public IGMInstruction CreateInstruction(int address, Opcode opcode, ComparisonType comparisonType, DataType dataType1, DataType dataType2);
 
     /// <summary>
+    /// Creates an instruction with an address, and an extended opcode.
+    /// </summary>
+    public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode);
+
+    /// <summary>
     /// Creates an instruction with an address, an extended opcode, and integer value.
     /// </summary>
     public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode, int value);
+
+    /// <summary>
+    /// Creates a duplication instruction with an address, data type, and single duplication size.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.Duplicate"/>, and have <see cref="IGMInstruction.DuplicationSize"/> as <paramref name="duplicationSize"/>.
+    /// </remarks>
+    public IGMInstruction CreateDuplicateInstruction(int address, DataType dataType, byte duplicationSize);
+
+    /// <summary>
+    /// Creates a duplication instruction with an address, data type, and two duplication sizes.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.Duplicate"/>, and have <see cref="IGMInstruction.DuplicationSize"/> as <paramref name="duplicationSize"/>,
+    /// and <see cref="IGMInstruction.DuplicationSize2"/> as <paramref name="duplicationSize2"/>.
+    /// </remarks>
+    public IGMInstruction CreateDupSwapInstruction(int address, DataType dataType, byte duplicationSize, byte duplicationSize2);
+
+    /// <summary>
+    /// Creates a pop swap instruction with an address, and a swap size.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.Pop"/>, with data types <see cref="DataType.Int16"/> and <see cref="DataType.Variable"/>,
+    /// and <see cref="IGMInstruction.PopSwapSize"/> as <paramref name="swapSize"/>.
+    /// </remarks>
+    public IGMInstruction CreatePopSwapInstruction(int address, byte swapSize);
 
     /// <summary>
     /// Creates an instruction with an address, which will exit early from within a with loop.

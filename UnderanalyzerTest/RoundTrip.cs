@@ -83,7 +83,7 @@ public class RoundTrip
         TestUtil.VerifyRoundTrip(
             """
             top = 1;
-            for (var i = 0; i < 10; i = i + 1)
+            for (var i = 0; i < 10; i++)
             {
                 if (a)
                 {
@@ -257,7 +257,7 @@ public class RoundTrip
     [Fact]
     public void TestSwitchContinueBreakExit()
     {
-        TestUtil.VerifyRoundTrip(
+        string testCode =
             """
             repeat (a)
             {
@@ -276,14 +276,21 @@ public class RoundTrip
                         exit;
                 }
             }
-            """
-        );
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingExtraRepeatInstruction = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingExtraRepeatInstruction = false
+        });
     }
 
     [Fact]
     public void TestAssignments()
     {
-        TestUtil.VerifyRoundTrip(
+        string testCode =
             """
             a = 0;
             a.b = 0;
@@ -301,9 +308,261 @@ public class RoundTrip
             global.a.b.c[0] = 1;
             global.a[0].b[1] = 2;
             global.a[0].b[1].c = 2;
-            """
-        );
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = false
+        });
     }
 
     // TODO: test for @@Global@@ rewriting for things like global.a[0] = 1 becoming @@Global@@().a[0] = 1
+
+    [Fact]
+    public void TestAssignments2dArray()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0, 1] = 2;
+            a.b[0, 1] = 2;
+            a.b.c[0, 1] = 2;
+            a[0, 1].b[0, 1] = 2;
+            a[0, 1].b[0, 1].c = 2;
+            global.a[0, 1] = 2;
+            global.a.b[0, 1] = 2;
+            global.a.b.c[0, 1] = 2;
+            global.a[0, 1].b[0, 1] = 2;
+            global.a[0, 1].b[0, 1].c = 2;
+            """,
+            false, new()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestCompoundAssignments()
+    {
+        string testCode =
+            """
+            a += 1;
+            a.b += 1;
+            a.b.c += 1;
+            a[0] += 1;
+            a.b[0] += 1;
+            a.b.c[0] += 1;
+            a[0].b[1] += 2;
+            a[0].b[1].c += 2;
+            global.a += 1;
+            global.a.b += 1;
+            global.a.b.c += 1;
+            global.a[0] += 1;
+            global.a.b[0] += 1;
+            global.a.b.c[0] += 1;
+            global.a[0].b[1] += 2;
+            global.a[0].b[1].c += 2;
+            a.b = a.b + 1;
+            a.b.c = a.b.c + 1;
+            a[0] = a[0] + 1;
+            a.b[0] = a.b[0] + 1;
+            a.b.c[0] = a.b.c[0] + 1;
+            a[0].b[1] = a[0].b[1] + 2;
+            a[0].b[1].c = a[0].b[1].c + 2;
+            global.a = global.a + 1;
+            global.a.b = global.a.b + 1;
+            global.a.b.c = global.a.b.c + 1;
+            global.a[0] = global.a[0] + 1;
+            global.a.b[0] = global.a.b[0] + 1;
+            global.a.b.c[0] = global.a.b.c[0] + 1;
+            global.a[0].b[1] = global.a[0].b[1] + 2;
+            global.a[0].b[1].c = global.a[0].b[1].c + 2;
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = false
+        });
+    }
+
+    [Fact]
+    public void TestCompoundAssignments2dArray()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0, 1] += 2;
+            a.b[0, 1] += 2;
+            a.b.c[0, 1] += 2;
+            a[0, 1].b[0, 1] += 2;
+            a[0, 1].b[0, 1].c += 2;
+            global.a[0, 1] += 2;
+            global.a.b[0, 1] += 2;
+            global.a.b.c[0, 1] += 2;
+            global.a[0, 1].b[0, 1] += 2;
+            global.a[0, 1].b[0, 1].c += 2;
+            a[0, 1] = a[0, 1] + 2;
+            a.b[0, 1] = a.b[0, 1] + 2;
+            a.b.c[0, 1] = a.b.c[0, 1] + 2;
+            a[0, 1].b[0, 1] = a[0, 1].b[0, 1] + 2;
+            a[0, 1].b[0, 1].c = a[0, 1].b[0, 1].c + 2;
+            global.a[0, 1] = global.a[0, 1] + 2;
+            global.a.b[0, 1] = global.a.b[0, 1] + 2;
+            global.a.b.c[0, 1] = global.a.b.c[0, 1] + 2;
+            global.a[0, 1].b[0, 1] = global.a[0, 1].b[0, 1] + 2;
+            global.a[0, 1].b[0, 1].c = global.a[0, 1].b[0, 1].c + 2;
+            """,
+            false, new()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestPrefixPostfix()
+    {
+        string testCode =
+            """
+            a++;
+            a.b++;
+            a.b.c++;
+            a[0]++;
+            a.b[0]++;
+            a.b.c[0]++;
+            a[0].b[1]++;
+            a[0].b[1].c++;
+            global.a++;
+            global.a.b++;
+            global.a.b.c++;
+            global.a[0]++;
+            global.a.b[0]++;
+            global.a.b.c[0]++;
+            global.a[0].b[1]++;
+            global.a[0].b[1].c++;
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = false
+        });
+    }
+
+    [Fact]
+    public void TestPrefixExpr()
+    {
+        string testCode =
+            """
+            d = ++a;
+            d = ++a.b;
+            d = ++a.b.c;
+            d = ++a[0];
+            d = ++a.b[0];
+            d = ++a.b.c[0];
+            d = ++a[0].b[1];
+            d = ++a[0].b[1].c;
+            d = ++global.a;
+            d = ++global.a.b;
+            d = ++global.a.b.c;
+            d = ++global.a[0];
+            d = ++global.a.b[0];
+            d = ++global.a.b.c[0];
+            d = ++global.a[0].b[1];
+            d = ++global.a[0].b[1].c;
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = false
+        });
+    }
+
+    [Fact]
+    public void TestPostfixExpr()
+    {
+        string testCode =
+            """
+            d = a++;
+            d = a.b++;
+            d = a.b.c++;
+            d = a[0]++;
+            d = a.b[0]++;
+            d = a.b.c[0]++;
+            d = a[0].b[1]++;
+            d = a[0].b[1].c++;
+            d = global.a++;
+            d = global.a.b++;
+            d = global.a.b.c++;
+            d = global.a[0]++;
+            d = global.a.b[0]++;
+            d = global.a.b.c[0]++;
+            d = global.a[0].b[1]++;
+            d = global.a[0].b[1].c++;
+            """;
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = true
+        });
+        TestUtil.VerifyRoundTrip(testCode, false, new()
+        {
+            UsingGMLv2 = false
+        });
+    }
+
+    [Fact]
+    public void TestPrefixExpr2dArray()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            d = ++a[0, 1];
+            d = ++a.b[0, 1];
+            d = ++a.b.c[0, 1];
+            d = ++a[0, 1].b[0, 1];
+            d = ++a[0, 1].b[0, 1].c;
+            d = ++global.a[0, 1];
+            d = ++global.a.b[0, 1];
+            d = ++global.a.b.c[0, 1];
+            d = ++global.a[0, 1].b[0, 1];
+            d = ++global.a[0, 1].b[0, 1].c;
+            """,
+            false, new()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestPostfixExpr2dArray()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            d = a[0, 1]++;
+            d = a.b[0, 1]++;
+            d = a.b.c[0, 1]++;
+            d = a[0, 1].b[0, 1]++;
+            d = a[0, 1].b[0, 1].c++;
+            d = global.a[0, 1]++;
+            d = global.a.b[0, 1]++;
+            d = global.a.b.c[0, 1]++;
+            d = global.a[0, 1].b[0, 1]++;
+            d = global.a[0, 1].b[0, 1].c++;
+            """,
+            false, new()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
 }

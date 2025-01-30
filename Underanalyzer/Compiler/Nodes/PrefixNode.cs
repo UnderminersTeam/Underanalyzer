@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -18,7 +19,7 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <summary>
     /// Expression being pre-incremented/pre-decremented.
     /// </summary>
-    public IASTNode Expression { get; private set; }
+    public IAssignableASTNode Expression { get; private set; }
 
     /// <summary>
     /// Whether this prefix is an increment (++) or a decrement (--).
@@ -31,7 +32,7 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private PrefixNode(TokenOperator token, bool isIncrement, IASTNode expression)
+    private PrefixNode(TokenOperator token, bool isIncrement, IAssignableASTNode expression)
     {
         NearbyToken = token;
         IsIncrement = isIncrement;
@@ -50,20 +51,26 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
             return null;
         }
 
+        // Ensure expression is assignable
+        if (expression is not IAssignableASTNode assignableExpression)
+        {
+            return null;
+        }
+
         // Create final node
-        return new PrefixNode(token, isIncrement, expression);
+        return new PrefixNode(token, isIncrement, assignableExpression);
     }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
-        Expression = Expression.PostProcess(context);
+        Expression = Expression.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         return this;
     }
 
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        Expression.GeneratePrePostAssignCode(context, IsIncrement, true, IsStatement);
     }
 }

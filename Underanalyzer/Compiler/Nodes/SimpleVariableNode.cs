@@ -109,6 +109,54 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
     }
 
+    /// <inheritdoc/>
+    public void GenerateCompoundAssignCode(BytecodeContext context, IASTNode expression, Opcode operationOpcode)
+    {
+        // Push this variable
+        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        context.Emit(Opcode.Push, varPatch, DataType.Variable);
+
+        // Push the expression
+        expression.GenerateCode(context);
+
+        // Perform operation
+        AssignNode.PerformCompoundOperation(context, operationOpcode);
+
+        // Normal assign
+        context.Emit(Opcode.Pop, varPatch, DataType.Variable, DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public void GeneratePrePostAssignCode(BytecodeContext context, bool isIncrement, bool isPre, bool isStatement)
+    {
+        // Push this variable
+        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        context.Emit(Opcode.Push, varPatch, DataType.Variable);
+
+        // Postfix expression: duplicate original value
+        if (!isStatement && !isPre)
+        {
+            context.EmitDuplicate(DataType.Variable, 0);
+            context.PushDataType(DataType.Variable);
+        }
+
+        // Push the expression
+        context.Emit(Opcode.Push, (short)1, DataType.Int16);
+
+        // Perform operation
+        context.Emit(isIncrement ? Opcode.Add : Opcode.Subtract, DataType.Int32, DataType.Variable);
+
+        // Prefix expression: duplicate new value
+        if (!isStatement && isPre)
+        {
+            context.EmitDuplicate(DataType.Variable, 0);
+            context.PushDataType(DataType.Variable);
+        }
+
+        // Normal assign
+        context.Emit(Opcode.Pop, varPatch, DataType.Variable, DataType.Variable);
+    }
+
     /// <summary>
     /// Resolves the final variable type (and scope in general) for a variable, given the current context, 
     /// the variable's name, and builtin variable information.

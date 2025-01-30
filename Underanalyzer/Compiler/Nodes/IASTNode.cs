@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -47,6 +48,16 @@ internal interface IAssignableASTNode : IASTNode
     /// Generates assignment code for this node.
     /// </summary>
     public void GenerateAssignCode(BytecodeContext context);
+
+    /// <summary>
+    /// Generates compound assignment code for this node.
+    /// </summary>
+    public void GenerateCompoundAssignCode(BytecodeContext context, IASTNode expression, Opcode operationOpcode);
+
+    /// <summary>
+    /// Generates pre/post-increment/decrement assignment code for this node.
+    /// </summary>
+    public void GeneratePrePostAssignCode(BytecodeContext context, bool isIncrement, bool isPre, bool isStatement);
 }
 
 /// <summary>

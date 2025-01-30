@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Compiler.Nodes;
 using static Underanalyzer.IGMInstruction;
@@ -82,6 +83,13 @@ internal sealed class BytecodeContext
     public void GenerateCode()
     {
         RootNode.GenerateCode(this);
+
+#if DEBUG
+        if (_dataTypeStack.Count > 0)
+        {
+            throw new Exception("Data type stack not cleared by end of code generation");
+        }
+#endif
     }
 
     /// <summary>
@@ -199,6 +207,17 @@ internal sealed class BytecodeContext
     }
 
     /// <summary>
+    /// Emits an instruction with the given extended opcode, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(ExtendedOpcode extendedOpcode)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode);
+        Instructions.Add(instr);
+        Position += 4;
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given extended opcode and integer value, at the current position.
     /// </summary>
     public IGMInstruction Emit(ExtendedOpcode extendedOpcode, int extendedValue)
@@ -206,6 +225,39 @@ internal sealed class BytecodeContext
         IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode, extendedValue);
         Instructions.Add(instr);
         Position += 8;
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a dulication instruction with the given data type and duplication size, at the current position.
+    /// </summary>
+    public IGMInstruction EmitDuplicate(DataType dataType, byte duplicationSize)
+    {
+        IGMInstruction instr = _codeBuilder.CreateDuplicateInstruction(Position, dataType, duplicationSize);
+        Instructions.Add(instr);
+        Position += 4;
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a dulication instruction with the given data type and duplication sizes, at the current position.
+    /// </summary>
+    public IGMInstruction EmitDupSwap(DataType dataType, byte duplicationSize, byte duplicationSize2)
+    {
+        IGMInstruction instr = _codeBuilder.CreateDupSwapInstruction(Position, dataType, duplicationSize, duplicationSize2);
+        Instructions.Add(instr);
+        Position += 4;
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a pop swap instruction with the given swap size, at the current position.
+    /// </summary>
+    public IGMInstruction EmitPopSwap(byte swapSize)
+    {
+        IGMInstruction instr = _codeBuilder.CreatePopSwapInstruction(Position, swapSize);
+        Instructions.Add(instr);
+        Position += 4;
         return instr;
     }
 

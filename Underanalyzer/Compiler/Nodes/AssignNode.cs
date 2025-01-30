@@ -8,6 +8,7 @@ using System;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -84,9 +85,63 @@ internal sealed class AssignNode : IASTNode
                 Expression.GenerateCode(context);
                 Destination.GenerateAssignCode(context);
                 break;
-            default:
-                // TODO
+            case AssignKind.CompoundPlus:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Add);
+                break;
+            case AssignKind.CompoundMinus:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Subtract);
+                break;
+            case AssignKind.CompoundTimes:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Multiply);
+                break;
+            case AssignKind.CompoundDivide:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Divide);
+                break;
+            case AssignKind.CompoundMod:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.GMLModulo);
+                break;
+            case AssignKind.CompoundBitwiseAnd:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.And);
+                break;
+            case AssignKind.CompoundBitwiseOr:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Or);
+                break;
+            case AssignKind.CompoundBitwiseXor:
+                Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Xor);
+                break;
+            case AssignKind.CompoundNullishCoalesce:
+                // TODO: implement
                 throw new NotImplementedException();
         }
+    }
+
+    /// <summary>
+    /// Performs the inner operation for a compound assignment, given its opcode.
+    /// </summary>
+    public static void PerformCompoundOperation(BytecodeContext context, Opcode operationOpcode)
+    {
+        // Pull expression type from stack
+        DataType operationDataType = context.PeekDataType();
+        if (operationOpcode is Opcode.And or Opcode.Or or Opcode.Xor)
+        {
+            // Bitwise operations convert to 64-bit integers
+            context.ConvertDataType(DataType.Int64);
+            operationDataType = DataType.Int64;
+        }
+        else if (operationDataType == DataType.Boolean)
+        {
+            // Booleans convert to integers
+            context.Emit(Opcode.Convert, DataType.Boolean, DataType.Int32);
+            context.PopDataType();
+            operationDataType = DataType.Int32;
+        }
+        else
+        {
+            // Don't want operation type on stack anymore, so just remove it
+            context.PopDataType();
+        }
+
+        // Perform the operation
+        context.Emit(operationOpcode, operationDataType, DataType.Variable);
     }
 }

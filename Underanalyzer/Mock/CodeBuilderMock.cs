@@ -6,7 +6,6 @@
 
 using System;
 using Underanalyzer.Compiler;
-using Underanalyzer.Decompiler;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Mock;
@@ -16,7 +15,6 @@ namespace Underanalyzer.Mock;
 /// </summary>
 public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
 {
-
     /// <inheritdoc/>
     public IGMInstruction CreateInstruction(int address, Opcode opcode)
     {
@@ -116,6 +114,18 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Extended,
+            ExtKind = extendedOpcode,
+            Type1 = DataType.Int16
+        };
+    }
+
+    /// <inheritdoc/>
     public IGMInstruction CreateInstruction(int address, ExtendedOpcode extendedOpcode, int value)
     {
         if (extendedOpcode == ExtendedOpcode.PushReference)
@@ -137,6 +147,44 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
             ExtKind = extendedOpcode,
             Type1 = DataType.Int32,
             ValueInt = value
+        };
+    }
+
+    /// <inheritdoc/>
+    public IGMInstruction CreateDuplicateInstruction(int address, DataType dataType, byte duplicationSize)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Duplicate,
+            Type1 = dataType,
+            DuplicationSize = duplicationSize
+        };
+    }
+
+    /// <inheritdoc/>
+    public IGMInstruction CreateDupSwapInstruction(int address, DataType dataType, byte duplicationSize, byte duplicationSize2)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Duplicate,
+            Type1 = dataType,
+            DuplicationSize = duplicationSize,
+            DuplicationSize2 = duplicationSize2
+        };
+    }
+
+    /// <inheritdoc/>
+    public IGMInstruction CreatePopSwapInstruction(int address, byte swapSize)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.Pop,
+            Type1 = DataType.Int16,
+            Type2 = DataType.Variable,
+            PopSwapSize = swapSize
         };
     }
 
@@ -168,10 +216,36 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            mockInstruction.Variable = new GMVariable(new GMString(variableName))
+            // Save instance type to register to data
+            InstanceType registerInstanceType = instanceType;
+
+            // Transform instance type into Self in GMLv2 when not using simple variables
+            if (gameContext.UsingGMLv2 && variableType != VariableType.Normal)
             {
-                InstanceType = isBuiltin ? InstanceType.Builtin : instanceType,
-            };
+                instanceType = InstanceType.Self;
+            }
+
+            // If the variable is builtin, use builtin instance type
+            if (isBuiltin)
+            {
+                instanceType = InstanceType.Builtin;
+                registerInstanceType = InstanceType.Builtin;
+            }
+
+            if (gameContext.MockVariables.TryGetValue((variableName, registerInstanceType), out GMVariable? existingVariable))
+            {
+                mockInstruction.Variable = existingVariable;
+            }
+            else
+            {
+                GMVariable newVariable = new(new GMString(variableName))
+                {
+                    InstanceType = registerInstanceType
+                };
+                mockInstruction.Variable = newVariable;
+                gameContext.MockVariables.Add((variableName, registerInstanceType), newVariable);
+            }
+
             mockInstruction.InstType = instanceType;
             mockInstruction.ReferenceVarType = variableType;
         }
