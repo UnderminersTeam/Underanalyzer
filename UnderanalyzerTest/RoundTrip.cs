@@ -565,4 +565,94 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestMultiArrays()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0] = 1;
+            a[0][1] = 2;
+            a[0][1][2] = 3;
+            a[0][1][2][3] = 4;
+            a.b[0][1][2] = 3;
+            a.b[0][1].c[2][3] = 4;
+            a.b[0][1].c[2][3].d = 4;
+            global.a[0] = 1;
+            global.a[0][1] = 2;
+            global.a[0][1][2] = 3;
+            global.a[0][1][2][3] = 4;
+            global.a.b[0][1][2] = 3;
+            global.a.b[0][1].c[2][3] = 4;
+            global.a.b[0][1].c[2][3].d = 4;
+            e = a[0];
+            e = a[0][1];
+            e = a[0][1][2];
+            e = a[0][1][2][3];
+            e = a.b[0][1][2];
+            e = a.b[0][1].c[2][3];
+            e = a.b[0][1].c[2][3].d;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestMultiArraysPrePost()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0]++;
+            a[0][1]++;
+            a[0][1][2]++;
+            a[0][1][2][3]++;
+            a.b[0][1][2]++;
+            a.b[0][1].c[2][3]++;
+            a.b[0][1].c[2][3].d++;
+            global.a[0]++;
+            global.a[0][1]++;
+            global.a[0][1][2]++;
+            global.a[0][1][2][3]++;
+            global.a.b[0][1][2]++;
+            global.a.b[0][1].c[2][3]++;
+            global.a.b[0][1].c[2][3].d++;
+            e = a[0]++;
+            e = a[0][1]++;
+            e = a[0][1][2]++;
+            e = a[0][1][2][3]++;
+            e = a.b[0][1][2]++;
+            e = a.b[0][1].c[2][3]++;
+            e = a.b[0][1].c[2][3].d++;
+            e = ++a[0];
+            e = ++a[0][1];
+            e = ++a[0][1][2];
+            e = ++a[0][1][2][3];
+            e = ++a.b[0][1][2];
+            e = ++a.b[0][1].c[2][3];
+            e = ++a.b[0][1].c[2][3].d;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestMultiArraysCompound()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0] += 1;
+            a[0][1] += 2;
+            a[0][1][2] += 3;
+            a[0][1][2][3] += 4;
+            a.b[0][1][2] += 3;
+            a.b[0][1].c[2][3] += 4;
+            a.b[0][1].c[2][3].d += 4;
+            global.a[0] += 1;
+            global.a[0][1] += 2;
+            global.a[0][1][2] += 3;
+            global.a[0][1][2][3] += 4;
+            global.a.b[0][1][2] += 3;
+            global.a.b[0][1].c[2][3] += 4;
+            global.a.b[0][1].c[2][3].d += 4;
+            """
+        );
+    }
 }

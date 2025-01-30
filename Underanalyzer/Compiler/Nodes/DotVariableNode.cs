@@ -161,11 +161,21 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         // Swap around stack to prepare for pop
         if (context.CompileContext.GameContext.UsingGMLv2)
         {
-            context.EmitDupSwap(DataType.Int32, 4, (conversionType == InstanceConversionType.StacktopId) ? (byte)9 : (byte)5);
+            if (conversionType == InstanceConversionType.StacktopId)
+            {
+                // Extra 16 bytes for RValue being referenced
+                context.EmitDupSwap(DataType.Int32, 4, 9);
+            }
+            else
+            {
+                // No stacktop RValue (just an instance ID)
+                context.EmitDupSwap(DataType.Int32, 4, 5);
+            }
         }
         else
         {
-            context.EmitPopSwap((byte)5);
+            // Pre-GMLv2 swap operation
+            context.EmitPopSwap(5);
         }
     }
 

@@ -188,6 +188,37 @@ internal sealed class AccessorNode : IAssignableASTNode
         return (instanceType, instanceConversionType);
     }
 
+    /// <summary>
+    /// Generates code for this node, as part of a chain of accessors.
+    /// </summary>
+    private void GenerateChainedCode(BytecodeContext context, bool isPop)
+    {
+        if (Expression is AccessorNode accessor)
+        {
+            // If expression is another accessor node, continue down chain
+            accessor.GenerateChainedCode(context, isPop);
+
+            // Generate current accessor
+            AccessorExpression.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+            context.Emit(ExtendedOpcode.PushArrayContainer);
+        }
+        else if (Expression is IVariableASTNode variable)
+        {
+            // Generate common code to prepare for push
+            (InstanceType pushInstanceType, _) = GenerateVariableCode(context, variable);
+
+            // Simple variable push
+            VariableType variableType = isPop ? VariableType.MultiPushPop : VariableType.MultiPush;
+            VariablePatch varPatch = new(variable.VariableName, pushInstanceType, variableType, variable.BuiltinVariable is not null);
+            context.Emit(Opcode.Push, varPatch, DataType.Variable);
+        }
+        else
+        {
+            // TODO: function calls
+        }
+    }
+
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
@@ -202,9 +233,20 @@ internal sealed class AccessorNode : IAssignableASTNode
             context.Emit(Opcode.Push, varPatch, DataType.Variable);
             context.PushDataType(DataType.Variable);
         }
+        else if (Expression is AccessorNode accessor)
+        {
+            // Multiple chained accessors. Generate chained code first
+            accessor.GenerateChainedCode(context, false);
+
+            // This accessor is the final one
+            AccessorExpression.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+            context.Emit(ExtendedOpcode.PushArrayFinal);
+            context.PushDataType(DataType.Variable);
+        }
         else
         {
-            // TODO: multiple accessors chained, and function calls
+            // TODO: function calls
         }
     }
 
@@ -229,9 +271,19 @@ internal sealed class AccessorNode : IAssignableASTNode
             VariablePatch varPatch = new(variable.VariableName, popInstanceType, VariableType.Array, variable.BuiltinVariable is not null);
             context.Emit(Opcode.Pop, varPatch, DataType.Variable, storeType);
         }
+        else if (Expression is AccessorNode accessor)
+        {
+            // Multiple chained accessors. Generate chained code first
+            accessor.GenerateChainedCode(context, true);
+
+            // This accessor is the final one
+            AccessorExpression.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+            context.Emit(ExtendedOpcode.PopArrayFinal);
+        }
         else
         {
-            // TODO: multiple accessors chained, and function calls
+            // TODO: function calls
         }
     }
 
@@ -270,9 +322,40 @@ internal sealed class AccessorNode : IAssignableASTNode
             // Simple variable store, but denote pop order using data types
             context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
         }
+        else if (Expression is AccessorNode accessor)
+        {
+            // Multiple chained accessors. Generate chained code first
+            accessor.GenerateChainedCode(context, true);
+
+            // This accessor is the final one
+            AccessorExpression.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+
+            // Duplicate array reference
+            context.EmitDuplicate(DataType.Int32, 4);
+
+            // Save array reference (in case the expression uses arrays itself, probably)
+            context.Emit(ExtendedOpcode.SaveArrayReference);
+
+            // Push value from array
+            context.Emit(ExtendedOpcode.PushArrayFinal);
+
+            // Push the expression
+            expression.GenerateCode(context);
+
+            // Perform operation
+            AssignNode.PerformCompoundOperation(context, operationOpcode);
+
+            // Restore array reference
+            context.Emit(ExtendedOpcode.RestoreArrayReference);
+
+            // Swap stack around again, and store to array
+            context.EmitDupSwap(DataType.Int32, 4, 5);
+            context.Emit(ExtendedOpcode.PopArrayFinal);
+        }
         else
         {
-            // TODO: multiple accessors chained, and function calls
+            // TODO: function calls
         }
     }
 
@@ -288,12 +371,36 @@ internal sealed class AccessorNode : IAssignableASTNode
         // Swap around stack to prepare for pop
         if (context.CompileContext.GameContext.UsingGMLv2)
         {
-            context.EmitDupSwap(DataType.Int32, 4, (conversionType == InstanceConversionType.StacktopId) ? (byte)10 : (byte)6);
+            if (conversionType == InstanceConversionType.StacktopId)
+            {
+                // Extra 16 bytes for RValue being referenced
+                context.EmitDupSwap(DataType.Int32, 4, 10);
+            }
+            else
+            {
+                // No stacktop RValue (just an instance ID)
+                context.EmitDupSwap(DataType.Int32, 4, 6);
+            }
         }
         else
         {
-            context.EmitPopSwap((byte)6);
+            // Pre-GMLv2 swap operation
+            context.EmitPopSwap(6);
         }
+    }
+
+    /// <summary>
+    /// Helper function to duplicate a pre/post-increment/decrement value, and swap around the stack.
+    /// For multi-dimensional arrays.
+    /// </summary>
+    private static void MultiArrayPrePostDuplicateAndSwap(BytecodeContext context)
+    {
+        // Duplicate value
+        context.EmitDuplicate(DataType.Variable, 0);
+        context.PushDataType(DataType.Variable);
+
+        // Swap around stack to prepare for pop
+        context.EmitDupSwap(DataType.Int32, 4, 9);
     }
 
     /// <inheritdoc/>
@@ -352,9 +459,46 @@ internal sealed class AccessorNode : IAssignableASTNode
             // Simple variable store, but denote pop order using data types
             context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
         }
+        else if (Expression is AccessorNode accessor)
+        {
+            // Multiple chained accessors. Generate chained code first
+            accessor.GenerateChainedCode(context, true);
+
+            // This accessor is the final one
+            AccessorExpression.GenerateCode(context);
+            context.ConvertDataType(DataType.Int32);
+
+            // Duplicate array reference
+            context.EmitDuplicate(DataType.Int32, 4);
+
+            // Push value from array
+            context.Emit(ExtendedOpcode.PushArrayFinal);
+
+            // Postfix expression: duplicate old value, and swap stack around for pop
+            if (!isStatement && !isPre)
+            {
+                MultiArrayPrePostDuplicateAndSwap(context);
+            }
+
+            // Push the expression
+            context.Emit(Opcode.Push, (short)1, DataType.Int16);
+
+            // Perform operation
+            context.Emit(isIncrement ? Opcode.Add : Opcode.Subtract, DataType.Int32, DataType.Variable);
+
+            // Prefix expression: duplicate new value, and swap stack around for pop
+            if (!isStatement && isPre)
+            {
+                MultiArrayPrePostDuplicateAndSwap(context);
+            }
+
+            // Swap stack around again, and store to array
+            context.EmitDupSwap(DataType.Int32, 4, 5);
+            context.Emit(ExtendedOpcode.PopArrayFinal);
+        }
         else
         {
-            // TODO: multiple accessors chained, and function calls
+            // TODO: function calls
         }
     }
 }
