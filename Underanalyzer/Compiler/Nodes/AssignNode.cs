@@ -62,6 +62,10 @@ internal sealed class AssignNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // TODO: if destination is an accessor that requires rewriting (e.g. function calls or non-basic array accessors),
+        // rewrite it. also, if we are a compound operation, we have to recursively clone the destination without pre/post expressions
+        // (so that the pre/post doesn't occur twice)
+
         Destination = Destination.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         Expression = Expression.PostProcess(context);
 

@@ -655,4 +655,71 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestVariableCalls()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] = 
+            new("show_debug_message", 1, 1);
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            var d;
+            show_debug_message("a");
+            test("a");
+            self.test("a");
+            other.test("a");
+            global.test("a");
+            a.b("a");
+            a.b.c("a");
+            a[0].b("a");
+            d("a");
+            a.d("a");
+            d.a("a");
+            obj_test.a("a");
+            obj_test.a.b("a");
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestVariableCallsAssetRefs()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = true
+        };
+        ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
+            new("show_debug_message", 1, 1);
+        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            var d;
+            show_debug_message("a");
+            test("a");
+            self.test("a");
+            other.test("a");
+            global.test("a");
+            a.b("a");
+            a.b.c("a");
+            a[0].b("a");
+            d("a");
+            a.d("a");
+            d.a("a");
+            obj_test.a("a");
+            obj_test.a.b("a");
+            """,
+            false,
+            gameContext
+        );
+    }
 }

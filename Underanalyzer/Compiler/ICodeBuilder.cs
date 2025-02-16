@@ -99,12 +99,20 @@ public interface ICodeBuilder
     public IGMInstruction CreateWithExitInstruction(int address);
 
     /// <summary>
-    /// Creates an instruction with an address and an argument count.
+    /// Creates a call instruction with an address and an argument count.
     /// </summary>
     /// <remarks>
     /// The instruction will be opcode <see cref="Opcode.Call"/>, with data type 1 being <see cref="DataType.Int32"/>.
     /// </remarks>
     public IGMInstruction CreateCallInstruction(int address, int argumentCount);
+
+    /// <summary>
+    /// Creates a variable call instruction with an address and an argument count.
+    /// </summary>
+    /// <remarks>
+    /// The instruction will be opcode <see cref="Opcode.CallVariable"/>, with data type 1 being <see cref="DataType.Variable"/>.
+    /// </remarks>
+    public IGMInstruction CreateCallVariableInstruction(int address, int argumentCount);
 
     /// <summary>
     /// Patches an existing instruction with a variable reference.

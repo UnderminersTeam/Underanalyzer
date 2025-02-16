@@ -31,9 +31,10 @@ public class BuiltinsMock : IBuiltins
     /// </summary>
     public Dictionary<string, BuiltinFunctionMock> BuiltinFunctions = new()
     {
-        { VMConstants.SelfFunction, new(VMConstants.SelfFunction, 0, int.MaxValue) },
-        { VMConstants.OtherFunction, new(VMConstants.OtherFunction, 0, int.MaxValue) },
-        { VMConstants.GlobalFunction, new(VMConstants.GlobalFunction, 0, int.MaxValue) }
+        { VMConstants.SelfFunction, new(VMConstants.SelfFunction, 0, 0) },
+        { VMConstants.OtherFunction, new(VMConstants.OtherFunction, 0, 0) },
+        { VMConstants.GlobalFunction, new(VMConstants.GlobalFunction, 0, 0) },
+        { VMConstants.GetInstanceFunction, new(VMConstants.GetInstanceFunction, 1, 1) }
     };
 
     /// <inheritdoc/>

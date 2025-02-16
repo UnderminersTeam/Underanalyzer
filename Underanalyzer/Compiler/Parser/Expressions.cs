@@ -592,8 +592,6 @@ internal static class Expressions
             if (!stopAtFunctionCall &&
                 currentToken is TokenSeparator { Kind: SeparatorKind.GroupOpen } tokenOpen)
             {
-                context.Position++;
-
                 // Parse function call, which becomes left side of chain
                 lhs = new FunctionCallNode(context, tokenOpen, lhs);
                 continue;

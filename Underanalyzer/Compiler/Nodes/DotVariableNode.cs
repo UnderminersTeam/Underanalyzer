@@ -63,6 +63,15 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
             return combined;
         }
 
+        // Combine asset references into instance type (if not using typed references)
+        if (!context.CompileContext.GameContext.UsingAssetReferences && 
+            LeftExpression is AssetReferenceNode { AssetId: int assetId })
+        {
+            SimpleVariableNode combined = new(VariableName, BuiltinVariable);
+            combined.SetExplicitInstanceType((InstanceType)assetId);
+            return combined;
+        }
+
         // Process left side
         LeftExpression = LeftExpression.PostProcess(context);
 

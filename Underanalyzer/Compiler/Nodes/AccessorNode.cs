@@ -215,7 +215,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         }
         else
         {
-            // TODO: function calls
+            throw new Exception("Invalid expression on accessor");
         }
     }
 
@@ -246,7 +246,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         }
         else
         {
-            // TODO: function calls
+            throw new Exception("Invalid expression on accessor");
         }
     }
 
@@ -283,7 +283,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         }
         else
         {
-            // TODO: function calls
+            throw new Exception("Invalid expression on accessor");
         }
     }
 
@@ -355,7 +355,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         }
         else
         {
-            // TODO: function calls
+            throw new Exception("Invalid expression on accessor");
         }
     }
 
@@ -498,7 +498,7 @@ internal sealed class AccessorNode : IAssignableASTNode
         }
         else
         {
-            // TODO: function calls
+            throw new Exception("Invalid expression on accessor");
         }
     }
 }

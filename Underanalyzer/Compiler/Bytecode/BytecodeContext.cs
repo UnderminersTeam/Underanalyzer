@@ -14,22 +14,18 @@ namespace Underanalyzer.Compiler.Bytecode;
 /// <summary>
 /// A context for bytecode generation, for a single code entry.
 /// </summary>
-internal sealed class BytecodeContext
+internal sealed class BytecodeContext : ISubCompileContext
 {
-    /// <summary>
-    /// The compile context for the overarching code entry.
-    /// </summary>
+    /// <inheritdoc/>
     public CompileContext CompileContext { get; }
+
+    /// <inheritdoc/>
+    public FunctionScope CurrentScope { get; set; }
 
     /// <summary>
     /// Root node used during bytecode generation.
     /// </summary>
     public IASTNode RootNode { get; }
-
-    /// <summary>
-    /// Current function scope being used during bytecode generation.
-    /// </summary>
-    public FunctionScope CurrentScope { get; set; }
 
     /// <summary>
     /// Set of global functions defined locally in the code entry being compiled.
@@ -314,6 +310,17 @@ internal sealed class BytecodeContext
         function.Instruction = instr;
         Patches.FunctionPatches!.Add(function);
 
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a <see cref="Opcode.CallVariable"/> instruction with the given argument count, at the current position.
+    /// </summary>
+    public IGMInstruction EmitCallVariable(int argumentCount)
+    {
+        IGMInstruction instr = _codeBuilder.CreateCallVariableInstruction(Position, argumentCount);
+        Instructions.Add(instr);
+        Position += 4;
         return instr;
     }
 

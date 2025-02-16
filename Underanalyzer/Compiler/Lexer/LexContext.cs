@@ -12,12 +12,17 @@ namespace Underanalyzer.Compiler.Lexer;
 /// <summary>
 /// A context for the lexer, for overarching code entries, or for smaller parts like macros or string interpolation.
 /// </summary>
-internal sealed class LexContext
+internal sealed class LexContext : ISubCompileContext
 {
-    /// <summary>
-    /// The compile context for the overarching code entry.
-    /// </summary>
+    /// <inheritdoc/>
     public CompileContext CompileContext { get; }
+
+    /// <inheritdoc/>
+    public FunctionScope CurrentScope 
+    { 
+        get => throw new InvalidOperationException(); 
+        set => throw new InvalidOperationException(); 
+    }
 
     /// <summary>
     /// The text being processed by this context.

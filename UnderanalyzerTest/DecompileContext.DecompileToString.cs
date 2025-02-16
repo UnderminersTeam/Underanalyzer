@@ -2755,4 +2755,46 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestCallVariable()
+    {
+        // TODO: make this test with asset references included
+        TestUtil.VerifyDecompileResult(
+            """
+            push.s "a"
+            conv.s.v
+            call.i show_debug_message 1
+            popz.v
+            push.s "a"
+            conv.s.v
+            call.i @@This@@ 0
+            push.v builtin.test
+            callv.v 1
+            popz.v
+            call.i @@This@@ 0
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 1
+            popz.v
+            push.v self.a
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            """,
+            """
+            show_debug_message("a");
+            test("a");
+            self.test("a");
+            a.b("a");
+            """
+        );
+    }
 }

@@ -109,6 +109,11 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
                 }
             }
         }
+        else if (Function is VariableNode { Left: InstanceTypeNode { InstanceType: IGMInstruction.InstanceType.Self, Duplicated: true } } varFunc)
+        {
+            // Force self to be printed on this variable (duplication detected)
+            varFunc.ForceSelf = true;
+        }
         if (canGenerateParentheses && Function is IMultiExpressionNode)
         {
             printer.Write('(');

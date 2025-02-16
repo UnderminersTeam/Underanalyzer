@@ -15,6 +15,11 @@ namespace Underanalyzer.Mock;
 /// </summary>
 public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
 {
+    /// <summary>
+    /// Whether "self" should become "builtin" in all possible locations (as in certain GM versions).
+    /// </summary>
+    public bool SelfToBuiltin { get; set; } = false;
+
     /// <inheritdoc/>
     public IGMInstruction CreateInstruction(int address, Opcode opcode)
     {
@@ -212,6 +217,18 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
+    public IGMInstruction CreateCallVariableInstruction(int address, int argumentCount)
+    {
+        return new GMInstruction()
+        {
+            Address = address,
+            Kind = Opcode.CallVariable,
+            Type1 = DataType.Variable,
+            ArgumentCount = argumentCount
+        };
+    }
+
+    /// <inheritdoc/>
     public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin)
     {
         if (instruction is GMInstruction mockInstruction)
@@ -230,6 +247,12 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
             {
                 instanceType = InstanceType.Builtin;
                 registerInstanceType = InstanceType.Builtin;
+            }
+
+            // Transform self to builtin if applicable
+            if (SelfToBuiltin && instanceType == InstanceType.Self && variableType == VariableType.Normal)
+            {
+                instanceType = InstanceType.Builtin;
             }
 
             if (gameContext.MockVariables.TryGetValue((variableName, registerInstanceType), out GMVariable? existingVariable))

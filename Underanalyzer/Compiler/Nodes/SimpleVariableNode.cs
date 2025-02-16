@@ -33,6 +33,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     public InstanceType ExplicitInstanceType { get; private set; }
 
+    /// <summary>
+    /// Whether this is a variable node as used in a function call.
+    /// </summary>
+    public bool IsFunctionCall { get; set; } = false;
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
@@ -95,8 +100,16 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             _ => (BuiltinVariable is null || !BuiltinVariable.IsGlobal) ? Opcode.Push : Opcode.PushBuiltin,
         };
 
+        // Determine instance type
+        InstanceType finalInstanceType = ExplicitInstanceType;
+        if (IsFunctionCall && finalInstanceType == InstanceType.Self)
+        {
+            // Change to builtin (weird compiler quirk)
+            finalInstanceType = InstanceType.Builtin;
+        }
+
         // Emit instruction to push (and push data type)
-        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        VariablePatch varPatch = new(VariableName, finalInstanceType, VariableType.Normal, BuiltinVariable is not null);
         context.Emit(opcode, varPatch, DataType.Variable);
         context.PushDataType(DataType.Variable);
     }
@@ -161,7 +174,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// Resolves the final variable type (and scope in general) for a variable, given the current context, 
     /// the variable's name, and builtin variable information.
     /// </summary>
-    public IAssignableASTNode ResolveStandaloneType(ParseContext context)
+    public IAssignableASTNode ResolveStandaloneType(ISubCompileContext context)
     {
         // If an explicit instance type has already been defined, don't do anything else
         if (HasExplicitInstanceType)

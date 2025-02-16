@@ -13,12 +13,13 @@ namespace Underanalyzer.Compiler.Parser;
 /// <summary>
 /// A context for the parser, for a single code entry.
 /// </summary>
-internal sealed class ParseContext
+internal sealed class ParseContext : ISubCompileContext
 {
-    /// <summary>
-    /// The compile context for the overarching code entry.
-    /// </summary>
+    /// <inheritdoc/>
     public CompileContext CompileContext { get; }
+
+    /// <inheritdoc/>
+    public FunctionScope CurrentScope { get; set; }
 
     /// <summary>
     /// List of tokens to be parsed by this context.
@@ -54,11 +55,6 @@ internal sealed class ParseContext
     /// True if reached the end of code; false otherwise.
     /// </summary>
     public bool EndOfCode => Position >= Tokens.Count;
-
-    /// <summary>
-    /// Current function scope being used during parsing.
-    /// </summary>
-    public FunctionScope CurrentScope { get; set; }
 
     public ParseContext(CompileContext context, List<IToken> tokens)
     {

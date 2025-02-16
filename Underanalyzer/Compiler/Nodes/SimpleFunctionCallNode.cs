@@ -378,22 +378,37 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
         }
     }
 
+    /// <summary>
+    /// Generates code for pushing arguments to the stack for this function call node.
+    /// </summary>
+    private void GenerateArguments(BytecodeContext context)
+    {
+        // Push arguments in reverse order (so they get popped in normal order)
+        for (int i = Arguments.Count - 1; i >= 0; i--)
+        {
+            Arguments[i].GenerateCode(context);
+            context.ConvertDataType(DataType.Variable);
+        }
+    }
+
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         if (context.IsGlobalFunctionName(FunctionName))
         {
-            // Push arguments in reverse order (so they get popped in normal order)
-            for (int i = Arguments.Count - 1; i >= 0; i--)
-            {
-                Arguments[i].GenerateCode(context);
-                context.ConvertDataType(DataType.Variable);
-            }
+            // Push arguments to stack
+            GenerateArguments(context);
 
             // Emit actual call instruction
             FunctionPatch funcPatch = new(FunctionName, BuiltinFunction);
             context.EmitCall(funcPatch, Arguments.Count);
             context.PushDataType(DataType.Variable);
+
+            // If this node is a statement, remove result from stack
+            if (IsStatement)
+            {
+                context.Emit(Opcode.PopDelete, context.PopDataType());
+            }
         }
         else
         {
@@ -403,8 +418,52 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
                 context.CompileContext.PushError($"Failed to find function \"{FunctionName}\"", NearbyToken);
             }
 
-            // TODO
-            throw new NotImplementedException();
+            // This is a single variable function call - convert to a variable
+            SimpleVariableNode varNode =
+                new(FunctionName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(FunctionName));
+            IAssignableASTNode assignable = varNode.ResolveStandaloneType(context);
+
+            // If still actually a simple variable node, compile it here, otherwise defer to general function call
+            if (assignable is SimpleVariableNode finalVarNode)
+            {
+                // Push arguments to stack
+                GenerateArguments(context);
+
+                // Push instance to stack
+                string functionToCall = finalVarNode.ExplicitInstanceType switch
+                {
+                    InstanceType.Other =>   VMConstants.OtherFunction,
+                    InstanceType.Global =>  VMConstants.GlobalFunction,
+                    _ =>                    VMConstants.SelfFunction
+                };
+                IBuiltinFunction? builtinFunctionToCall =
+                    context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(functionToCall);
+                context.EmitCall(new FunctionPatch(functionToCall, builtinFunctionToCall), 0);
+
+                // Compile variable
+                finalVarNode.IsFunctionCall = true;
+                finalVarNode.GenerateCode(context);
+                context.PopDataType();
+
+                // Emit actual call
+                context.EmitCallVariable(Arguments.Count);
+                context.PushDataType(DataType.Variable);
+
+                // If this node is a statement, remove result from stack
+                if (IsStatement)
+                {
+                    context.Emit(Opcode.PopDelete, context.PopDataType());
+                }
+            }
+            else
+            {
+                // Convert to a general function call node
+                FunctionCallNode funcCall = new(NearbyToken, assignable, Arguments)
+                {
+                    IsStatement = IsStatement
+                };
+                funcCall.GenerateCode(context);
+            }
         }
     }
 }
