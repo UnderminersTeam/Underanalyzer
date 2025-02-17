@@ -48,11 +48,11 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         switch (Function.Name.Content)
         {
             case VMConstants.SelfFunction:
-                return new InstanceTypeNode(IGMInstruction.InstanceType.Self) { Duplicated = Duplicated, StackType = StackType };
+                return new InstanceTypeNode(IGMInstruction.InstanceType.Self, true) { Duplicated = Duplicated, StackType = StackType };
             case VMConstants.OtherFunction:
-                return new InstanceTypeNode(IGMInstruction.InstanceType.Other) { Duplicated = Duplicated, StackType = StackType };
+                return new InstanceTypeNode(IGMInstruction.InstanceType.Other, true) { Duplicated = Duplicated, StackType = StackType };
             case VMConstants.GlobalFunction:
-                return new InstanceTypeNode(IGMInstruction.InstanceType.Global) { Duplicated = Duplicated, StackType = StackType };
+                return new InstanceTypeNode(IGMInstruction.InstanceType.Global, true) { Duplicated = Duplicated, StackType = StackType };
             case VMConstants.GetInstanceFunction:
                 if (Arguments.Count == 0 || Arguments[0] is not Int16Node)
                 {

@@ -144,7 +144,8 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
             // Handle pretty strange compiler quirk with no dup swaps being performed (if no dot on left side of this dot)
             if (!inChain && dotVar.LeftExpression is 
                     FunctionCallNode { Expression: SimpleVariableNode { CollapsedFromDot: false } or 
-                                                   FunctionCallNode or SimpleFunctionCallNode } or 
+                                                   FunctionCallNode or SimpleFunctionCallNode or
+                                                   AccessorNode } or 
                     SimpleFunctionCallNode)
             {
                 inChain = true;
@@ -188,7 +189,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 };
             }
         }
-        else if (Expression is FunctionCallNode or SimpleFunctionCallNode)
+        else if (Expression is FunctionCallNode or SimpleFunctionCallNode or AccessorNode)
         {
             // Only push arguments if not already pushed
             if (!inChain)
@@ -197,10 +198,47 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 GenerateArguments(context);
             }
 
-            // Push self
-            IBuiltinFunction? builtinFunctionToCall =
-                context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction);
-            context.EmitCall(new FunctionPatch(VMConstants.SelfFunction, builtinFunctionToCall), 0);
+            // Handle compiler quirk with dot on left side of accessors using the accessor as an instance
+            bool dupInstance = false;
+            if (Expression is AccessorNode accessor)
+            {
+                // Get leftmost accessor from here
+                AccessorNode leftmostAccessor = accessor;
+                while (leftmostAccessor.Expression is AccessorNode furtherLeft)
+                {
+                    leftmostAccessor = furtherLeft;
+                }
+
+                if (leftmostAccessor.Expression is DotVariableNode)
+                {
+                    // Duplicate instance if dot on left side of leftmost accessor
+                    dupInstance = true;
+                }
+                else if (leftmostAccessor.Expression is SimpleVariableNode { CollapsedFromDot: true } simpleVarCollapsed)
+                {
+                    // Duplicate instance if a collapsed dot node is on the left side of the leftmost accessor
+                    dupInstance = true;
+
+                    // If leftmost accessor expression has "self." on left side (collapsed from dot),
+                    // generate code specific for this situation (compiler quirk).
+                    if (simpleVarCollapsed.ExplicitInstanceType == InstanceType.Self)
+                    {
+                        context.EmitCall(new FunctionPatch(VMConstants.SelfFunction,
+                            context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction)), 0);
+                        simpleVarCollapsed.SetExplicitInstanceType(InstanceType.StackTop);
+                    }
+
+                    // TODO: certain GameMaker versions also do the above for other/global apparently
+                }
+            }
+
+            // Push self (if not using expression as an instance)
+            if (!dupInstance)
+            {
+                IBuiltinFunction? builtinFunctionToCall =
+                    context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction);
+                context.EmitCall(new FunctionPatch(VMConstants.SelfFunction, builtinFunctionToCall), 0);
+            }
 
             // Recurse to earlier function call
             if (Expression is FunctionCallNode funcCall)
@@ -212,6 +250,12 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 Expression.GenerateCode(context);
             }
             context.PopDataType();
+
+            // Duplicate expression to use as instance, if applicable
+            if (dupInstance)
+            {
+                context.EmitDuplicate(DataType.Variable, 0);
+            }
 
             // Emit actual call
             context.EmitCallVariable(Arguments.Count);

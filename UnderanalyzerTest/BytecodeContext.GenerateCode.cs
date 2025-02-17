@@ -470,4 +470,460 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestVariableCallsArrays()
+    {
+        // NOTE: These compile somewhat differently depending on GameMaker version, which this currently ignores.
+        //       As of writing this test, the goal is to mainly get compatible code compilation for all versions.
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            a[0](1);
+            self.a[0](1);
+            global.a[0](1);
+            obj_test.a[0](1);
+            a[0].b(1);
+            a[0].b[1](2);
+            a[0](1).b[2](3);
+            a.b[0](1).c.d[2](3);
+            a.b[0].c(1).d.e[2].f(3);
+            """,
+            """
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            pushi.e 123
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pushi.e 1
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            callv.v 1
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.c
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.d
+            dup.v 0
+            callv.v 1
+            popz.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.c
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.d
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.e
+            pushi.e 3
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.f
+            callv.v 1
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestVariableCallsArraysAssetRefs()
+    {
+        // NOTE: These compile somewhat differently depending on GameMaker version, which this currently ignores.
+        //       As of writing this test, the goal is to mainly get compatible code compilation for all versions.
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = true
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            a[0](1);
+            self.a[0](1);
+            global.a[0](1);
+            obj_test.a[0](1);
+            a[0].b(1);
+            a[0].b[1](2);
+            a[0](1).b[2](3);
+            a.b[0](1).c.d[2](3);
+            a.b[0].c(1).d.e[2].f(3);
+            """,
+            """
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 1
+            conv.i.v
+            pushref.i 123 Object
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.a
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pushi.e 1
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            callv.v 1
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.c
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.d
+            dup.v 0
+            callv.v 1
+            popz.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.c
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.d
+            pushi.e -9
+            pushi.e 2
+            push.v [array]self.e
+            pushi.e 3
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.f
+            callv.v 1
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestVariableCallsArraysMulti()
+    {
+        // NOTE: These compile somewhat differently depending on GameMaker version, which this currently ignores.
+        //       As of writing this test, the goal is to mainly get compatible code compilation for all versions.
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            a[0][1](2);
+            self.a[0][1](2);
+            global.a[0][1](2);
+            obj_test.a[0][1](2);
+            a.b[0][1](2);
+            a[0][1].b(2);
+            a[0][1].b[1][2](3);
+            a[0][1](2).b[2][3](4);
+            a.b[0][1](2).c.d[3][4](5);
+            a.b[0][1].c(2).d.e[3][4].f(5);
+            """,
+            """
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            pushi.e 123
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [multipush]self.b
+            pushi.e 1
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            pushi.e 2
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            pushi.e -9
+            pushi.e 1
+            push.v [multipush]self.b
+            pushi.e 2
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 4
+            conv.i.v
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -1
+            pushi.e 0
+            push.v [multipush]self.a
+            pushi.e 1
+            pushaf.e
+            callv.v 1
+            pushi.e -9
+            pushi.e 2
+            push.v [multipush]self.b
+            pushi.e 3
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e 5
+            conv.i.v
+            pushi.e 2
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [multipush]self.b
+            pushi.e 1
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.c
+            pushi.e -9
+            pushi.e 3
+            push.v [multipush]self.d
+            pushi.e 4
+            pushaf.e
+            dup.v 0
+            callv.v 1
+            popz.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [multipush]self.b
+            pushi.e 1
+            pushaf.e
+            pushi.e 2
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.c
+            callv.v 1
+            pushi.e -9
+            push.v [stacktop]self.d
+            pushi.e -9
+            pushi.e 3
+            push.v [multipush]self.e
+            pushi.e 4
+            pushaf.e
+            pushi.e 5
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.f
+            callv.v 1
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
 }

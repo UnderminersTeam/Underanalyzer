@@ -762,8 +762,6 @@ public class RoundTrip
             UsingGMLv2 = true,
             UsingAssetReferences = true
         };
-        ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
-            new("show_debug_message", 1, 1);
         ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
         gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
         TestUtil.VerifyRoundTrip(
@@ -779,6 +777,59 @@ public class RoundTrip
             obj_test.a(1).b(2);
             obj_test.a(1).b(2)(3)(4);
             obj_test.a(1).b(2)(3).c(4);
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestVariableCallsArrays()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0](1);
+            self.a[0](1);
+            global.a[0](1);
+            obj_test.a[0](1);
+            a[0].b(1);
+            a[0].b[1](2);
+            a[0](1).b[2](3);
+            a.b[0](1).c.d[2](3);
+            a.b[0].c(1).d.e[2].f(3);
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestVariableCallsArraysMulti()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0][1](2);
+            self.a[0][1](2);
+            global.a[0][1](2);
+            obj_test.a[0][1](2);
+            a.b[0][1](2);
+            a[0][1].b(2);
+            a[0][1].b[1][2](3);
+            a[0][1](2).b[2][3](4);
+            a.b[0][1](2).c.d[3][4](5);
+            a.b[0][1].c(2).d.e[3][4].f(5);
             """,
             false,
             gameContext

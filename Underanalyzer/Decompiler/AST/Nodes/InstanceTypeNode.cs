@@ -11,12 +11,17 @@ namespace Underanalyzer.Decompiler.AST;
 /// <summary>
 /// Represents an instance type (<see cref="IGMInstruction.InstanceType"/>) in the AST.
 /// </summary>
-public class InstanceTypeNode(IGMInstruction.InstanceType instType) : IExpressionNode, IConditionalValueNode
+public class InstanceTypeNode(IGMInstruction.InstanceType instType, bool fromBuiltinFunction = false) : IExpressionNode, IConditionalValueNode
 {
     /// <summary>
     /// The instance type for this node.
     /// </summary>
     public IGMInstruction.InstanceType InstanceType { get; } = instType;
+
+    /// <summary>
+    /// Whether this node was created from a builtin function, such as <see cref="VMConstants.SelfFunction"/>.
+    /// </summary>
+    public bool FromBuiltinFunction { get; } = fromBuiltinFunction;
 
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
