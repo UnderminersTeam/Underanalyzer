@@ -61,6 +61,11 @@ internal record struct VariablePatch(string Name, InstanceType InstanceType, Var
 {
     /// <inheritdoc/>
     public IGMInstruction? Instruction { get; set; }
+
+    /// <summary>
+    /// Instance type to use for instruction. Sometimes differs from <see cref="InstanceType"/>, due to compiler quirks.
+    /// </summary>
+    public InstanceType InstructionInstanceType { get; set; } = InstanceType;
 }
 
 /// <summary>

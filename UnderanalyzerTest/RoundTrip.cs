@@ -722,4 +722,66 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestRepeatVariableCalls()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
+            new("show_debug_message", 1, 1);
+        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            a(1)(2)(3)(4)(5);
+            a.b(1)(2)(3);
+            a(1).b(2);
+            self.a(1).b(2);
+            a(1).b(2)(3)(4);
+            a(1).b(2)(3).c(4);
+            obj_test.b(1)(2)(3);
+            obj_test.b.c(1)(2)(3);
+            obj_test.a(1).b(2);
+            obj_test.a(1).b(2)(3)(4);
+            obj_test.a(1).b(2)(3).c(4);
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestRepeatVariableCallsAssetRefs()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = true
+        };
+        ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
+            new("show_debug_message", 1, 1);
+        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            a(1)(2)(3)(4)(5);
+            a.b(1)(2)(3);
+            a(1).b(2);
+            self.a(1).b(2);
+            a(1).b(2)(3)(4);
+            a(1).b(2)(3).c(4);
+            obj_test.b(1)(2)(3);
+            obj_test.b.c(1)(2)(3);
+            obj_test.a(1).b(2);
+            obj_test.a(1).b(2)(3)(4);
+            obj_test.a(1).b(2)(3).c(4);
+            """,
+            false,
+            gameContext
+        );
+    }
 }

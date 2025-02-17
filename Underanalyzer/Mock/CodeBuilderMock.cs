@@ -229,33 +229,31 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
-    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin)
+    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType variableInstanceType, InstanceType instructionInstanceType, VariableType variableType, bool isBuiltin)
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            // Save instance type to register to data
-            InstanceType registerInstanceType = instanceType;
-
             // Transform instance type into Self in GMLv2 when not using simple variables
             if (gameContext.UsingGMLv2 && variableType != VariableType.Normal)
             {
-                instanceType = InstanceType.Self;
+                variableInstanceType = InstanceType.Self;
+                instructionInstanceType = InstanceType.Self;
             }
 
             // If the variable is builtin, use builtin instance type
             if (isBuiltin)
             {
-                instanceType = InstanceType.Builtin;
-                registerInstanceType = InstanceType.Builtin;
+                variableInstanceType = InstanceType.Builtin;
+                instructionInstanceType = InstanceType.Builtin;
             }
 
             // Transform self to builtin if applicable
-            if (SelfToBuiltin && instanceType == InstanceType.Self && variableType == VariableType.Normal)
+            if (SelfToBuiltin && instructionInstanceType == InstanceType.Self && variableType == VariableType.Normal)
             {
-                instanceType = InstanceType.Builtin;
+                instructionInstanceType = InstanceType.Builtin;
             }
 
-            if (gameContext.MockVariables.TryGetValue((variableName, registerInstanceType), out GMVariable? existingVariable))
+            if (gameContext.MockVariables.TryGetValue((variableName, variableInstanceType), out GMVariable? existingVariable))
             {
                 mockInstruction.Variable = existingVariable;
             }
@@ -263,13 +261,13 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
             {
                 GMVariable newVariable = new(new GMString(variableName))
                 {
-                    InstanceType = registerInstanceType
+                    InstanceType = variableInstanceType
                 };
                 mockInstruction.Variable = newVariable;
-                gameContext.MockVariables.Add((variableName, registerInstanceType), newVariable);
+                gameContext.MockVariables.Add((variableName, variableInstanceType), newVariable);
             }
 
-            mockInstruction.InstType = instanceType;
+            mockInstruction.InstType = instructionInstanceType;
             mockInstruction.ReferenceVarType = variableType;
         }
     }

@@ -117,7 +117,7 @@ public interface ICodeBuilder
     /// <summary>
     /// Patches an existing instruction with a variable reference.
     /// </summary>
-    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType instanceType, VariableType variableType, bool isBuiltin);
+    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType variableInstanceType, InstanceType instructionInstanceType, VariableType variableType, bool isBuiltin);
 
     /// <summary>
     /// Patches an existing instruction with a function reference.

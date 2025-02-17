@@ -38,6 +38,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     public bool IsFunctionCall { get; set; } = false;
 
+    /// <summary>
+    /// Whether this is a variable node that was collapsed from a <see cref="DotVariableNode"/>.
+    /// </summary>
+    public bool CollapsedFromDot { get; set; } = false;
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
@@ -102,14 +107,14 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
 
         // Determine instance type
         InstanceType finalInstanceType = ExplicitInstanceType;
-        if (IsFunctionCall && finalInstanceType == InstanceType.Self)
-        {
-            // Change to builtin (weird compiler quirk)
-            finalInstanceType = InstanceType.Builtin;
-        }
 
         // Emit instruction to push (and push data type)
         VariablePatch varPatch = new(VariableName, finalInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        if (IsFunctionCall && finalInstanceType == InstanceType.Self)
+        {
+            // Change instruction encoding to builtin (weird compiler quirk)
+            varPatch.InstructionInstanceType = InstanceType.Builtin;
+        }
         context.Emit(opcode, varPatch, DataType.Variable);
         context.PushDataType(DataType.Variable);
     }

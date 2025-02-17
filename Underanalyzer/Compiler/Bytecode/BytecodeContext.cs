@@ -98,7 +98,7 @@ internal sealed class BytecodeContext : ISubCompileContext
         // Resolve variable patches
         foreach (VariablePatch variablePatch in patches.VariablePatches!)
         {
-            codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.VariableType, variablePatch.IsBuiltin);
+            codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, variablePatch.IsBuiltin);
         }
 
         // Resolve function patches

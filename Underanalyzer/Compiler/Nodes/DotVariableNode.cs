@@ -60,6 +60,7 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         {
             SimpleVariableNode combined = new(VariableName, BuiltinVariable);
             combined.SetExplicitInstanceType((InstanceType)(int)numberValue);
+            combined.CollapsedFromDot = true;
             return combined;
         }
 
@@ -69,6 +70,7 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         {
             SimpleVariableNode combined = new(VariableName, BuiltinVariable);
             combined.SetExplicitInstanceType((InstanceType)assetId);
+            combined.CollapsedFromDot = true;
             return combined;
         }
 

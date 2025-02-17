@@ -234,9 +234,10 @@ internal static class TestUtil
             {
                 Assert.Equal(variable.Name.Content, actualInstr.Variable!.Name.Content);
 
-                // Self sometimes becomes builtin for instructions, but not the actual variable itself
+                // Self sometimes becomes builtin/stacktop for instructions, but not the actual variable itself
                 if (actualInstr.Variable!.InstanceType != IGMInstruction.InstanceType.Self ||
-                    variable.InstanceType != IGMInstruction.InstanceType.Builtin)
+                    variable.InstanceType is not (IGMInstruction.InstanceType.Builtin or 
+                                                  IGMInstruction.InstanceType.StackTop))
                 {
                     Assert.Equal(variable.InstanceType, actualInstr.Variable!.InstanceType);
                 }

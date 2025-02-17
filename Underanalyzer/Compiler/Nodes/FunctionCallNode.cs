@@ -66,10 +66,37 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
         return this;
     }
 
-    /// <inheritdoc/>
-    public void GenerateCode(BytecodeContext context)
+    /// <summary>
+    /// Generates code for pushing arguments to the stack for this function call node.
+    /// </summary>
+    private void GenerateArguments(BytecodeContext context)
+    {
+        // Push arguments in reverse order (so they get popped in normal order)
+        for (int i = Arguments.Count - 1; i >= 0; i--)
+        {
+            Arguments[i].GenerateCode(context);
+            context.ConvertDataType(DataType.Variable);
+        }
+    }
+
+    /// <summary>
+    /// Generates code for this node, given whether it's in part of (but not the end of) a chain.
+    /// </summary>
+    private void GenerateCode(BytecodeContext context, bool inChain)
     {
         VariablePatch finalVariable;
+
+        // For some reason, chains of function calls generate arguments before instance.
+        // We'll also have an exception for DotVariableNode expressions, which is broken in the original compiler.
+        if (Expression is DotVariableNode)
+        {
+            inChain = false;
+        }
+        if (inChain)
+        {
+            // Push arguments to stack
+            GenerateArguments(context);
+        }
 
         // Push instance
         if (Expression is SimpleVariableNode simpleVar)
@@ -90,9 +117,9 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
             {
                 functionToCall = simpleVar.ExplicitInstanceType switch
                 {
-                    InstanceType.Other =>   VMConstants.OtherFunction,
-                    InstanceType.Global =>  VMConstants.GlobalFunction,
-                    _ =>                    VMConstants.SelfFunction
+                    InstanceType.Other => VMConstants.OtherFunction,
+                    InstanceType.Global => VMConstants.GlobalFunction,
+                    _ => VMConstants.SelfFunction
                 };
                 argsToUse = 0;
             }
@@ -100,39 +127,118 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(functionToCall);
             context.EmitCall(new FunctionPatch(functionToCall, builtinFunctionToCall), argsToUse);
 
-            // Make final variable patch
-            finalVariable = new(simpleVar.VariableName, InstanceType.StackTop, VariableType.Normal, simpleVar.BuiltinVariable is not null);
-        }
-        else if (Expression is DotVariableNode dotVar)
-        {
-            // Push left expression
-            dotVar.LeftExpression.GenerateCode(context);
-
-            // If conversion is necessary, run function to get single instance
-            if (context.ConvertDataType(DataType.Variable))
+            // If in chain, this value needs to be duplicated still
+            if (inChain)
             {
-                context.EmitCall(new FunctionPatch(VMConstants.GetInstanceFunction,
-                    context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.GetInstanceFunction)), 1);
+                context.EmitDuplicate(DataType.Variable, 0);
             }
 
             // Make final variable patch
-            finalVariable = new(dotVar.VariableName, InstanceType.StackTop, VariableType.Normal, dotVar.BuiltinVariable is not null);
+            finalVariable = new(simpleVar.VariableName, InstanceType.Self, VariableType.Normal, simpleVar.BuiltinVariable is not null)
+            {
+                InstructionInstanceType = InstanceType.StackTop
+            };
+        }
+        else if (Expression is DotVariableNode dotVar)
+        {
+            // Handle pretty strange compiler quirk with no dup swaps being performed (if no dot on left side of this dot)
+            if (!inChain && dotVar.LeftExpression is 
+                    FunctionCallNode { Expression: SimpleVariableNode { CollapsedFromDot: false } or 
+                                                   FunctionCallNode or SimpleFunctionCallNode } or 
+                    SimpleFunctionCallNode)
+            {
+                inChain = true;
+
+                // Push arguments to stack
+                GenerateArguments(context);
+
+                // Push left expression
+                if (dotVar.LeftExpression is FunctionCallNode funcCall)
+                {
+                    funcCall.GenerateCode(context, true);
+                }
+                else
+                {
+                    dotVar.LeftExpression.GenerateCode(context);
+                }
+
+                // Duplicate left expression (it's an instance) and convert to instance ID
+                context.EmitDuplicate(DataType.Variable, 0);
+                context.ConvertToInstanceId();
+
+                // Make final variable patch
+                finalVariable = new(dotVar.VariableName, InstanceType.Self, VariableType.StackTop, dotVar.BuiltinVariable is not null);
+            }
+            else
+            {
+                // Push left expression
+                dotVar.LeftExpression.GenerateCode(context);
+
+                // If conversion is necessary, run function to get single instance
+                if (context.ConvertDataType(DataType.Variable))
+                {
+                    context.EmitCall(new FunctionPatch(VMConstants.GetInstanceFunction,
+                        context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.GetInstanceFunction)), 1);
+                }
+
+                // Make final variable patch
+                finalVariable = new(dotVar.VariableName, InstanceType.Self, VariableType.Normal, dotVar.BuiltinVariable is not null)
+                {
+                    InstructionInstanceType = InstanceType.StackTop
+                };
+            }
+        }
+        else if (Expression is FunctionCallNode or SimpleFunctionCallNode)
+        {
+            // Only push arguments if not already pushed
+            if (!inChain)
+            {
+                // Push arguments to stack
+                GenerateArguments(context);
+            }
+
+            // Push self
+            IBuiltinFunction? builtinFunctionToCall =
+                context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction);
+            context.EmitCall(new FunctionPatch(VMConstants.SelfFunction, builtinFunctionToCall), 0);
+
+            // Recurse to earlier function call
+            if (Expression is FunctionCallNode funcCall)
+            {
+                funcCall.GenerateCode(context, true);
+            }
+            else
+            {
+                Expression.GenerateCode(context);
+            }
+            context.PopDataType();
+
+            // Emit actual call
+            context.EmitCallVariable(Arguments.Count);
+            context.PushDataType(DataType.Variable);
+
+            // If this node is a statement, remove result from stack
+            if (IsStatement)
+            {
+                context.Emit(Opcode.PopDelete, context.PopDataType());
+            }
+            return;
         }
         else
         {
             throw new NotImplementedException();
         }
 
-        // Push arguments in reverse order (so they get popped in normal order)
-        for (int i = Arguments.Count - 1; i >= 0; i--)
+        // In the common case, generate arguments after instance and swap/duplicate
+        if (!inChain)
         {
-            Arguments[i].GenerateCode(context);
-            context.ConvertDataType(DataType.Variable);
-        }
+            // Push arguments to stack
+            GenerateArguments(context);
 
-        // Swap instance and arguments around on stack, and duplicate instance
-        context.EmitDupSwap(DataType.Variable, (byte)Arguments.Count, 1);
-        context.EmitDuplicate(DataType.Variable, 0);
+            // Swap instance and arguments around on stack, and duplicate instance
+            context.EmitDupSwap(DataType.Variable, (byte)Arguments.Count, 1);
+            context.EmitDuplicate(DataType.Variable, 0);
+        }
 
         // Compile final variable
         context.Emit(Opcode.Push, finalVariable, DataType.Variable);
@@ -146,5 +252,11 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
         {
             context.Emit(Opcode.PopDelete, context.PopDataType());
         }
+    }
+
+    /// <inheritdoc/>
+    public void GenerateCode(BytecodeContext context)
+    {
+        GenerateCode(context, false);
     }
 }

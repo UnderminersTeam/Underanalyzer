@@ -265,4 +265,209 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestRepeatVariableCalls()
+    {
+        // NOTE: as of writing, "a.b(1)(2)(3);" does not compile correctly in GameMaker, but does here
+        TestUtil.AssertBytecode(
+            """
+            a(1)(2)(3)(4)(5);
+            a.b(1)(2)(3);
+            a(1).b(2);
+            a(1).b(2)(3)(4);
+            a(1).b(2)(3).c(4);
+            """,
+            """
+            pushi.e 5
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 4
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 3
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            callv.v 1
+            callv.v 1
+            callv.v 1
+            callv.v 1
+            popz.v
+            pushi.e 3
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            push.v self.a
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            callv.v 1
+            callv.v 1
+            popz.v
+            pushi.e 2
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            callv.v 1
+            popz.v
+            pushi.e 4
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 3
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 2
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            callv.v 1
+            callv.v 1
+            callv.v 1
+            popz.v
+            pushi.e 4
+            conv.i.v
+            pushi.e 3
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 2
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            callv.v 1
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.c
+            callv.v 1
+            popz.v
+            """
+        );
+    }
+
+    [Fact]
+    public void TestRepeatVariableCalls2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            obj_test.a(1).b(2);
+            """,
+            """
+            pushi.e 123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.a
+            callv.v 1
+            pushi.e 2
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestRepeatVariableCalls2AssetRefs()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = true,
+            UsingAssetReferences = true
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            obj_test.a(1).b(2);
+            """,
+            """
+            pushref.i 123 Object
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.a
+            callv.v 1
+            pushi.e 2
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestRepeatVariableCalls3()
+    {
+        TestUtil.AssertBytecode(
+            """
+            self.a(1).b(2);
+            """,
+            """
+            call.i @@This@@ 0
+            pushi.e 1
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.a
+            callv.v 1
+            pushi.e 2
+            conv.i.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
+            """
+        );
+    }
 }
