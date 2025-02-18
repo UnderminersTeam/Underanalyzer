@@ -234,7 +234,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         if (cleaner.StructArguments is not null)
         {
             // Verify this is an argument array access
-            if (instType == (int)InstanceType.Argument && 
+            if (instType is (int)InstanceType.Argument or (int)InstanceType.Self &&
                 Variable is { Name.Content: "argument" } &&
                 ArrayIndices is [Int16Node arrayIndex])
             {

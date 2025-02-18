@@ -2797,4 +2797,83 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestNewConstructorSetStatic()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > gml_Script_Test (locals=0, args=1)
+            :[1]
+            call.i @@SetStatic@@ 0
+            push.v arg.argument0
+            pop.v.v builtin.test
+            exit.i
+
+            :[2]
+            push.i [function]gml_Script_Test
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.Test
+            popz.v
+            """,
+            """
+            function Test(arg0) constructor
+            {
+                test = arg0;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestStructSelfArgument()
+    {
+        // Note about this test case: -1 (self) values are generally -15 (arguments), but seems like either
+        // different GameMaker versions or mod tooling(?) generates code that uses self...
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            call.i @@NewGMLArray@@ 0
+            call.i @@NewGMLArray@@ 0
+            b [2]
+
+            > test_struct (locals=0, args=0)
+            :[1]
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 1
+            push.v [array]self.argument
+            pop.v.v self.b
+            exit.i
+
+            :[2]
+            push.i [function]test_struct
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -16
+            pop.v.v [stacktop]static.test_struct
+            call.i @@NewGMLObject@@ 3
+            pop.v.v self.c
+            """,
+            """
+            c = 
+            {
+                a: [],
+                b: []
+            };
+            """
+        );
+    }
 }
