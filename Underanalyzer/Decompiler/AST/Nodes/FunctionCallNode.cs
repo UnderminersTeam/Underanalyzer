@@ -142,9 +142,9 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
-    public void Print(ASTPrinter printer)
+    public void Print(ASTPrinter printer, ASTFragmentContext? overrideFunctionLookupContext = null)
     {
-        printer.Write(printer.LookupFunction(Function));
+        printer.Write(printer.LookupFunction(Function, overrideFunctionLookupContext));
         printer.Write('(');
         for (int i = 0; i < Arguments.Count; i++)
         {
@@ -155,6 +155,11 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
             }
         }
         printer.Write(')');
+    }
+
+    public void Print(ASTPrinter printer)
+    {
+        Print(printer, null);
     }
 
     public bool RequiresMultipleLines(ASTPrinter printer)

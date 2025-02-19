@@ -391,24 +391,33 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
         }
     }
 
+    /// <summary>
+    /// Generates code for this function call, using a direct call (not any indirect variables, etc.).
+    /// </summary>
+    public void GenerateDirectCode(BytecodeContext context, FunctionScope? overrideCallScope = null)
+    {
+        // Push arguments to stack
+        GenerateArguments(context);
+
+        // Emit actual call instruction
+        FunctionPatch funcPatch = new(overrideCallScope ?? context.CurrentScope, FunctionName, BuiltinFunction);
+        context.EmitCall(funcPatch, Arguments.Count);
+        context.PushDataType(DataType.Variable);
+
+        // If this node is a statement, remove result from stack
+        if (IsStatement)
+        {
+            context.Emit(Opcode.PopDelete, context.PopDataType());
+        }
+    }
+
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        if (context.IsGlobalFunctionName(FunctionName))
+        if (context.CurrentScope.IsFunctionDeclared(FunctionName) || context.IsGlobalFunctionName(FunctionName))
         {
-            // Push arguments to stack
-            GenerateArguments(context);
-
-            // Emit actual call instruction
-            FunctionPatch funcPatch = new(FunctionName, BuiltinFunction);
-            context.EmitCall(funcPatch, Arguments.Count);
-            context.PushDataType(DataType.Variable);
-
-            // If this node is a statement, remove result from stack
-            if (IsStatement)
-            {
-                context.Emit(Opcode.PopDelete, context.PopDataType());
-            }
+            // Function is in scope to be called directly, so do that
+            GenerateDirectCode(context);
         }
         else
         {
@@ -436,9 +445,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
                     InstanceType.Global =>  VMConstants.GlobalFunction,
                     _ =>                    VMConstants.SelfFunction
                 };
-                IBuiltinFunction? builtinFunctionToCall =
-                    context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(functionToCall);
-                context.EmitCall(new FunctionPatch(functionToCall, builtinFunctionToCall), 0);
+                context.EmitCall(FunctionPatch.FromBuiltin(context, functionToCall), 0);
 
                 // Compile variable
                 finalVarNode.IsFunctionCall = true;

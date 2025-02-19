@@ -5,6 +5,7 @@
 */
 
 using System.Diagnostics.CodeAnalysis;
+using Underanalyzer.Compiler.Bytecode;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler;
@@ -122,7 +123,12 @@ public interface ICodeBuilder
     /// <summary>
     /// Patches an existing instruction with a function reference.
     /// </summary>
-    public void PatchInstruction(IGMInstruction instruction, string functionName, IBuiltinFunction? builtinFunction);
+    public void PatchInstruction(IGMInstruction instruction, FunctionScope scope, string functionName, IBuiltinFunction? builtinFunction);
+
+    /// <summary>
+    /// Patches an existing instruction with a function reference, from a specific local function entry.
+    /// </summary>
+    public void PatchInstruction(IGMInstruction instruction, FunctionEntry functionEntry);
 
     /// <summary>
     /// Patches an existing instruction with a string reference.

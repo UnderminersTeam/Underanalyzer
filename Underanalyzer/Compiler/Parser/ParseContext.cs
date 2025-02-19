@@ -21,6 +21,9 @@ internal sealed class ParseContext : ISubCompileContext
     /// <inheritdoc/>
     public FunctionScope CurrentScope { get; set; }
 
+    /// <inheritdoc/>
+    public FunctionScope RootScope { get; set; }
+
     /// <summary>
     /// List of tokens to be parsed by this context.
     /// </summary>
@@ -30,11 +33,6 @@ internal sealed class ParseContext : ISubCompileContext
     /// Root node as parsed by this context.
     /// </summary>
     public IASTNode? Root { get; private set; } = null;
-
-    /// <summary>
-    /// Root function scope being used during parsing.
-    /// </summary>
-    public FunctionScope RootScope { get; set; }
 
     /// <summary>
     /// Enum declarations parsed by this context.

@@ -403,18 +403,21 @@ public interface IGMInstruction
 
         /// <summary>
         /// Pushes a boolean value to the stack, indicating whether static initialization has already occurred for this function (true), or otherwise false.
-        /// Enters a static variable initialization state.
         /// Mnemonic: "isstaticok"
         /// </summary>
         [OpcodeInfo("isstaticok")]
         HasStaticInitialized = -6,
 
         /// <summary>
-        /// Exits a static variable initialization state.
+        /// Marks the current function to no longer be able to enter its own static initialization.
         /// Mnemonic: "setstatic"
         /// </summary>
+        /// <remarks>
+        /// This can either occur at the beginning or end of a static block, depending on whether "AllowReentrantStatic" is enabled by a 
+        /// game's developer (enabled by default before GameMaker 2024.11; disabled by default otherwise).
+        /// </remarks>
         [OpcodeInfo("setstatic")]
-        ResetStatic = -7,
+        SetStaticInitialized = -7,
 
         /// <summary>
         /// Keeps track of an array reference temporarily. Used in multi-dimensional array compound assignment statements.

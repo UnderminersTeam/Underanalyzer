@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -364,9 +365,18 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         FunctionScope oldScope = context.CurrentScope;
         context.CurrentScope = Scope;
 
+        // Declare function in the current scope if named
+        if (FunctionName is not null)
+        {
+            if (!oldScope.TryDeclareFunction(FunctionName))
+            {
+                context.CompileContext.PushError($"Function name \"{FunctionName}\" already declared in scope", NearbyToken);
+            }
+        }
+
         DefaultValueBlock?.PostProcessChildrenOnly(context);
-        Body.PostProcessChildrenOnly(context);
         InheritanceCall?.PostProcessChildrenOnly(context);
+        Body.PostProcessChildrenOnly(context);
 
         // Exit function scope
         context.CurrentScope = oldScope;
@@ -377,8 +387,158 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO: register FunctionEntry instance
-        // TODO: when entering, make sure to enter new FunctionScope, and create ControlFlowContexts for it
-        // TODO: generate actual code
+        // Enter scope of this function
+        FunctionScope oldScope = context.CurrentScope;
+        context.CurrentScope = Scope;
+
+        // Skip past function body
+        SingleForwardBranchPatch skipFunctionPatch = new(context.Emit(Opcode.Branch));
+
+        // Register FunctionEntry instance
+        FunctionEntry entry = new(
+            context.Position,
+            Scope.LocalCount,
+            ArgumentNames.Count,
+            FunctionName,
+            oldScope == context.RootScope,
+            IsStruct ? FunctionEntryKind.StructInstantiation : FunctionEntryKind.FunctionDeclaration
+        );
+        context.FunctionEntries.Add(entry);
+
+        // Assign function entry in the current scope if named
+        if (FunctionName is not null)
+        {
+            oldScope.AssignFunctionEntry(FunctionName, entry);
+        }
+
+        // Create control flow context stack for the scope
+        Scope.ControlFlowContexts = new(8);
+
+        // Generate default argument assignments, before main body
+        DefaultValueBlock?.GenerateCode(context);
+
+        // Inheritance call, before main body
+        if (InheritanceCall is SimpleFunctionCallNode inheritCall)
+        {
+            // Generate actual call
+            if (oldScope.IsFunctionDeclared(inheritCall.FunctionName))
+            {
+                // Override scope to be the outer scope for this call (but NOT its arguments), and generate a direct call
+                inheritCall.GenerateDirectCode(context, oldScope);
+            }
+            else
+            {
+                // General case
+                inheritCall.GenerateCode(context);
+            }
+            context.PopDataType();
+
+            // Copy static variables from parent function (must be statically accessible from this scope)
+            context.EmitPushFunction(new FunctionPatch(oldScope, inheritCall.FunctionName, inheritCall.BuiltinFunction));
+            context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.CopyStaticFunction), 1);
+        }
+
+        // If this is a constructor, generate set static function call for certain GameMaker versions
+        if (IsConstructor && context.CompileContext.GameContext.UsingConstructorSetStatic)
+        {
+            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SetStaticFunction), 1);
+        }
+
+        // Static block, before main body
+        if (Scope.StaticInitializerBlock is BlockNode staticBlock)
+        {
+            // If static has already initialized, branch past this block
+            context.Emit(ExtendedOpcode.HasStaticInitialized);
+            SingleForwardBranchPatch skipStaticPatch = new(context.Emit(Opcode.BranchTrue));
+
+            // If not allowing re-entrant static, set the static flag here
+            bool allowReentrantStatic = context.CompileContext.GameContext.UsingReentrantStatic;
+            if (!allowReentrantStatic)
+            {
+                context.Emit(ExtendedOpcode.SetStaticInitialized);
+            }
+
+            // Compile block
+            Scope.GeneratingStaticBlock = true;
+            staticBlock.GenerateCode(context);
+            Scope.GeneratingStaticBlock = false;
+
+            // If allowing re-entrant static, set the static flag here
+            if (allowReentrantStatic)
+            {
+                context.Emit(ExtendedOpcode.SetStaticInitialized);
+            }
+
+            // Skip static patch ends up here
+            skipStaticPatch.Patch(context);
+        }
+
+        // Generate main body
+        Body.GenerateCode(context);
+        context.Emit(Opcode.Exit, DataType.Int32);
+
+        // Clean up control flow context stack for this scope (no longer need it)
+        Scope.ControlFlowContexts = null;
+            
+        // Exit scope of this function
+        context.CurrentScope = oldScope;
+
+        // Skip function patch ends up here
+        skipFunctionPatch.Patch(context);
+
+        // Generate code to register function in variable form
+        context.EmitPushFunction(new LocalFunctionPatch(entry));
+        context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+        if (IsConstructor)
+        {
+            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.NullObjectFunction), 0);
+        }
+        else
+        {
+            context.Emit(Opcode.PushImmediate, (short)(oldScope.GeneratingStaticBlock ? InstanceType.Static : InstanceType.Self), DataType.Int16);
+            context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+        }
+        context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.MethodFunction), 2);
+
+        // Store this function to a variable, if not anonymous (or if a struct)
+        if (FunctionName is not null)
+        {
+            context.EmitDuplicate(DataType.Variable, 0);
+            if (context.CompileContext.GameContext.UsingNewFunctionVariables)
+            {
+                context.Emit(Opcode.PushImmediate, (short)InstanceType.Self, DataType.Int16);
+            }
+            else
+            {
+                context.Emit(Opcode.PushImmediate, (short)InstanceType.Builtin, DataType.Int16);
+            }
+            context.Emit(Opcode.Pop, new VariablePatch(FunctionName, InstanceType.Self, VariableType.StackTop), DataType.Variable, DataType.Variable);
+        }
+        else if (IsStruct)
+        {
+            context.EmitDuplicate(DataType.Variable, 0);
+            if (context.CompileContext.GameContext.UsingNewFunctionVariables)
+            {
+                context.Emit(Opcode.PushImmediate, (short)InstanceType.Global, DataType.Int16);
+                context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Global, VariableType.StackTop), DataType.Variable, DataType.Variable);
+            }
+            else
+            {
+                context.Emit(Opcode.PushImmediate, (short)InstanceType.Static, DataType.Int16);
+                context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Static, VariableType.StackTop), DataType.Variable, DataType.Variable);
+            }
+        }
+
+        if (IsStatement)
+        {
+            // This is a statement, so remove method() result from the stack
+            context.Emit(Opcode.PopDelete, DataType.Variable);
+        }
+        else
+        {
+            // This is not a statement, so result from method() is still on the stack
+            context.PushDataType(DataType.Variable);
+        }
     }
 }

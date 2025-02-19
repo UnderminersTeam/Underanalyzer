@@ -86,6 +86,24 @@ public interface IGameContext
     public bool UsingFinallyBeforeThrow { get; }
 
     /// <summary>
+    /// <see langword="true"/> if this game uses the new code generation for constructors, as introduced in GameMaker version 2024.11; <see langword="false"/> otherwise.
+    /// </summary>
+    public bool UsingConstructorSetStatic { get; }
+
+    /// <summary>
+    /// <see langword="true"/> if this game allows static code blocks to recursively re-enter themselves; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2024.11, this is guaranteed to be <see langword="true"/>. Afterwards, it is <see langword="false"/> by default, but can be changed by a game's developer.
+    /// </remarks>
+    public bool UsingReentrantStatic { get; }
+
+    /// <summary>
+    /// <see langword="true"/> if this game assigns function declarations using new code generation introduced in GameMaker 2024.2; <see langword="false"/> otherwise.
+    /// </summary>
+    public bool UsingNewFunctionVariables { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

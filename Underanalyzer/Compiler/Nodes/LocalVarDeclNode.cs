@@ -5,7 +5,6 @@
 */
 
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;

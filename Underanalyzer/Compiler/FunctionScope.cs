@@ -4,8 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Nodes;
 
@@ -14,7 +14,7 @@ namespace Underanalyzer.Compiler;
 /// <summary>
 /// Structure used to track data at the level of a specific function/event/script scope.
 /// </summary>
-internal sealed class FunctionScope(bool isFunction)
+public sealed class FunctionScope(bool isFunction)
 {
     /// <summary>
     /// Whether this scope is for specifically a function, and not a script or event.
@@ -24,12 +24,22 @@ internal sealed class FunctionScope(bool isFunction)
     /// <summary>
     /// If not <see langword="null"/>, this is the block used for initializing static variables for this scope.
     /// </summary>
-    public BlockNode? StaticInitializerBlock { get; set; } = null;
+    internal BlockNode? StaticInitializerBlock { get; set; } = null;
 
     /// <summary>
     /// Stack of control flow contexts used during bytecode generation.
     /// </summary>
-    public Stack<IControlFlowContext>? ControlFlowContexts { get; set; } = null;
+    internal Stack<IControlFlowContext>? ControlFlowContexts { get; set; } = null;
+
+    /// <summary>
+    /// Number of locals declared in this scope.
+    /// </summary>
+    internal int LocalCount => _declaredLocals.Count;
+
+    /// <summary>
+    /// Whether bytecode is currently being generated for a static block.
+    /// </summary>
+    internal bool GeneratingStaticBlock { get; set; } = false;
 
     // Set of local variables declared for this scope
     private readonly HashSet<string> _declaredLocals = new(8);
@@ -43,12 +53,15 @@ internal sealed class FunctionScope(bool isFunction)
     // Lookup of argument names to argument indices
     private readonly Dictionary<string, int> _declaredArguments = new(8);
 
+    // Functions declared in this scope (actual entries are assigned during bytecode generation)
+    private readonly Dictionary<string, FunctionEntry?> _declaredFunctions = new(4);
+
     /// <summary>
     /// Declares a local variable for this function scope.
     /// </summary>
     /// <param name="name">Name of the local variable to be declared.</param>
     /// <returns>True if the local was not yet declared; false otherwise.</returns>
-    public bool DeclareLocal(string name)
+    internal bool DeclareLocal(string name)
     {
         if (_declaredLocals.Add(name))
         {
@@ -63,7 +76,7 @@ internal sealed class FunctionScope(bool isFunction)
     /// </summary>
     /// <param name="name">Name of the local variable to check.</param>
     /// <returns>True if the local variable has been declared; false otherwise.</returns>
-    public bool IsLocalDeclared(string name)
+    internal bool IsLocalDeclared(string name)
     {
         return _declaredLocals.Contains(name);
     }
@@ -73,7 +86,7 @@ internal sealed class FunctionScope(bool isFunction)
     /// </summary>
     /// <param name="name">Name of the static variable to be declared.</param>
     /// <returns>True if the static was not yet declared; false otherwise.</returns>
-    public bool DeclareStatic(string name)
+    internal bool DeclareStatic(string name)
     {
         return _declaredStatics.Add(name);
     }
@@ -83,7 +96,7 @@ internal sealed class FunctionScope(bool isFunction)
     /// </summary>
     /// <param name="name">Name of the static variable to check.</param>
     /// <returns>True if the static variable has been declared; false otherwise.</returns>
-    public bool IsStaticDeclared(string name)
+    internal bool IsStaticDeclared(string name)
     {
         return _declaredStatics.Contains(name);
     }
@@ -92,7 +105,7 @@ internal sealed class FunctionScope(bool isFunction)
     /// Declares argument names for this function scope.
     /// </summary>
     /// <param name="argumentNames">List of arguments, in order, to declare.</param>
-    public void DeclareArguments(List<string> argumentNames)
+    internal void DeclareArguments(List<string> argumentNames)
     {
         // Map argument names to corresponding index
         for (int i = 0; i < argumentNames.Count; i++)
@@ -106,8 +119,47 @@ internal sealed class FunctionScope(bool isFunction)
     /// </summary>
     /// <param name="name">Name of the variable to look up.</param>
     /// <returns>True if an argument index was found; false otherwise.</returns>
-    public bool TryGetArgumentIndex(string name, out int index)
+    internal bool TryGetArgumentIndex(string name, out int index)
     {
         return _declaredArguments.TryGetValue(name, out index);
+    }
+
+    /// <summary>
+    /// Attempts to declare a function in this function scope.
+    /// </summary>
+    /// <param name="name">Name of the function to declare.</param>
+    /// <returns>True if the function was declared; false if there was an existing function declared with the name.</returns>
+    internal bool TryDeclareFunction(string name)
+    {
+        return _declaredFunctions.TryAdd(name, null);
+    }
+
+    /// <summary>
+    /// Assigns a function entry in this function scope.
+    /// </summary>
+    /// <param name="name">Name of the function to declare.</param>
+    /// <param name="entry">Function entry to be assigned.</param>
+    internal void AssignFunctionEntry(string name, FunctionEntry entry)
+    {
+        _declaredFunctions[name] = entry;
+    }
+
+    /// <summary>
+    /// Attempts to look up a function entry with the given name in this function scope.
+    /// </summary>
+    /// <param name="name">Name of the function to look up.</param>
+    /// <param name="entry">Output function entry, if the lookup is successful.</param>
+    /// <returns><see langword="true"/> if a function entry was found; <see langword="false"/> otherwise.</returns>
+    public bool TryGetDeclaredFunction(string name, [NotNullWhen(true)] out FunctionEntry? entry)
+    {
+        return _declaredFunctions.TryGetValue(name, out entry);
+    }
+
+    /// <summary>
+    /// Returns whether or not a function with the given name is declared in this function scope.
+    /// </summary>
+    public bool IsFunctionDeclared(string name)
+    {
+        return _declaredFunctions.ContainsKey(name);
     }
 }

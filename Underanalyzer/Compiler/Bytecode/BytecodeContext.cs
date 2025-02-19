@@ -22,6 +22,9 @@ internal sealed class BytecodeContext : ISubCompileContext
     /// <inheritdoc/>
     public FunctionScope CurrentScope { get; set; }
 
+    /// <inheritdoc/>
+    public FunctionScope RootScope { get; set; }
+
     /// <summary>
     /// Root node used during bytecode generation.
     /// </summary>
@@ -66,6 +69,7 @@ internal sealed class BytecodeContext : ISubCompileContext
         CompileContext = context;
         RootNode = rootNode;
         CurrentScope = rootScope;
+        RootScope = rootScope;
         LocalGlobalFunctions = localGlobalFunctions;
 
         rootScope.ControlFlowContexts = new(8);
@@ -104,7 +108,20 @@ internal sealed class BytecodeContext : ISubCompileContext
         // Resolve function patches
         foreach (FunctionPatch functionPatch in patches.FunctionPatches!)
         {
-            codeBuilder.PatchInstruction(functionPatch.Instruction!, functionPatch.Name, functionPatch.BuiltinFunction);
+            codeBuilder.PatchInstruction(functionPatch.Instruction!, functionPatch.Scope, functionPatch.Name, functionPatch.BuiltinFunction);
+        }
+
+        // Resolve local function patches
+        foreach (LocalFunctionPatch functionPatch in patches.LocalFunctionPatches!)
+        {
+            codeBuilder.PatchInstruction(functionPatch.Instruction!, functionPatch.FunctionEntry);
+        }
+
+        // Resolve struct variable patches
+        foreach (StructVariablePatch variablePatch in patches.StructVariablePatches!)
+        {
+            codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.FunctionEntry.StructName ?? throw new InvalidOperationException("Struct name not resolved on function entry"), 
+                                         variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, false);
         }
 
         // Resolve string patches
@@ -284,6 +301,21 @@ internal sealed class BytecodeContext : ISubCompileContext
     }
 
     /// <summary>
+    /// Emits an instruction with the given opcode, data types, and given struct variable, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(Opcode opcode, StructVariablePatch variable, DataType dataType1, DataType dataType2 = DataType.Double)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
+        Instructions.Add(instr);
+        Position += 8;
+
+        variable.Instruction = instr;
+        Patches.StructVariablePatches!.Add(variable);
+
+        return instr;
+    }
+
+    /// <summary>
     /// Emits an instruction with the given opcode, data types, and given function, at the current position.
     /// </summary>
     public IGMInstruction Emit(Opcode opcode, FunctionPatch function, DataType dataType1, DataType dataType2 = DataType.Double)
@@ -294,6 +326,36 @@ internal sealed class BytecodeContext : ISubCompileContext
 
         function.Instruction = instr;
         Patches.FunctionPatches!.Add(function);
+
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a <see cref="Opcode.Push"/> instruction with the given function, at the current position.
+    /// </summary>
+    public IGMInstruction EmitPushFunction(FunctionPatch function)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, Opcode.Push, DataType.Int32);
+        Instructions.Add(instr);
+        Position += 8;
+
+        function.Instruction = instr;
+        Patches.FunctionPatches!.Add(function);
+
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits a <see cref="Opcode.Push"/> instruction with the given local function, at the current position.
+    /// </summary>
+    public IGMInstruction EmitPushFunction(LocalFunctionPatch function)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, Opcode.Push, DataType.Int32);
+        Instructions.Add(instr);
+        Position += 8;
+
+        function.Instruction = instr;
+        Patches.LocalFunctionPatches!.Add(function);
 
         return instr;
     }

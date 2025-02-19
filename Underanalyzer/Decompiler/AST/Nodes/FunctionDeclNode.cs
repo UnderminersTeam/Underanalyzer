@@ -238,8 +238,16 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         if (Body.FragmentContext.BaseParentCall is not null)
         {
             printer.Write(" : ");
+            ASTFragmentContext outerFragmentContext = printer.TopFragmentContext!;
             printer.PushFragmentContext(Body.FragmentContext);
-            Body.FragmentContext.BaseParentCall.Print(printer);
+            if (Body.FragmentContext.BaseParentCall is FunctionCallNode functionCall)
+            {
+                functionCall.Print(printer, outerFragmentContext);
+            }
+            else
+            {
+                Body.FragmentContext.BaseParentCall.Print(printer);
+            }
             printer.PopFragmentContext();
         }
 

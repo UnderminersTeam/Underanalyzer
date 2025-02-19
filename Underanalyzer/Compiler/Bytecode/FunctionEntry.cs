@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
+
 namespace Underanalyzer.Compiler.Bytecode;
 
 /// <summary>
@@ -41,6 +43,16 @@ public sealed record FunctionEntry
     /// </summary>
     public FunctionEntryKind Kind { get; }
 
+    /// <summary>
+    /// Function as found in the game data, when resolved using <see cref="ResolveFunction(IGMFunction)"/>.
+    /// </summary>
+    public IGMFunction? Function { get; private set; }
+
+    /// <summary>
+    /// Name of the struct function, if applicable, and when resolved using <see cref="ResolveStructName(string)"/>.
+    /// </summary>
+    public string? StructName { get; private set; }
+
     internal FunctionEntry(int bytecodeOffset, int localCount, int argumentCount, string? functionName, bool declaredInRootScope, FunctionEntryKind kind)
     {
         BytecodeOffset = bytecodeOffset;
@@ -49,6 +61,38 @@ public sealed record FunctionEntry
         FunctionName = functionName;
         DeclaredInRootScope = declaredInRootScope;
         Kind = kind;
+    }
+
+    /// <summary>
+    /// Resolves the actual function for this function entry. <see cref="Function"/> must be <see langword="null"/> (as initialized).
+    /// </summary>
+    public void ResolveFunction(IGMFunction function)
+    {
+        // Usage checks
+        if (Function is not null)
+        {
+            throw new InvalidOperationException("Tried to resolve function when it was already resolved");
+        }
+
+        Function = function;
+    }
+
+    /// <summary>
+    /// Resolves the struct name for this function entry. <see cref="Kind"/> must be <see cref="FunctionEntryKind.StructInstantiation"/>, and <see cref="StructName"/> must be <see langword="null"/> (as initialized).
+    /// </summary>
+    public void ResolveStructName(string name)
+    {
+        // Usage checks
+        if (Kind != FunctionEntryKind.StructInstantiation)
+        {
+            throw new InvalidOperationException("Tried to resolve struct name for non-struct function entry");
+        }
+        if (StructName is not null)
+        {
+            throw new InvalidOperationException("Tried to resolve struct name when it was already resolved");
+        }
+
+        StructName = name;
     }
 }
 

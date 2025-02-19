@@ -253,7 +253,7 @@ public sealed class ASTPrinter(DecompileContext context)
     /// <summary>
     /// Looks up a function name, given a function reference.
     /// </summary>
-    public string LookupFunction(IGMFunction function)
+    public string LookupFunction(IGMFunction function, ASTFragmentContext? overrideContext = null)
     {
         if (Context.GameContext.GlobalFunctions.TryGetFunctionName(function, out string? name))
         {
@@ -262,7 +262,7 @@ public sealed class ASTPrinter(DecompileContext context)
         }
 
         string funcName = function.Name.Content;
-        if (TopFragmentContext!.SubFunctionNames.TryGetValue(funcName, out string? realName))
+        if ((overrideContext ?? TopFragmentContext!).SubFunctionNames.TryGetValue(funcName, out string? realName))
         {
             // We found a sub-function name within this fragment!
             return realName;

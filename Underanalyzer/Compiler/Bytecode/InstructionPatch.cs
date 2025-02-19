@@ -25,6 +25,16 @@ internal readonly struct InstructionPatches
     public List<FunctionPatch>? FunctionPatches { get; init; }
 
     /// <summary>
+    /// List of local function patches generated during code generation.
+    /// </summary>
+    public List<LocalFunctionPatch>? LocalFunctionPatches { get; init; }
+
+    /// <summary>
+    /// List of struct variable patches generated during code generation.
+    /// </summary>
+    public List<StructVariablePatch>? StructVariablePatches { get; init; }
+
+    /// <summary>
     /// List of string patches generated during code generation.
     /// </summary>
     public List<StringPatch>? StringPatches { get; init; }
@@ -38,6 +48,8 @@ internal readonly struct InstructionPatches
         {
             VariablePatches = new(32),
             FunctionPatches = new(32),
+            LocalFunctionPatches = new(4),
+            StructVariablePatches = new(4),
             StringPatches = new(16)
         };
     }
@@ -69,9 +81,41 @@ internal record struct VariablePatch(string Name, InstanceType InstanceType, Var
 }
 
 /// <summary>
+/// A variable patch used during bytecode generation, to assign struct name variables to instructions.
+/// </summary>
+internal record struct StructVariablePatch(FunctionEntry FunctionEntry, InstanceType InstanceType, VariableType VariableType = VariableType.Normal) : IInstructionPatch
+{
+    /// <inheritdoc/>
+    public IGMInstruction? Instruction { get; set; }
+
+    /// <summary>
+    /// Instance type to use for instruction. Sometimes differs from <see cref="InstanceType"/>, due to compiler quirks.
+    /// </summary>
+    public InstanceType InstructionInstanceType { get; set; } = InstanceType;
+}
+
+/// <summary>
 /// A function patch used during bytecode generation, to assign functions to instructions.
 /// </summary>
-internal record struct FunctionPatch(string Name, IBuiltinFunction? BuiltinFunction = null) : IInstructionPatch
+internal record struct FunctionPatch(FunctionScope Scope, string Name, IBuiltinFunction? BuiltinFunction = null) : IInstructionPatch
+{
+    /// <inheritdoc/>
+    public IGMInstruction? Instruction { get; set; }
+
+    /// <summary>
+    /// Creates a function patch from a builtin function, and the compile context.
+    /// </summary>
+    /// <param name="builtinName">Builtin function name to use.</param>
+    public static FunctionPatch FromBuiltin(ISubCompileContext context, string builtinName)
+    {
+        return new FunctionPatch(context.CurrentScope, builtinName, context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(builtinName));
+    }
+}
+
+/// <summary>
+/// A local function patch used during bytecode generation, to assign local functions to instructions.
+/// </summary>
+internal record struct LocalFunctionPatch(FunctionEntry FunctionEntry) : IInstructionPatch
 {
     /// <inheritdoc/>
     public IGMInstruction? Instruction { get; set; }

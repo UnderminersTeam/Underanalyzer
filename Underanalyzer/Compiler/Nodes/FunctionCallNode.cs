@@ -123,9 +123,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 };
                 argsToUse = 0;
             }
-            IBuiltinFunction? builtinFunctionToCall =
-                context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(functionToCall);
-            context.EmitCall(new FunctionPatch(functionToCall, builtinFunctionToCall), argsToUse);
+            context.EmitCall(FunctionPatch.FromBuiltin(context, functionToCall), argsToUse);
 
             // If in chain, this value needs to be duplicated still
             if (inChain)
@@ -178,8 +176,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 // If conversion is necessary, run function to get single instance
                 if (context.ConvertDataType(DataType.Variable))
                 {
-                    context.EmitCall(new FunctionPatch(VMConstants.GetInstanceFunction,
-                        context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.GetInstanceFunction)), 1);
+                    context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.GetInstanceFunction), 1);
                 }
 
                 // Make final variable patch
@@ -223,8 +220,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                     // generate code specific for this situation (compiler quirk).
                     if (simpleVarCollapsed.ExplicitInstanceType == InstanceType.Self)
                     {
-                        context.EmitCall(new FunctionPatch(VMConstants.SelfFunction,
-                            context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction)), 0);
+                        context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SelfFunction), 0);
                         simpleVarCollapsed.SetExplicitInstanceType(InstanceType.StackTop);
                     }
 
@@ -235,9 +231,7 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
             // Push self (if not using expression as an instance)
             if (!dupInstance)
             {
-                IBuiltinFunction? builtinFunctionToCall =
-                    context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.SelfFunction);
-                context.EmitCall(new FunctionPatch(VMConstants.SelfFunction, builtinFunctionToCall), 0);
+                context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SelfFunction), 0);
             }
 
             // Recurse to earlier function call

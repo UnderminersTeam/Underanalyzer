@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -40,6 +41,6 @@ internal sealed class SwitchCaseNode(TokenKeyword token, IASTNode? expression) :
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        throw new InvalidOperationException();
     }
 }

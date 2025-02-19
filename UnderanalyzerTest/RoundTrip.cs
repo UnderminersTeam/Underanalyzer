@@ -835,4 +835,51 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestFunctionDecls()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            abc();
+            
+            function abc()
+            {
+            }
+
+            anon = function()
+            {
+            };
+
+            struct = 
+            {
+                a: 123,
+                
+                b: function()
+                {
+                },
+                
+                c: [1, 2, 3, 4, 5],
+                d: 
+                {
+                    e: 3.14
+                }
+            };
+
+            function Parent(arg0) constructor
+            {
+                a = arg0;
+            }
+
+            function Child(arg0, arg1 = 789) : Parent(arg0) constructor
+            {
+                static testFunc = function()
+                {
+                };
+                
+                b = arg1;
+            }
+            """
+        );
+    }
 }

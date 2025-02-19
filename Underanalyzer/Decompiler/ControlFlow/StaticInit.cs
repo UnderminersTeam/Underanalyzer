@@ -68,7 +68,7 @@ internal sealed class StaticInit : IControlFlowNode
 
                 // Remove instruction from ending block, if it's the right one (changes depending on version)
                 IControlFlowNode afterNode = block.Successors[1];
-                if (afterNode is Block { Instructions: [{ Kind: Opcode.Extended, ExtKind: ExtendedOpcode.ResetStatic }, ..] } afterBlock)
+                if (afterNode is Block { Instructions: [{ Kind: Opcode.Extended, ExtKind: ExtendedOpcode.SetStaticInitialized }, ..] } afterBlock)
                 {
                     afterBlock.Instructions.RemoveAt(0);
                 }

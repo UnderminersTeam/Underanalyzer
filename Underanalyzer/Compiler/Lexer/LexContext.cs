@@ -18,10 +18,17 @@ internal sealed class LexContext : ISubCompileContext
     public CompileContext CompileContext { get; }
 
     /// <inheritdoc/>
-    public FunctionScope CurrentScope 
-    { 
-        get => throw new InvalidOperationException(); 
-        set => throw new InvalidOperationException(); 
+    public FunctionScope CurrentScope
+    {
+        get => throw new InvalidOperationException();
+        set => throw new InvalidOperationException();
+    }
+
+    /// <inheritdoc/>
+    public FunctionScope RootScope
+    {
+        get => throw new InvalidOperationException();
+        set => throw new InvalidOperationException();
     }
 
     /// <summary>

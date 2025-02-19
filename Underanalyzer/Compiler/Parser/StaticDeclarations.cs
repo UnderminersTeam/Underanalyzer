@@ -6,6 +6,7 @@
 
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Nodes;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Parser;
 
@@ -60,7 +61,9 @@ internal static class StaticDeclarations
                     // Add assignment statement for this variable
                     if (context.CurrentScope.StaticInitializerBlock is BlockNode initBlock)
                     {
-                        initBlock.Children.Add(new AssignNode(AssignNode.AssignKind.Normal, new SimpleVariableNode(tokenVariable.Text, null), value));
+                        SimpleVariableNode newVariable = new(tokenVariable.Text, null);
+                        newVariable.SetExplicitInstanceType(InstanceType.Static);
+                        initBlock.Children.Add(new AssignNode(AssignNode.AssignKind.Normal, newVariable, value));
                     }
                 }
                 else

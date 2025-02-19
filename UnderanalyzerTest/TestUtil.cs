@@ -142,15 +142,39 @@ internal static class TestUtil
         CompileContext context = new(code, isGlobalScript, gameContext);
         context.Compile();
 
-        // Resolve global FunctionEntry instances
-        if (isGlobalScript)
+        // Resolve FunctionEntry instances
+        int structCounter = 1;
+        int anonCounter = 1;
+        foreach (FunctionEntry functionEntry in context.OutputFunctionEntries!)
         {
-            foreach (FunctionEntry functionEntry in context.OutputFunctionEntries!)
+            // Determine function name
+            if (functionEntry is { FunctionName: string globalFuncName, DeclaredInRootScope: true })
             {
-                if (functionEntry is { FunctionName: string functionName, DeclaredInRootScope: true })
+                // For global functions, declare them in global scope accordingly
+                if (isGlobalScript)
                 {
-                    ((GlobalFunctions)gameContext.GlobalFunctions).DefineFunction(functionName, new GMFunction($"global_func_{functionName}"));
+                    GMFunction actualFunction = new($"global_func_{globalFuncName}");
+                    functionEntry.ResolveFunction(actualFunction);
+                    ((GlobalFunctions)gameContext.GlobalFunctions).DefineFunction(globalFuncName, actualFunction);
                 }
+                else
+                {
+                    functionEntry.ResolveFunction(new GMFunction($"regular_func_{globalFuncName}"));
+                }
+            }
+            else if (functionEntry.FunctionName is string regularFuncName)
+            {
+                functionEntry.ResolveFunction(new GMFunction($"regular_func_{regularFuncName}"));
+            }
+            else if (functionEntry.Kind == FunctionEntryKind.StructInstantiation)
+            {
+                string structName = $"__struct__{structCounter++}";
+                functionEntry.ResolveStructName(structName);
+                functionEntry.ResolveFunction(new GMFunction($"struct_func_{structName}"));
+            }
+            else
+            {
+                functionEntry.ResolveFunction(new GMFunction($"anon_func_{anonCounter++}"));
             }
         }
 
@@ -165,13 +189,9 @@ internal static class TestUtil
             rootEntry.Instructions.Add(castInstr);
             rootEntry.Length += IGMInstruction.GetSize(castInstr);
         }
-        int childIndex = 0;
         foreach (FunctionEntry func in context.OutputFunctionEntries!)
         {
-            GMCode childEntry = new(
-                $"child_{childIndex}_" +
-                $"{func.FunctionName ?? (func.Kind == FunctionEntryKind.StructInstantiation ? "struct" : "anon")}", 
-                rootEntry.Instructions)
+            GMCode childEntry = new(func.Function!.Name.Content, rootEntry.Instructions)
             {
                 Parent = rootEntry,
                 StartOffset = func.BytecodeOffset,

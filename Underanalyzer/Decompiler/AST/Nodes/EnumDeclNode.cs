@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
 

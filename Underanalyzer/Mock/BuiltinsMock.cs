@@ -34,7 +34,13 @@ public class BuiltinsMock : IBuiltins
         { VMConstants.SelfFunction, new(VMConstants.SelfFunction, 0, 0) },
         { VMConstants.OtherFunction, new(VMConstants.OtherFunction, 0, 0) },
         { VMConstants.GlobalFunction, new(VMConstants.GlobalFunction, 0, 0) },
-        { VMConstants.GetInstanceFunction, new(VMConstants.GetInstanceFunction, 1, 1) }
+        { VMConstants.GetInstanceFunction, new(VMConstants.GetInstanceFunction, 1, 1) },
+        { VMConstants.MethodFunction, new(VMConstants.MethodFunction, 2, 2) },
+        { VMConstants.NullObjectFunction, new(VMConstants.NullObjectFunction, 0, 0) },
+        { VMConstants.NewObjectFunction, new(VMConstants.NewObjectFunction, 0, int.MaxValue) },
+        { VMConstants.NewArrayFunction, new(VMConstants.NewArrayFunction, 0, int.MaxValue) },
+        { VMConstants.SetStaticFunction, new(VMConstants.SetStaticFunction, 0, 0) },
+        { VMConstants.CopyStaticFunction, new(VMConstants.CopyStaticFunction, 1, 1) }
     };
 
     /// <inheritdoc/>

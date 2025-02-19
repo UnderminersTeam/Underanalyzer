@@ -6,6 +6,7 @@
 
 using System;
 using Underanalyzer.Compiler;
+using Underanalyzer.Compiler.Bytecode;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Mock;
@@ -273,11 +274,15 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
-    public void PatchInstruction(IGMInstruction instruction, string functionName, IBuiltinFunction? builtinFunction)
+    public void PatchInstruction(IGMInstruction instruction, FunctionScope scope, string functionName, IBuiltinFunction? builtinFunction)
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            if (gameContext.Builtins.LookupBuiltinFunction(functionName) is not null)
+            if (scope.TryGetDeclaredFunction(functionName, out FunctionEntry? entry))
+            {
+                mockInstruction.Function = entry.Function ?? throw new InvalidOperationException("Function not resolved for function entry");
+            }    
+            else if (gameContext.Builtins.LookupBuiltinFunction(functionName) is not null)
             {
                 mockInstruction.Function = new GMFunction(functionName);
             }
@@ -289,6 +294,15 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
             {
                 throw new Exception($"Failed to look up function \"{functionName}\"");
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public void PatchInstruction(IGMInstruction instruction, FunctionEntry functionEntry)
+    {
+        if (instruction is GMInstruction mockInstruction)
+        {
+            mockInstruction.Function = functionEntry.Function ?? throw new InvalidOperationException("Function not resolved for function entry");
         }
     }
 
