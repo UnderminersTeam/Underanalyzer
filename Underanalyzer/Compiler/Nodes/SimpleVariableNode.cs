@@ -90,6 +90,26 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         return ResolveStandaloneType(context);
     }
 
+    /// <summary>
+    /// Creates a variable patch for this simple variable node.
+    /// </summary>
+    private VariablePatch CreateVariablePatch(BytecodeContext context)
+    {
+        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+
+        if (ExplicitInstanceType == InstanceType.Self)
+        {
+            // Change instruction encoding to builtin (weird compiler quirk), when either a function call,
+            // or in newer GML versions when not on the RHS of a dot variable.
+            if (IsFunctionCall || (!CollapsedFromDot && context.CompileContext.GameContext.UsingSelfToBuiltin))
+            {
+                varPatch.InstructionInstanceType = InstanceType.Builtin;
+            }
+        }
+
+        return varPatch;
+    }
+
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
@@ -105,17 +125,8 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             _ => (BuiltinVariable is null || !BuiltinVariable.IsGlobal) ? Opcode.Push : Opcode.PushBuiltin,
         };
 
-        // Determine instance type
-        InstanceType finalInstanceType = ExplicitInstanceType;
-
         // Emit instruction to push (and push data type)
-        VariablePatch varPatch = new(VariableName, finalInstanceType, VariableType.Normal, BuiltinVariable is not null);
-        if (IsFunctionCall && finalInstanceType == InstanceType.Self)
-        {
-            // Change instruction encoding to builtin (weird compiler quirk)
-            varPatch.InstructionInstanceType = InstanceType.Builtin;
-        }
-        context.Emit(opcode, varPatch, DataType.Variable);
+        context.Emit(opcode, CreateVariablePatch(context), DataType.Variable);
         context.PushDataType(DataType.Variable);
     }
 
@@ -123,15 +134,14 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public void GenerateAssignCode(BytecodeContext context)
     {
         // Simple variable store
-        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
-        context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
+        context.Emit(Opcode.Pop, CreateVariablePatch(context), DataType.Variable, context.PopDataType());
     }
 
     /// <inheritdoc/>
     public void GenerateCompoundAssignCode(BytecodeContext context, IASTNode expression, Opcode operationOpcode)
     {
         // Push this variable
-        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        VariablePatch varPatch = CreateVariablePatch(context);
         context.Emit(Opcode.Push, varPatch, DataType.Variable);
 
         // Push the expression
@@ -148,7 +158,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public void GeneratePrePostAssignCode(BytecodeContext context, bool isIncrement, bool isPre, bool isStatement)
     {
         // Push this variable
-        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        VariablePatch varPatch = CreateVariablePatch(context);
         context.Emit(Opcode.Push, varPatch, DataType.Variable);
 
         // Postfix expression: duplicate original value

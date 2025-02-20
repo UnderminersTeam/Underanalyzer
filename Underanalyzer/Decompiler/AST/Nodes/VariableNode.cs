@@ -339,6 +339,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
                     case (int)InstanceType.Self:
                     case (int)InstanceType.Builtin:
                         if (ForceSelf || 
+                            (value == (int)InstanceType.Self && printer.Context.GameContext.UsingSelfToBuiltin) ||
                             leftInstType is { FromBuiltinFunction: true } ||
                             printer.LocalVariableNames.Contains(Variable.Name.Content) ||
                             printer.TopFragmentContext!.NamedArguments.Contains(Variable.Name.Content))

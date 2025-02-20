@@ -695,11 +695,11 @@ public class RoundTrip
         GameContextMock gameContext = new()
         {
             UsingGMLv2 = true,
-            UsingAssetReferences = true
+            UsingAssetReferences = true,
+            UsingSelfToBuiltin = true
         };
         ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
             new("show_debug_message", 1, 1);
-        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
         gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
         TestUtil.VerifyRoundTrip(
             """
@@ -729,11 +729,11 @@ public class RoundTrip
         GameContextMock gameContext = new()
         {
             UsingGMLv2 = true,
-            UsingAssetReferences = false
+            UsingAssetReferences = false,
+            UsingSelfToBuiltin = true
         };
         ((BuiltinsMock)gameContext.Builtins).BuiltinFunctions["show_debug_message"] =
             new("show_debug_message", 1, 1);
-        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
         gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
         TestUtil.VerifyRoundTrip(
             """
@@ -760,9 +760,9 @@ public class RoundTrip
         GameContextMock gameContext = new()
         {
             UsingGMLv2 = true,
-            UsingAssetReferences = true
+            UsingAssetReferences = true,
+            UsingSelfToBuiltin = true
         };
-        ((CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
         gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
         TestUtil.VerifyRoundTrip(
             """
@@ -915,6 +915,92 @@ public class RoundTrip
             b = new global.VariableCall();
             new Complex.Variable.Call(123, 456);
             """
+        );
+    }
+    [Fact]
+    public void TestNonSelfToBuiltin()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 0;
+            self.a = 0;
+            a = b;
+            a = self.b;
+            a += 1;
+            self.a += 1;
+            a++;
+            self.a++;
+            a.b = 0;
+            a[0] = 1;
+            self.a[0] = 1;
+            a.b[0] = 1;
+            a[0] += 1;
+            self.a[0] += 1;
+            a.b[0] += 1;
+            a = a[0];
+            a = self.a[0];
+            a = a.b[0];
+            global.a = 0;
+            global.a[0] = 0;
+            """,
+            """
+            a = 0;
+            a = 0;
+            a = b;
+            a = b;
+            a += 1;
+            a += 1;
+            a++;
+            a++;
+            a.b = 0;
+            a[0] = 1;
+            self.a[0] = 1;
+            a.b[0] = 1;
+            a[0] += 1;
+            self.a[0] += 1;
+            a.b[0] += 1;
+            a = a[0];
+            a = self.a[0];
+            a = a.b[0];
+            global.a = 0;
+            global.a[0] = 0;
+            """
+        );
+    }
+
+    [Fact]
+    public void TestSelfToBuiltin()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true,
+            UsingGlobalConstantFunction = true
+        };
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 0;
+            self.a = 0;
+            a = b;
+            a = self.b;
+            a += 1;
+            self.a += 1;
+            a++;
+            self.a++;
+            a.b = 0;
+            a[0] = 1;
+            self.a[0] = 1;
+            a.b[0] = 1;
+            a[0] += 1;
+            self.a[0] += 1;
+            a.b[0] += 1;
+            a = a[0];
+            a = self.a[0];
+            a = a.b[0];
+            global.a = 0;
+            global.a[0] = 0;
+            """,
+            false,
+            gameContext
         );
     }
 }

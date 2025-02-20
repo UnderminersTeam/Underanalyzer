@@ -56,7 +56,10 @@ internal sealed class NumberNode : IConstantASTNode
         {
             "self" => new SimpleFunctionCallNode(VMConstants.SelfFunction, null, []),
             "other" => new SimpleFunctionCallNode(VMConstants.OtherFunction, null, []),
-            "global" => new SimpleFunctionCallNode(VMConstants.GlobalFunction, null, []),
+            "global" => 
+                context.CompileContext.GameContext.UsingGlobalConstantFunction ?
+                    new SimpleFunctionCallNode(VMConstants.GlobalFunction, null, []) :
+                    this,
             _ => this
         };
     }

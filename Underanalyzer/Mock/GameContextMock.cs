@@ -33,6 +33,10 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingNewFunctionVariables { get; set; } = false;
     /// <inheritdoc/>
+    public bool UsingSelfToBuiltin { get; set; } = false;
+    /// <inheritdoc/>
+    public bool UsingGlobalConstantFunction { get; set; } = false;
+    /// <inheritdoc/>
     public bool UsingExtraRepeatInstruction { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingTypedBooleans { get; set; } = true;

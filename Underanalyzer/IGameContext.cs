@@ -104,6 +104,22 @@ public interface IGameContext
     public bool UsingNewFunctionVariables { get; }
 
     /// <summary>
+    /// <see langword="true"/> if "self" should become "builtin" during code generation for simple variables (not on the right side of a dot); <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2024.2, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
+    /// </remarks>
+    public bool UsingSelfToBuiltin { get; set; }
+
+    /// <summary>
+    /// <see langword="true"/> if the "global" constant should become a function call during code generation; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2023.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
+    /// </remarks>
+    public bool UsingGlobalConstantFunction { get; set; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

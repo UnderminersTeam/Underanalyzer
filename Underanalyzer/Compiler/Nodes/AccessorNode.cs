@@ -125,6 +125,12 @@ internal sealed class AccessorNode : IAssignableASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Compiler quirk with rewriting constants in dot nodes earlier in some cases
+        if (Expression is DotVariableNode { LeftExpression: NumberNode numberNode } dotVariableNode)
+        {
+            dotVariableNode.LeftExpression = numberNode.PostProcess(context);
+        }
+
         Expression = Expression.PostProcess(context);
         AccessorExpression = AccessorExpression.PostProcess(context);
         AccessorExpression2 = AccessorExpression2?.PostProcess(context);
@@ -148,8 +154,20 @@ internal sealed class AccessorNode : IAssignableASTNode
         InstanceConversionType instanceConversionType;
         if (variable is SimpleVariableNode simpleVariable)
         {
+            // Check if instance type should be transformed on simple variable (compiler quirk)
+            InstanceType stackInstanceType = simpleVariable.ExplicitInstanceType;
+            if (stackInstanceType == InstanceType.Self)
+            {
+                // Change instance type to builtin (weird compiler quirk), when either a function call,
+                // or in newer GML versions when not on the RHS of a dot variable.
+                if (simpleVariable.IsFunctionCall || (!simpleVariable.CollapsedFromDot && context.CompileContext.GameContext.UsingSelfToBuiltin))
+                {
+                    stackInstanceType = InstanceType.Builtin;
+                }
+            }
+
             // Generate instance type
-            NumberNode.GenerateCode(context, (int)simpleVariable.ExplicitInstanceType);
+            NumberNode.GenerateCode(context, (int)stackInstanceType);
             instanceConversionType = context.ConvertToInstanceId();
 
             // Use variable's instance type

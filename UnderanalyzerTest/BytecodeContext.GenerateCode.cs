@@ -94,6 +94,34 @@ public class BytecodeContext_GenerateCode
             pop.v.v self.a
             call.i @@Other@@ 0
             pop.v.v self.b
+            pushi.e -5
+            pop.v.i self.c
+            pushi.e -4
+            pop.v.i self.d
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingGMLv2 = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestInstanceConstants3()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = self;
+            b = other;
+            c = global;
+            d = noone;
+            """,
+            """
+            call.i @@This@@ 0
+            pop.v.v self.a
+            call.i @@Other@@ 0
+            pop.v.v self.b
             call.i @@Global@@ 0
             pop.v.v self.c
             pushi.e -4
@@ -102,7 +130,8 @@ public class BytecodeContext_GenerateCode
             false,
             new Underanalyzer.Mock.GameContextMock()
             {
-                UsingGMLv2 = true
+                UsingGMLv2 = true,
+                UsingGlobalConstantFunction = true
             }
         );
     }
@@ -192,11 +221,11 @@ public class BytecodeContext_GenerateCode
         Underanalyzer.Mock.GameContextMock gameContext = new()
         {
             UsingGMLv2 = true,
-            UsingAssetReferences = true
+            UsingAssetReferences = true,
+            UsingSelfToBuiltin = true
         };
         ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins)
             .BuiltinFunctions["show_debug_message"] = new("show_debug_message", 1, 1);
-        ((Underanalyzer.Mock.CodeBuilderMock)gameContext.CodeBuilder).SelfToBuiltin = true;
         gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
         TestUtil.AssertBytecode(
             """
@@ -1051,6 +1080,254 @@ public class BytecodeContext_GenerateCode
             call.i @@NewGMLObject@@ 3
             popz.v
             """
+        );
+    }
+
+    [Fact]
+    public void TestNonSelfToBuiltin()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = 0;
+            self.a = 0;
+            a = b;
+            a = self.b;
+            a += 1;
+            self.a += 1;
+            a++;
+            self.a++;
+            a.b = 0;
+            a[0] = 1;
+            self.a[0] = 1;
+            a.b[0] = 1;
+            a[0] += 1;
+            self.a[0] += 1;
+            a.b[0] += 1;
+            a = a[0];
+            a = self.a[0];
+            a = a.b[0];
+            global.a = 0;
+            global.a[0] = 0;
+            """,
+            """
+            pushi.e 0
+            pop.v.i self.a
+            pushi.e 0
+            pop.v.i self.a
+            push.v self.b
+            pop.v.v self.a
+            push.v self.b
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 1
+            add.i.v
+            pop.v.v self.a
+            push.v self.a
+            pushi.e 1
+            add.i.v
+            pop.v.v self.a
+            push.v self.a
+            push.e 1
+            add.i.v
+            pop.v.v self.a
+            push.v self.a
+            push.e 1
+            add.i.v
+            pop.v.v self.a
+            pushi.e 0
+            push.v self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.a
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.b
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v self.a
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v self.a
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pop.v.v self.a
+            pushi.e 0
+            pop.v.i global.a
+            pushi.e 0
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            pop.v.v [array]self.a
+            """
+        );
+    }
+
+    [Fact]
+    public void TestSelfToBuiltin()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true,
+            UsingGlobalConstantFunction = true
+        };
+        TestUtil.AssertBytecode(
+            """
+            a = 0;
+            self.a = 0;
+            a = b;
+            a = self.b;
+            a += 1;
+            self.a += 1;
+            a++;
+            self.a++;
+            a.b = 0;
+            a[0] = 1;
+            self.a[0] = 1;
+            a.b[0] = 1;
+            a[0] += 1;
+            self.a[0] += 1;
+            a.b[0] += 1;
+            a = a[0];
+            a = self.a[0];
+            a = a.b[0];
+            global.a = 0;
+            global.a[0] = 0;
+            """,
+            """
+            pushi.e 0
+            pop.v.i builtin.a
+            pushi.e 0
+            pop.v.i self.a
+            push.v builtin.b
+            pop.v.v builtin.a
+            push.v self.b
+            pop.v.v builtin.a
+            push.v builtin.a
+            pushi.e 1
+            add.i.v
+            pop.v.v builtin.a
+            push.v self.a
+            pushi.e 1
+            add.i.v
+            pop.v.v self.a
+            push.v builtin.a
+            push.e 1
+            add.i.v
+            pop.v.v builtin.a
+            push.v self.a
+            push.e 1
+            add.i.v
+            pop.v.v self.a
+            pushi.e 0
+            push.v builtin.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            conv.i.v
+            pushi.e -6
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            push.v builtin.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            pushi.e -6
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.a
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.a
+            push.v builtin.a
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.b
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.b
+            pushi.e -6
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v builtin.a
+            call.i @@This@@ 0
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v builtin.a
+            push.v builtin.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            pop.v.v builtin.a
+            pushi.e 0
+            pop.v.i global.a
+            pushi.e 0
+            conv.i.v
+            call.i @@Global@@ 0
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.a
+            """,
+            false,
+            gameContext
         );
     }
 }

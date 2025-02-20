@@ -20,7 +20,7 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
     /// <summary>
     /// Expression on the left side of the dot.
     /// </summary>
-    public IASTNode LeftExpression { get; private set; }
+    public IASTNode LeftExpression { get; set; }
 
     /// <inheritdoc/>
     public string VariableName { get; }
