@@ -17,7 +17,7 @@ namespace Underanalyzer.Compiler;
 /// <summary>
 /// A compilation context belonging to a single code entry in a game.
 /// </summary>
-public sealed class CompileContext(string code, bool isGlobalScript, IGameContext gameContext)
+public sealed class CompileContext(string code, string? globalScriptName, IGameContext gameContext)
 {
     /// <summary>
     /// Source GML code being compiled.
@@ -25,9 +25,14 @@ public sealed class CompileContext(string code, bool isGlobalScript, IGameContex
     public string Code { get; } = code;
 
     /// <summary>
+    /// Global script name for the code being compiled, or <see langword="null"/> if no such name is applicable.
+    /// </summary>
+    public string? GlobalScriptName { get; } = globalScriptName;
+
+    /// <summary>
     /// Whether the code being compiled is for a global script or not.
     /// </summary>
-    public bool IsGlobalScript { get; } = isGlobalScript;
+    public bool IsGlobalScript => GlobalScriptName is not null;
 
     /// <summary>
     /// The game context this compile context belongs to.

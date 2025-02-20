@@ -926,4 +926,56 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestFunctionDeclNames()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function GlobalScriptMockName()
+            {
+            }
+
+            function RandomOtherName()
+            {
+            }
+            """,
+            """
+            :[0]
+            b [2]
+
+            > global_func_GlobalScriptMockName (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]global_func_GlobalScriptMockName
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.GlobalScriptMockName
+            popz.v
+            b [4]
+
+            > global_func_RandomOtherName (locals=0, args=0)
+            :[3]
+            exit.i
+
+            :[4]
+            push.i [function]global_func_RandomOtherName
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.RandomOtherName
+            popz.v
+            """,
+            true
+        );
+    }
 }

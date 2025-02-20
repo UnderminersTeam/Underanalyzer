@@ -505,7 +505,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         if (FunctionName is not null)
         {
             context.EmitDuplicate(DataType.Variable, 0);
-            if (context.CompileContext.GameContext.UsingNewFunctionVariables)
+            if (context.CompileContext.GameContext.UsingNewFunctionVariables || FunctionName == context.CompileContext.GlobalScriptName)
             {
                 context.Emit(Opcode.PushImmediate, (short)InstanceType.Self, DataType.Int16);
             }

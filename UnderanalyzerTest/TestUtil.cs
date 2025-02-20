@@ -91,7 +91,7 @@ internal static class TestUtil
     /// </summary>
     public static LexContext Lex(string code, GameContextMock? gameContext = null)
     {
-        CompileContext compileContext = new(code, false, gameContext ?? new());
+        CompileContext compileContext = new(code, null, gameContext ?? new());
         LexContext rootLexContext = new(compileContext, compileContext.Code);
         rootLexContext.Tokenize();
         rootLexContext.PostProcessTokens();
@@ -139,7 +139,7 @@ internal static class TestUtil
     {
         // Compile code
         gameContext ??= new();
-        CompileContext context = new(code, isGlobalScript, gameContext);
+        CompileContext context = new(code, isGlobalScript ? "GlobalScriptMockName" : null, gameContext);
         context.Compile();
 
         // Resolve FunctionEntry instances
