@@ -882,4 +882,39 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestNewObject()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function Test() constructor
+            {
+            }
+
+            new Test();
+            new self.Test();
+            new global.Test();
+            a = new Test();
+            b = new VariableCall();
+            b = new self.VariableCall();
+            b = new global.VariableCall();
+            new Complex.Variable.Call(123, 456);
+            """,
+            """
+            function Test() constructor
+            {
+            }
+            
+            new Test();
+            new Test();
+            new Test();
+            a = new Test();
+            b = new VariableCall();
+            b = new self.VariableCall();
+            b = new global.VariableCall();
+            new Complex.Variable.Call(123, 456);
+            """
+        );
+    }
 }

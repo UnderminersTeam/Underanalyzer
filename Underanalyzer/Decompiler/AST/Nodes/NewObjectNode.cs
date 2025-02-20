@@ -36,13 +36,24 @@ public class NewObjectNode(IExpressionNode function, List<IExpressionNode> argum
     public string ConditionalTypeName => "NewObject";
     public string ConditionalValue => ""; // TODO?
 
-    public IExpressionNode Clean(ASTCleaner cleaner)
+    private void CleanFunctionAndArgs(ASTCleaner cleaner)
     {
         Function = Function.Clean(cleaner);
         for (int i = 0; i < Arguments.Count; i++)
         {
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
+
+        // If function is a singular variable node with "self", that implies a compiler quirk when "self." is directly used.
+        if (Function is VariableNode { Left: InstanceTypeNode { InstanceType: IGMInstruction.InstanceType.Self } } variable)
+        {
+            variable.ForceSelf = true;
+        }
+    }
+
+    public IExpressionNode Clean(ASTCleaner cleaner)
+    {
+        CleanFunctionAndArgs(cleaner);
 
         if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, FunctionName) is IMacroTypeFunctionArgs argsMacroType)
         {
@@ -58,11 +69,8 @@ public class NewObjectNode(IExpressionNode function, List<IExpressionNode> argum
 
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
-        Function = Function.Clean(cleaner);
-        for (int i = 0; i < Arguments.Count; i++)
-        {
-            Arguments[i] = Arguments[i].Clean(cleaner);
-        }
+        CleanFunctionAndArgs(cleaner);
+
         return this;
     }
 

@@ -43,6 +43,12 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
     /// </summary>
     public bool RegularPush { get; } = regularPush;
 
+    /// <summary>
+    /// Whether this variable node should be forced to print "self." if it is able to.
+    /// Meant for tracking obscure compiler quirks.
+    /// </summary>
+    public bool ForceSelf { get; set; } = false;
+
     public bool Duplicated { get; set; } = false;
     public bool Group { get; set; } = false;
     public DataType StackType { get; set; } = DataType.Variable;
@@ -332,7 +338,8 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
                 {
                     case (int)InstanceType.Self:
                     case (int)InstanceType.Builtin:
-                        if (leftInstType is { FromBuiltinFunction: true } ||
+                        if (ForceSelf || 
+                            leftInstType is { FromBuiltinFunction: true } ||
                             printer.LocalVariableNames.Contains(Variable.Name.Content) ||
                             printer.TopFragmentContext!.NamedArguments.Contains(Variable.Name.Content))
                         {

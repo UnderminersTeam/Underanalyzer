@@ -978,4 +978,79 @@ public class BytecodeContext_GenerateCode
             true
         );
     }
+
+    [Fact]
+    public void TestNewObject()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function Test() constructor 
+            {
+            }
+
+            new Test();
+            new self.Test();
+            new global.Test();
+            a = new Test();
+            b = new VariableCall();
+            b = new self.VariableCall();
+            b = new global.VariableCall();
+            new Complex.Variable.Call(123, 456);
+            """,
+            """
+            :[0]
+            b [2]
+
+            > regular_func_Test (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_Test
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.Test
+            popz.v
+            push.i [function]regular_func_Test
+            conv.i.v
+            call.i @@NewGMLObject@@ 1
+            popz.v
+            push.i [function]regular_func_Test
+            conv.i.v
+            call.i @@NewGMLObject@@ 1
+            popz.v
+            push.i [function]regular_func_Test
+            conv.i.v
+            call.i @@NewGMLObject@@ 1
+            popz.v
+            push.i [function]regular_func_Test
+            conv.i.v
+            call.i @@NewGMLObject@@ 1
+            pop.v.v self.a
+            push.v builtin.VariableCall
+            call.i @@NewGMLObject@@ 1
+            pop.v.v self.b
+            push.v self.VariableCall
+            call.i @@NewGMLObject@@ 1
+            pop.v.v self.b
+            pushglb.v global.VariableCall
+            call.i @@NewGMLObject@@ 1
+            pop.v.v self.b
+            pushi.e 456
+            conv.i.v
+            pushi.e 123
+            conv.i.v
+            push.v self.Complex
+            pushi.e -9
+            push.v [stacktop]self.Variable
+            pushi.e -9
+            push.v [stacktop]self.Call
+            call.i @@NewGMLObject@@ 3
+            popz.v
+            """
+        );
+    }
 }

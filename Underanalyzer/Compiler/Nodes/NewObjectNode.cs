@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -95,6 +96,54 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        throw new System.NotImplementedException();
+        // Push arguments in reverse order (so they get popped in normal order)
+        for (int i = Arguments.Count - 1; i >= 0; i--)
+        {
+            Arguments[i].GenerateCode(context);
+            context.ConvertDataType(DataType.Variable);
+        }
+
+        // Push function reference
+        if (Expression is SimpleVariableNode simpleVariable)
+        {
+            string functionName = simpleVariable.VariableName;
+            if (context.CurrentScope.IsFunctionDeclared(functionName) || context.IsGlobalFunctionName(functionName))
+            {
+                // We can statically resolve the function at compile time, so do that
+                context.EmitPushFunction(new FunctionPatch(context.CurrentScope, functionName));
+                context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+            }
+            else
+            {
+                // Failed to find function, so just push variable.
+                // Mark it as a function call variable, if not collapsed from a dot variable, to mimic official compiler quirks.
+                if (!simpleVariable.CollapsedFromDot)
+                {
+                    simpleVariable.IsFunctionCall = true;
+                }
+                simpleVariable.GenerateCode(context);
+                context.ConvertDataType(DataType.Variable);
+            }
+        }
+        else
+        {
+            // Non-trivial expression, so we can't statically resolve it at all (just generate it normally)
+            Expression.GenerateCode(context);
+            context.ConvertDataType(DataType.Variable);
+        }
+
+        // Call to actually instantiate object
+        context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.NewObjectFunction), Arguments.Count + 1);
+
+        if (IsStatement)
+        {
+            // This is a statement, so remove result from the stack
+            context.Emit(Opcode.PopDelete, DataType.Variable);
+        }
+        else
+        {
+            // This is not a statement, so result is on the stack
+            context.PushDataType(DataType.Variable);
+        }
     }
 }
