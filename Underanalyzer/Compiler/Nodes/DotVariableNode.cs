@@ -98,6 +98,12 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
             }
         }
 
+        // Mark simple variables on the leftmost side as such
+        if (LeftExpression is SimpleVariableNode simpleVariable)
+        {
+            simpleVariable.LeftmostSideOfDot = true;
+        }
+
         return this;
     }
 

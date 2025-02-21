@@ -43,6 +43,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     public bool CollapsedFromDot { get; set; } = false;
 
+    /// <summary>
+    /// Whether this is a variable node currently on the leftmost side of a <see cref="DotVariableNode"/>.
+    /// </summary>
+    public bool LeftmostSideOfDot { get; set; } = false;
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
@@ -113,8 +118,69 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO: check if this is a function and generate code accordingly
-        // will need to handle general expressions, as well as FunctionName.variable_name (which uses static_get)
+        // Check if this is a function and generate code accordingly
+        if (ExplicitInstanceType == InstanceType.Self && !CollapsedFromDot && 
+            (context.IsFunctionDeclaredInCurrentScope(VariableName) || context.IsGlobalFunctionName(VariableName) ||
+             context.CompileContext.GameContext.GetScriptId(VariableName, out _) ||
+             context.CompileContext.GameContext.GetScriptIdByFunctionName(VariableName, out _)))
+        {
+            if (context.CompileContext.GameContext.UsingAssetReferences)
+            {
+                if (!LeftmostSideOfDot && 
+                    context.CompileContext.ScriptKind == CompileScriptKind.GlobalScript && 
+                    context.CurrentScope == context.RootScope && 
+                    context.CurrentScope.IsFunctionDeclared(VariableName))
+                {
+                    // Push script reference (for local functions inside of root scope in global scripts)
+                    context.Emit(ExtendedOpcode.PushReference, new LocalFunctionPatch(null, context.CurrentScope, VariableName));
+                    context.PushDataType(DataType.Variable);
+                }
+                else if (!LeftmostSideOfDot && 
+                        (context.CompileContext.GameContext.GetScriptIdByFunctionName(VariableName, out int assetId) ||
+                         context.CompileContext.GameContext.GetScriptId(VariableName, out assetId)))
+                {
+                    // Push script reference (for existing global functions with scripts associated with them)
+                    context.Emit(ExtendedOpcode.PushReference, assetId);
+                    context.PushDataType(DataType.Variable);
+                }
+                else
+                {
+                    // Push function reference
+                    context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName,
+                                                               context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VariableName)));
+                    context.PushDataType(DataType.Int32);
+                }
+            }
+            else if (context.CompileContext.GameContext.UsingGMLv2)
+            {
+                // Push function reference
+                context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName, 
+                                                           context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VariableName)));
+                context.PushDataType(DataType.Int32);
+            }
+            else
+            {
+                // Push script ID
+                if (context.CompileContext.GameContext.GetScriptId(VariableName, out int scriptId))
+                {
+                    NumberNode.GenerateCode(context, scriptId);
+                }
+                else
+                {
+                    context.CompileContext.PushError($"Failed to find script with name \"{VariableName}\" (note: cannot use built-in functions directly in this GameMaker version)", NearbyToken);
+                    context.PushDataType(DataType.Int32);
+                }
+            }
+
+            // If leftmost side of dot, generate static_get call
+            if (context.CompileContext.GameContext.UsingGMLv2 && LeftmostSideOfDot)
+            {
+                context.ConvertDataType(DataType.Variable);
+                context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.StaticGetFunction), 1);
+                context.PushDataType(DataType.Variable);
+            }
+            return;
+        }
 
         // Get correct opcode to generate
         Opcode opcode = ExplicitInstanceType switch

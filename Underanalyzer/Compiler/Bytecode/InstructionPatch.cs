@@ -115,7 +115,7 @@ internal record struct FunctionPatch(FunctionScope Scope, string Name, IBuiltinF
 /// <summary>
 /// A local function patch used during bytecode generation, to assign local functions to instructions.
 /// </summary>
-internal record struct LocalFunctionPatch(FunctionEntry FunctionEntry) : IInstructionPatch
+internal record struct LocalFunctionPatch(FunctionEntry? FunctionEntry, FunctionScope? FunctionScope = null, string? FunctionName = null) : IInstructionPatch
 {
     /// <inheritdoc/>
     public IGMInstruction? Instruction { get; set; }

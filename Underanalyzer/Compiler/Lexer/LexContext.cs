@@ -194,8 +194,8 @@ internal sealed class LexContext : ISubCompileContext
                     continue;
                 }
 
-                // Check if this identifier is a game asset
-                if (CompileContext.GameContext.GetAssetId(text, out int assetId))
+                // Check if this identifier is a game asset (but not a script)
+                if (CompileContext.GameContext.GetAssetId(text, out int assetId) && !CompileContext.GameContext.GetScriptId(text, out _))
                 {
                     Tokens[i] = new TokenAssetReference(identifier.Context, identifier.TextPosition, identifier.Text, assetId);
                     continue;

@@ -15,9 +15,21 @@ using Underanalyzer.Compiler.Bytecode;
 namespace Underanalyzer.Compiler;
 
 /// <summary>
+/// Kind of script being compiled.
+/// </summary>
+public enum CompileScriptKind
+{
+    Script,
+    GlobalScript,
+    RoomCreationCode,
+    ObjectEvent,
+    Timeline
+}
+
+/// <summary>
 /// A compilation context belonging to a single code entry in a game.
 /// </summary>
-public sealed class CompileContext(string code, string? globalScriptName, IGameContext gameContext)
+public sealed class CompileContext(string code, CompileScriptKind scriptKind, string? globalScriptName, IGameContext gameContext)
 {
     /// <summary>
     /// Source GML code being compiled.
@@ -25,14 +37,14 @@ public sealed class CompileContext(string code, string? globalScriptName, IGameC
     public string Code { get; } = code;
 
     /// <summary>
+    /// Kind of script being compiled.
+    /// </summary>
+    public CompileScriptKind ScriptKind { get; } = scriptKind;
+
+    /// <summary>
     /// Global script name for the code being compiled, or <see langword="null"/> if no such name is applicable.
     /// </summary>
     public string? GlobalScriptName { get; } = globalScriptName;
-
-    /// <summary>
-    /// Whether the code being compiled is for a global script or not.
-    /// </summary>
-    public bool IsGlobalScript => GlobalScriptName is not null;
 
     /// <summary>
     /// The game context this compile context belongs to.

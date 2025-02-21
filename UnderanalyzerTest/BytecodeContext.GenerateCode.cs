@@ -1330,4 +1330,348 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestFunctionReferencesModern()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = true,
+            UsingSelfToBuiltin = true,
+            UsingNewFunctionVariables = true
+        };
+        gameContext.DefineMockAsset(AssetType.Script, 124, "AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 125, "global_func_AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 123, "ExampleFunction");
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("ExampleFunction", new Underanalyzer.Mock.GMFunction("ExampleFunction"));
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("AnotherFunction", new Underanalyzer.Mock.GMFunction("global_func_AnotherFunction"));
+        ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins).BuiltinFunctions["script_execute"] =
+            new("script_execute", 0, int.MaxValue);
+        TestUtil.AssertBytecode(
+            """
+            test = ExampleFunction;
+            test2 = script_execute;
+            test3 = LocalFunction;
+            test4 = AnotherFunction;
+            ExampleFunction.a += 1;
+            LocalFunction.a += 1;
+            AnotherFunction.a += 1;
+            
+            function LocalFunction()
+            {
+            }
+            """,
+            """
+            pushref.i 123 Script
+            pop.v.v builtin.test
+            push.i [function]script_execute
+            pop.v.i builtin.test2
+            pushref.i 1 Script
+            pop.v.v builtin.test3
+            pushref.i 125 Script
+            pop.v.v builtin.test4
+            push.i [function]ExampleFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            push.i [function]global_func_LocalFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            push.i [function]global_func_AnotherFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            b [2]
+            
+            > global_func_LocalFunction (locals=0, args=0)
+            :[1]
+            exit.i
+            
+            :[2]
+            push.i [function]global_func_LocalFunction
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.LocalFunction
+            popz.v
+            """,
+            true,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestFunctionReferencesRegularModern()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = true,
+            UsingSelfToBuiltin = true,
+            UsingNewFunctionVariables = true,
+            UsingObjectFunctionForesight = true
+        };
+        gameContext.DefineMockAsset(AssetType.Script, 124, "AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 125, "global_func_AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 123, "ExampleFunction");
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("ExampleFunction", new Underanalyzer.Mock.GMFunction("ExampleFunction"));
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("AnotherFunction", new Underanalyzer.Mock.GMFunction("global_func_AnotherFunction"));
+        ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins).BuiltinFunctions["script_execute"] =
+            new("script_execute", 0, int.MaxValue);
+        TestUtil.AssertBytecode(
+            """
+            test = ExampleFunction;
+            test2 = script_execute;
+            test3 = LocalFunction;
+            test4 = AnotherFunction;
+            ExampleFunction.a += 1;
+            LocalFunction.a += 1;
+            AnotherFunction.a += 1;
+            
+            function LocalFunction()
+            {
+            }
+            """,
+            """
+            pushref.i 123 Script
+            pop.v.v builtin.test
+            push.i [function]script_execute
+            pop.v.i builtin.test2
+            push.i [function]regular_func_LocalFunction
+            pop.v.i builtin.test3
+            pushref.i 125 Script
+            pop.v.v builtin.test4
+            push.i [function]ExampleFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            push.i [function]regular_func_LocalFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            push.i [function]global_func_AnotherFunction
+            conv.i.v
+            call.i static_get 1
+            pushi.e -9
+            dup.i 4
+            push.v [stacktop]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [stacktop]self.a
+            b [2]
+
+            > regular_func_LocalFunction (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_LocalFunction
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.LocalFunction
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestFunctionReferencesEarlyGMLv2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Script, 124, "AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 125, "global_func_AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 123, "ExampleFunction");
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("ExampleFunction", new Underanalyzer.Mock.GMFunction("ExampleFunction"));
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("AnotherFunction", new Underanalyzer.Mock.GMFunction("global_func_AnotherFunction"));
+        ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins).BuiltinFunctions["script_execute"] =
+            new("script_execute", 0, int.MaxValue);
+        TestUtil.AssertBytecode(
+            """
+            test = ExampleFunction;
+            test2 = script_execute;
+            test3 = LocalFunction;
+            test4 = AnotherFunction;
+            
+            function LocalFunction()
+            {
+            }
+            """,
+            """
+            push.i [function]ExampleFunction
+            pop.v.i self.test
+            push.i [function]script_execute
+            pop.v.i self.test2
+            push.i [function]global_func_LocalFunction
+            pop.v.i self.test3
+            push.i [function]global_func_AnotherFunction
+            pop.v.i self.test4
+            b [2]
+
+            > global_func_LocalFunction (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]global_func_LocalFunction
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.LocalFunction
+            popz.v
+            """,
+            true,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestFunctionReferencesRegularEarlyGMLv2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Script, 124, "AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 125, "global_func_AnotherFunction");
+        gameContext.DefineMockAsset(AssetType.Script, 123, "ExampleFunction");
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("ExampleFunction", new Underanalyzer.Mock.GMFunction("ExampleFunction"));
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("AnotherFunction", new Underanalyzer.Mock.GMFunction("global_func_AnotherFunction"));
+        ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins).BuiltinFunctions["script_execute"] =
+            new("script_execute", 0, int.MaxValue);
+        TestUtil.AssertBytecode(
+            """
+            test = ExampleFunction;
+            test2 = script_execute;
+            test3 = LocalFunction;
+            test4 = AnotherFunction;
+            
+            function LocalFunction()
+            {
+            }
+            """,
+            """
+            push.i [function]ExampleFunction
+            pop.v.i self.test
+            push.i [function]script_execute
+            pop.v.i self.test2
+            push.v self.LocalFunction
+            pop.v.v self.test3
+            push.i [function]global_func_AnotherFunction
+            pop.v.i self.test4
+            b [2]
+
+            > regular_func_LocalFunction (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_LocalFunction
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.LocalFunction
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestFunctionReferencesPreGMLv2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = false,
+            UsingGMLv2 = false
+        };
+        gameContext.DefineMockAsset(AssetType.Script, 123, "ExampleFunction");
+        ((Underanalyzer.Decompiler.GlobalFunctions)gameContext.GlobalFunctions)
+            .DefineFunction("ExampleFunction", new Underanalyzer.Mock.GMFunction("ExampleFunction"));
+        TestUtil.AssertBytecode(
+            """
+            a = ExampleFunction;
+            """,
+            """
+            pushi.e 123
+            pop.v.i self.a
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestFunctionReferencesErrorPreGMLv2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = false,
+            UsingGMLv2 = false
+        };
+        ((Underanalyzer.Mock.BuiltinsMock)gameContext.Builtins).BuiltinFunctions["script_execute"] =
+            new("script_execute", 0, int.MaxValue);
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                a = script_execute;
+                """,
+                "",
+                false,
+                gameContext
+            );
+        });
+    }
 }

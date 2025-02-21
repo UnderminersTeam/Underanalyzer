@@ -62,7 +62,7 @@ internal sealed class ParseContext : ISubCompileContext
         RootScope = new(false);
         CurrentScope = RootScope;
 
-        if (context.IsGlobalScript)
+        if (context.ScriptKind == CompileScriptKind.GlobalScript)
         {
             ParseGlobalFunctions = new(8);
         }

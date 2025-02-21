@@ -152,7 +152,15 @@ public sealed class FunctionScope(bool isFunction)
     /// <returns><see langword="true"/> if a function entry was found; <see langword="false"/> otherwise.</returns>
     public bool TryGetDeclaredFunction(string name, [NotNullWhen(true)] out FunctionEntry? entry)
     {
-        return _declaredFunctions.TryGetValue(name, out entry);
+        if (_declaredFunctions.TryGetValue(name, out entry))
+        {
+            if (entry is null)
+            {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
 
     /// <summary>

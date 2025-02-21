@@ -120,6 +120,15 @@ public interface IGameContext
     public bool UsingGlobalConstantFunction { get; set; }
 
     /// <summary>
+    /// <see langword="true"/> if the compiler is aware of functions before they are declared in the same object code event entry (this is 
+    /// always true for global scripts & room creation code); <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
+    /// </remarks>
+    public bool UsingObjectFunctionForesight { get; set; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.
@@ -165,4 +174,13 @@ public interface IGameContext
     /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
     /// <returns><see langword="true"/> if an asset ID for the script name was found; <see langword="false"/> otherwise.</returns>
     public bool GetScriptId(string scriptName, out int assetId);
+
+    /// <summary>
+    /// Returns the asset ID of a script from its global function name, if one exists. If <see cref="UsingAssetReferences"/> is <see langword="true"/>, 
+    /// this ID encodes the correct script asset type as well.
+    /// </summary>
+    /// <param name="functionName">Global function name to look up</param>
+    /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if an asset ID for the script name was found; <see langword="false"/> otherwise.</returns>
+    public bool GetScriptIdByFunctionName(string functionName, out int assetId);
 }

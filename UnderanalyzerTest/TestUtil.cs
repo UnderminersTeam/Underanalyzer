@@ -91,7 +91,7 @@ internal static class TestUtil
     /// </summary>
     public static LexContext Lex(string code, GameContextMock? gameContext = null)
     {
-        CompileContext compileContext = new(code, null, gameContext ?? new());
+        CompileContext compileContext = new(code, CompileScriptKind.Script, null, gameContext ?? new());
         LexContext rootLexContext = new(compileContext, compileContext.Code);
         rootLexContext.Tokenize();
         rootLexContext.PostProcessTokens();
@@ -139,12 +139,27 @@ internal static class TestUtil
     {
         // Compile code
         gameContext ??= new();
-        CompileContext context = new(code, isGlobalScript ? "GlobalScriptMockName" : null, gameContext);
+        string? globalScriptName = null;
+        CompileScriptKind scriptKind = CompileScriptKind.ObjectEvent;
+        if (isGlobalScript)
+        {
+            globalScriptName = "GlobalScriptMockName";
+            scriptKind = CompileScriptKind.GlobalScript;
+            gameContext.DefineMockAsset(AssetType.Script, 0, globalScriptName);
+        }
+        CompileContext context = new(code, scriptKind, globalScriptName, gameContext);
         context.Compile();
+
+        // Throw if errors encountered
+        if (context.Errors.Count > 0)
+        {
+            throw new TestCompileErrorException("Compile errors occurred");
+        }
 
         // Resolve FunctionEntry instances
         int structCounter = 1;
         int anonCounter = 1;
+        int scriptIndexCounter = 1;
         foreach (FunctionEntry functionEntry in context.OutputFunctionEntries!)
         {
             // Determine function name
@@ -153,33 +168,50 @@ internal static class TestUtil
                 // For global functions, declare them in global scope accordingly
                 if (isGlobalScript)
                 {
-                    GMFunction actualFunction = new($"global_func_{globalFuncName}");
+                    string name = $"global_func_{globalFuncName}";
+                    GMFunction actualFunction = new(name);
                     functionEntry.ResolveFunction(actualFunction);
                     ((GlobalFunctions)gameContext.GlobalFunctions).DefineFunction(globalFuncName, actualFunction);
+                    gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
                 }
                 else
                 {
-                    functionEntry.ResolveFunction(new GMFunction($"regular_func_{globalFuncName}"));
+                    string name = $"regular_func_{globalFuncName}";
+                    functionEntry.ResolveFunction(new GMFunction(name));
+                    gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
                 }
             }
             else if (functionEntry.FunctionName is string regularFuncName)
             {
-                functionEntry.ResolveFunction(new GMFunction($"regular_func_{regularFuncName}"));
+                string name = $"regular_func_{regularFuncName}";
+                functionEntry.ResolveFunction(new GMFunction(name));
+                gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
             else if (functionEntry.Kind == FunctionEntryKind.StructInstantiation)
             {
                 string structName = $"__struct__{structCounter++}";
                 functionEntry.ResolveStructName(structName);
-                functionEntry.ResolveFunction(new GMFunction($"struct_func_{structName}"));
+
+                string name = $"struct_func_{structName}";
+                functionEntry.ResolveFunction(new GMFunction(name));
+                gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
             else
             {
-                functionEntry.ResolveFunction(new GMFunction($"anon_func_{anonCounter++}"));
+                string name = $"anon_func_{anonCounter++}";
+                functionEntry.ResolveFunction(new GMFunction(name));
+                gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
         }
 
         // Link instructions to data
         context.Link();
+
+        // Throw if errors encountered
+        if (context.Errors.Count > 0)
+        {
+            throw new TestCompileErrorException("Link errors occurred");
+        }
 
         // Create code entries
         GMCode rootEntry = new("root", new(context.OutputInstructions!.Count));

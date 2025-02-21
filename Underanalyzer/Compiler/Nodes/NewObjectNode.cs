@@ -107,7 +107,7 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
         if (Expression is SimpleVariableNode simpleVariable)
         {
             string functionName = simpleVariable.VariableName;
-            if (context.CurrentScope.IsFunctionDeclared(functionName) || context.IsGlobalFunctionName(functionName))
+            if (context.IsFunctionDeclaredInCurrentScope(functionName) || context.IsGlobalFunctionName(functionName))
             {
                 // We can statically resolve the function at compile time, so do that
                 context.EmitPushFunction(new FunctionPatch(context.CurrentScope, functionName));

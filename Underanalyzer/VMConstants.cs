@@ -60,6 +60,9 @@ internal static class VMConstants
     public const string ChooseFunction = "choose";
     public const string ScriptExecuteFunction = "script_execute";
 
+    // Function used to get static structs from functions
+    public const string StaticGetFunction = "static_get";
+
     // Builtin array variables (some of which don't exist past GMS2, but are still recognized by the compiler apparently)
     public static readonly HashSet<string> BuiltinArrayVariables = 
     [

@@ -114,7 +114,20 @@ internal sealed class BytecodeContext : ISubCompileContext
         // Resolve local function patches
         foreach (LocalFunctionPatch functionPatch in patches.LocalFunctionPatches!)
         {
-            codeBuilder.PatchInstruction(functionPatch.Instruction!, functionPatch.FunctionEntry);
+            FunctionEntry entry;
+            if (functionPatch.FunctionEntry is not null)
+            {
+                entry = functionPatch.FunctionEntry;
+            }
+            else if (functionPatch.FunctionScope!.TryGetDeclaredFunction(functionPatch.FunctionName!, out FunctionEntry? found))
+            {
+                entry = found;
+            }
+            else
+            {
+                throw new CompilerException($"Failed to resolve local function with name \"{functionPatch.FunctionName}\"");
+            }
+            codeBuilder.PatchInstruction(functionPatch.Instruction!, entry);
         }
 
         // Resolve struct variable patches
@@ -227,6 +240,21 @@ internal sealed class BytecodeContext : ISubCompileContext
         IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode);
         Instructions.Add(instr);
         Position += 4;
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits an instruction with the given extended opcode, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(ExtendedOpcode extendedOpcode, LocalFunctionPatch function)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode, 0);
+        Instructions.Add(instr);
+        Position += 8;
+
+        function.Instruction = instr;
+        Patches.LocalFunctionPatches!.Add(function);
+
         return instr;
     }
 
@@ -606,5 +634,33 @@ internal sealed class BytecodeContext : ISubCompileContext
     public IControlFlowContext GetTopControlFlowContext()
     {
         return CurrentScope.ControlFlowContexts!.Peek();
+    }
+
+    /// <summary>
+    /// Returns whether a function is declared in the current scope, depending on script type and GameMaker version.
+    /// </summary>
+    public bool IsFunctionDeclaredInCurrentScope(string name)
+    {
+        switch (CompileContext.ScriptKind)
+        {
+            case CompileScriptKind.GlobalScript:
+            case CompileScriptKind.RoomCreationCode:
+                // Global scripts and room creation code have foresight of future function declarations in the script
+                return CurrentScope.IsFunctionDeclared(name);
+
+            case CompileScriptKind.ObjectEvent:
+                // Object events only have foresight of future functions in certain versions
+                if (CompileContext.GameContext.UsingObjectFunctionForesight)
+                {
+                    return CurrentScope.IsFunctionDeclared(name);
+                }
+
+                // No foresight; attempt to retrieve function entry
+                return CurrentScope.TryGetDeclaredFunction(name, out _);
+
+            default:
+                // No foresight; attempt to retrieve function entry
+                return CurrentScope.TryGetDeclaredFunction(name, out _);
+        }
     }
 }

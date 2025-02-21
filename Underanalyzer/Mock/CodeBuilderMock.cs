@@ -291,7 +291,25 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            mockInstruction.Function = functionEntry.Function ?? throw new InvalidOperationException("Function not resolved for function entry");
+            if (mockInstruction is { Kind: Opcode.Extended, ExtKind: ExtendedOpcode.PushReference })
+            {
+                if (gameContext.GetScriptId(
+                    functionEntry.Function?.Name.Content ?? 
+                        throw new InvalidOperationException("Function not resolved for function entry"), 
+                    out int assetIndex))
+                {
+                    mockInstruction.AssetReferenceId = assetIndex & 0xFFFFFF;
+                    mockInstruction.AssetReferenceType = (AssetType)(assetIndex >> 24);
+                }
+                else
+                {
+                    throw new Exception($"Failed to look up script asset for function \"{functionEntry.Function?.Name.Content}\"");
+                }
+            }
+            else
+            {
+                mockInstruction.Function = functionEntry.Function ?? throw new InvalidOperationException("Function not resolved for function entry");
+            }
         }
     }
 

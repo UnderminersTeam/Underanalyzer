@@ -414,7 +414,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        if (context.CurrentScope.IsFunctionDeclared(FunctionName) || context.IsGlobalFunctionName(FunctionName))
+        if (context.IsFunctionDeclaredInCurrentScope(FunctionName) || context.IsGlobalFunctionName(FunctionName))
         {
             // Function is in scope to be called directly, so do that
             GenerateDirectCode(context);

@@ -37,6 +37,8 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingGlobalConstantFunction { get; set; } = false;
     /// <inheritdoc/>
+    public bool UsingObjectFunctionForesight { get; set; } = false;
+    /// <inheritdoc/>
     public bool UsingExtraRepeatInstruction { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingTypedBooleans { get; set; } = true;
@@ -141,5 +143,11 @@ public class GameContextMock : IGameContext
     public bool GetScriptId(string scriptName, out int assetId)
     {
         return _mockScriptsByName.TryGetValue(scriptName, out assetId);
+    }
+
+    /// <inheritdoc/>
+    public bool GetScriptIdByFunctionName(string functionName, out int assetId)
+    {
+        return _mockScriptsByName.TryGetValue($"global_func_{functionName}", out assetId);
     }
 }
