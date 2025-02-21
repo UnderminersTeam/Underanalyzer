@@ -1003,4 +1003,15 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestThrow()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            throw "test";
+            throw new ExampleException();
+            """
+        );
+    }
 }

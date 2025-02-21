@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -60,6 +61,11 @@ internal sealed class ThrowNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        throw new System.NotImplementedException();
+        // Push expression being thrown
+        Expression.GenerateCode(context);
+
+        // Convert to variable, and call built-in throw function (no stack cleanup necessary)
+        context.ConvertDataType(DataType.Variable);
+        context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.ThrowFunction), 1);
     }
 }
