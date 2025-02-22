@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -49,6 +50,21 @@ internal sealed class NullishCoalesceNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        // TODO
+        // Compile left side (which will be checked for nullish)
+        Left.GenerateCode(context);
+        context.ConvertDataType(DataType.Variable);
+
+        // Check if nullish; branch around right side if not
+        context.Emit(ExtendedOpcode.IsNullishValue);
+        SingleForwardBranchPatch skipRightSidePatch = new(context.Emit(Opcode.BranchFalse));
+
+        // Right side (but remove nullish result from left side first)
+        context.Emit(Opcode.PopDelete, DataType.Variable);
+        Right.GenerateCode(context);
+        context.ConvertDataType(DataType.Variable);
+
+        // Branch destination at end, and push variable type
+        skipRightSidePatch.Patch(context);
+        context.PushDataType(DataType.Variable);
     }
 }

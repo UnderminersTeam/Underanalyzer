@@ -1014,4 +1014,17 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestNullishCoalesce()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = b ?? c;
+            d = (e ?? f) ?? (g ?? h);
+            j ??= k;
+            l ??= m ?? n;
+            """
+        );
+    }
 }

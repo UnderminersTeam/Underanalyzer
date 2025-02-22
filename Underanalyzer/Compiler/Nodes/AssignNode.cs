@@ -114,8 +114,29 @@ internal sealed class AssignNode : IASTNode
                 Destination.GenerateCompoundAssignCode(context, Expression, Opcode.Xor);
                 break;
             case AssignKind.CompoundNullishCoalesce:
-                // TODO: implement
-                throw new NotImplementedException();
+                // Push destination value first
+                Destination.GenerateCode(context);
+                context.ConvertDataType(DataType.Variable);
+
+                // Check if nullish; branch around right side (and assignment) if not
+                context.Emit(ExtendedOpcode.IsNullishValue);
+                SingleForwardBranchPatch skipRightSidePatch = new(context.Emit(Opcode.BranchFalse));
+
+                // Right side (but remove nullish result from left side first)
+                context.Emit(Opcode.PopDelete, DataType.Variable);
+                Expression.GenerateCode(context);
+                context.ConvertDataType(DataType.Variable);
+
+                // Assign right side, then branch around removal of non-nullish destination value
+                context.PushDataType(DataType.Variable);
+                Destination.GenerateAssignCode(context);
+                SingleForwardBranchPatch skipDestinationPopPatch = new(context.Emit(Opcode.Branch));
+
+                // Remove non-nullish destination value from stack
+                skipRightSidePatch.Patch(context);
+                context.Emit(Opcode.PopDelete, DataType.Variable);
+                skipDestinationPopPatch.Patch(context);
+                break;
         }
     }
 
