@@ -109,7 +109,7 @@ public interface IGameContext
     /// <remarks>
     /// Before GameMaker 2024.2, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
     /// </remarks>
-    public bool UsingSelfToBuiltin { get; set; }
+    public bool UsingSelfToBuiltin { get; }
 
     /// <summary>
     /// <see langword="true"/> if the "global" constant should become a function call during code generation; <see langword="false"/> otherwise.
@@ -117,7 +117,7 @@ public interface IGameContext
     /// <remarks>
     /// Before GameMaker 2023.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
     /// </remarks>
-    public bool UsingGlobalConstantFunction { get; set; }
+    public bool UsingGlobalConstantFunction { get; }
 
     /// <summary>
     /// <see langword="true"/> if the compiler is aware of functions before they are declared in the same object code event entry (this is 
@@ -126,7 +126,7 @@ public interface IGameContext
     /// <remarks>
     /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
     /// </remarks>
-    public bool UsingObjectFunctionForesight { get; set; }
+    public bool UsingObjectFunctionForesight { get; }
 
     /// <summary>
     /// <see langword="true"/> if the compiler generates code more correctly for break/continue statements inside of try statements; <see langword="false"/> otherwise.
@@ -134,7 +134,7 @@ public interface IGameContext
     /// <remarks>
     /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
     /// </remarks>
-    public bool UsingBetterTryBreakContinue { get; set; }
+    public bool UsingBetterTryBreakContinue { get; }
 
     /// <summary>
     /// Interface for getting global functions.
