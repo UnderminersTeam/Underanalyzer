@@ -133,7 +133,8 @@ internal sealed class TryCatch : IControlFlowNode
                     block.Instructions.Clear();
 
                     // Remove try unhook instructions from end node
-                    if (endBlock.Instructions[0].Kind != IGMInstruction.Opcode.Call ||
+                    if (endBlock.Instructions.Count == 0 ||
+                        endBlock.Instructions[0].Kind != IGMInstruction.Opcode.Call ||
                         endBlock.Instructions[0].Function?.Name?.Content != VMConstants.TryUnhookFunction)
                     {
                         throw new DecompilerException("Expected try unhook in end node");

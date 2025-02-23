@@ -129,6 +129,14 @@ public interface IGameContext
     public bool UsingObjectFunctionForesight { get; set; }
 
     /// <summary>
+    /// <see langword="true"/> if the compiler generates code more correctly for break/continue statements inside of try statements; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
+    /// </remarks>
+    public bool UsingBetterTryBreakContinue { get; set; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

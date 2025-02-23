@@ -595,14 +595,6 @@ internal sealed class BlockSimulator
 
         if (top is Int16Node i16 && i16.Value is 0 or 1)
         {
-            // If we convert from integer to boolean, turn into true/false if 1 or 0, respectively
-            if (instr is { Type1: DataType.Int32, Type2: DataType.Boolean })
-            {
-                builder.ExpressionStack.Pop();
-                builder.ExpressionStack.Push(new BooleanNode(i16.Value == 1));
-                return;
-            }
-            
             // If we convert from boolean to anything else, and we have an Int16 on the stack,
             // we know that we had a boolean on the stack previously, so change that.
             if (instr is { Type1: DataType.Boolean })

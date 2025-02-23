@@ -29,7 +29,7 @@ internal sealed class RepeatLoopNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private RepeatLoopNode(TokenKeyword token, IASTNode timesToRepeat, IASTNode body)
+    private RepeatLoopNode(IToken? token, IASTNode timesToRepeat, IASTNode body)
     {
         NearbyToken = token;
         TimesToRepeat = timesToRepeat;
@@ -66,9 +66,38 @@ internal sealed class RepeatLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Enter repeat context
+        bool previousProcessingSwitch = context.ProcessingSwitch;
+        bool previousProcessingBreakContinueContext = context.CurrentScope.ProcessingBreakContinueContext;
+        bool previousShouldGenerateBreakContinueCode = true;
+        context.ProcessingSwitch = false;
+        context.CurrentScope.ProcessingBreakContinueContext = true;
+        if (context.TryStatementContext is TryStatementContext tryContext)
+        {
+            // Entering repeat loop, so break/continue code should no longer be generated.
+            previousShouldGenerateBreakContinueCode = tryContext.ShouldGenerateBreakContinueCode;
+            tryContext.ShouldGenerateBreakContinueCode = false;
+        }
+
+        // Normal post-processing
         TimesToRepeat = TimesToRepeat.PostProcess(context);
         Body = Body.PostProcess(context);
+
+        // Exit repeat context
+        context.ProcessingSwitch = previousProcessingSwitch;
+        context.CurrentScope.ProcessingBreakContinueContext = previousProcessingBreakContinueContext;
+        if (context.TryStatementContext is TryStatementContext tryContext2)
+        {
+            tryContext2.ShouldGenerateBreakContinueCode = previousShouldGenerateBreakContinueCode;
+        }
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new RepeatLoopNode(NearbyToken, TimesToRepeat.Duplicate(context), Body.Duplicate(context));
     }
 
     /// <inheritdoc/>

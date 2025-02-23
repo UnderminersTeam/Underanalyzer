@@ -14,7 +14,7 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a switch "case" or "default" label in the AST.
 /// </summary>
-internal sealed class SwitchCaseNode(TokenKeyword token, IASTNode? expression) : IASTNode
+internal sealed class SwitchCaseNode(IToken? token, IASTNode? expression) : IASTNode
 {
     /// <summary>
     /// Expression for the case, or null if none (for default).
@@ -36,6 +36,12 @@ internal sealed class SwitchCaseNode(TokenKeyword token, IASTNode? expression) :
         }
 
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new SwitchCaseNode(NearbyToken, Expression?.Duplicate(context));
     }
 
     /// <inheritdoc/>

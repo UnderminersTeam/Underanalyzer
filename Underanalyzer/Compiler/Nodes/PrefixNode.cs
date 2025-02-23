@@ -32,7 +32,7 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private PrefixNode(TokenOperator token, bool isIncrement, IAssignableASTNode expression)
+    private PrefixNode(IToken? token, IAssignableASTNode expression, bool isIncrement)
     {
         NearbyToken = token;
         IsIncrement = isIncrement;
@@ -58,7 +58,7 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
         }
 
         // Create final node
-        return new PrefixNode(token, isIncrement, assignableExpression);
+        return new PrefixNode(token, assignableExpression, isIncrement);
     }
 
     /// <inheritdoc/>
@@ -66,6 +66,18 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     {
         Expression = Expression.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new PrefixNode(
+            NearbyToken,
+            Expression.Duplicate(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable"),
+            IsIncrement)
+        {
+            IsStatement = IsStatement
+        };
     }
 
     /// <inheritdoc/>

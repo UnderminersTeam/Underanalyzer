@@ -25,7 +25,7 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingLogicalShortCircuit { get; set; } = true;
     /// <inheritdoc/>
-    public bool UsingFinallyBeforeThrow { get; set; } = false;
+    public bool UsingFinallyBeforeThrow { get; set; } = true;
     /// <inheritdoc/>
     public bool UsingConstructorSetStatic { get; set; } = false;
     /// <inheritdoc/>
@@ -38,6 +38,8 @@ public class GameContextMock : IGameContext
     public bool UsingGlobalConstantFunction { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingObjectFunctionForesight { get; set; } = false;
+    /// <inheritdoc/>
+    public bool UsingBetterTryBreakContinue { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingExtraRepeatInstruction { get; set; } = false;
     /// <inheritdoc/>

@@ -81,6 +81,16 @@ internal sealed class AssignNode : IASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new AssignNode(
+            Kind,
+            Destination.Duplicate(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable"),
+            Expression.Duplicate(context)
+        );
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         switch (Kind)

@@ -33,7 +33,7 @@ internal sealed class LocalVarDeclNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private LocalVarDeclNode(IToken token, List<string> declaredLocals, List<IASTNode?> assignedValues)
+    private LocalVarDeclNode(IToken? token, List<string> declaredLocals, List<IASTNode?> assignedValues)
     {
         DeclaredLocals = declaredLocals;
         AssignedValues = assignedValues;
@@ -115,6 +115,17 @@ internal sealed class LocalVarDeclNode : IASTNode
             AssignedValues[i] = AssignedValues[i]?.PostProcess(context);
         }
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode?> newAssignedValues = new(AssignedValues);
+        for (int i = 0; i < newAssignedValues.Count; i++)
+        {
+            newAssignedValues[i] = newAssignedValues[i]?.Duplicate(context);
+        }
+        return new LocalVarDeclNode(NearbyToken, new(DeclaredLocals), newAssignedValues);
     }
 
     /// <inheritdoc/>

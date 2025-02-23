@@ -43,6 +43,12 @@ internal sealed class BooleanNode : IConstantASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         context.Emit(Opcode.PushImmediate, (short)(Value ? 1 : 0), DataType.Int16);

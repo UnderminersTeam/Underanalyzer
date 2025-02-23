@@ -30,7 +30,7 @@ internal sealed class SwitchNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private SwitchNode(TokenKeyword token, IASTNode expression, List<IASTNode> children)
+    private SwitchNode(IToken? token, IASTNode expression, List<IASTNode> children)
     {
         NearbyToken = token;
         Expression = expression;
@@ -102,6 +102,11 @@ internal sealed class SwitchNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Enter switch context
+        bool previousProcessingSwitch = context.ProcessingSwitch;
+        context.ProcessingSwitch = true;
+
+        // Normal post-processing
         Expression = Expression.PostProcess(context);
         if (Children.Count == 0)
         {
@@ -120,7 +125,22 @@ internal sealed class SwitchNode : IASTNode
 
             // TODO: possibly check for duplicate cases here
         }
+
+        // Exit switch context
+        context.ProcessingSwitch = previousProcessingSwitch;
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newChildren = new(Children);
+        for (int i = 0; i < newChildren.Count; i++)
+        {
+            newChildren[i] = newChildren[i].Duplicate(context);
+        }
+        return new SwitchNode(NearbyToken, Expression.Duplicate(context), newChildren);
     }
 
     // Helper struct for generating switch case code

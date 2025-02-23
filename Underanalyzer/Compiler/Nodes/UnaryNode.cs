@@ -40,7 +40,7 @@ internal sealed class UnaryNode : IASTNode
         Negative        // -
     }
 
-    private UnaryNode(IToken token, UnaryKind kind, IASTNode expression)
+    private UnaryNode(IToken? token, UnaryKind kind, IASTNode expression)
     {
         NearbyToken = token;
         Kind = kind;
@@ -88,6 +88,12 @@ internal sealed class UnaryNode : IASTNode
 
             _ => this
         };
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new UnaryNode(NearbyToken, Kind, Expression.Duplicate(context));
     }
 
     /// <inheritdoc/>

@@ -75,10 +75,12 @@ internal static class Statements
                 return null;
             case TokenKeyword { Kind: KeywordKind.Exit } tokenExit:
                 context.Position++;
+                context.ExitReturnBreakContinueCount++;
                 return new ExitNode(tokenExit);
             case TokenKeyword { Kind: KeywordKind.Return } tokenReturn:
                 {
                     context.Position++;
+                    context.ExitReturnBreakContinueCount++;
                     if (!context.EndOfCode)
                     {
                         // Parse expression for return value, if one exists
@@ -96,13 +98,16 @@ internal static class Statements
                 }
             case TokenKeyword { Kind: KeywordKind.Break } tokenBreak:
                 context.Position++;
+                context.ExitReturnBreakContinueCount++;
                 return new BreakNode(tokenBreak);
             case TokenKeyword { Kind: KeywordKind.Continue } tokenContinue:
                 context.Position++;
+                context.ExitReturnBreakContinueCount++;
                 return new ContinueNode(tokenContinue);
             case TokenKeyword { Kind: KeywordKind.Throw }:
                 if (context.CompileContext.GameContext.UsingGMLv2)
                 {
+                    context.ThrowCount++;
                     return ThrowNode.Parse(context);
                 }
                 context.Position++;

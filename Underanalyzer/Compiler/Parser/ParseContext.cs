@@ -54,6 +54,45 @@ internal sealed class ParseContext : ISubCompileContext
     /// </summary>
     public bool EndOfCode => Position >= Tokens.Count;
 
+    /// <summary>
+    /// Number of return/exit/break/continue statements encountered during parsing.
+    /// </summary>
+    public int ExitReturnBreakContinueCount { get; set; } = 0;
+
+    /// <summary>
+    /// Number of throw statements encountered during parsing.
+    /// </summary>
+    public int ThrowCount { get; set; } = 0;
+
+    /// <summary>
+    /// Index of next try statement to be post-processed.
+    /// </summary>
+    public int TryStatementProcessIndex { get; set; } = 0;
+
+    /// <summary>
+    /// Current try statement context during post-processing.
+    /// </summary>
+    /// <remarks>
+    /// This is buggy by not being attached to function scopes, but mimics official compiler behavior.
+    /// </remarks>
+    public TryStatementContext? TryStatementContext { get; set; } = null;
+
+    /// <summary>
+    /// Whether currently processing a finally block of a try statement.
+    /// </summary>
+    /// <remarks>
+    /// This is buggy by not being attached to function scopes, but mimics official compiler behavior.
+    /// </remarks>
+    public bool ProcessingFinally { get; set; } = false;
+
+    /// <summary>
+    /// Whether currently post-processing a switch statement. Gets reset by loop control flow.
+    /// </summary>
+    /// <remarks>
+    /// This is buggy by not being attached to function scopes, but mimics official compiler behavior.
+    /// </remarks>
+    public bool ProcessingSwitch { get; set; } = false;
+
     public ParseContext(CompileContext context, List<IToken> tokens)
     {
         CompileContext = context;

@@ -146,6 +146,17 @@ internal sealed class BinaryChainNode : IASTNode
         return this;
     }
 
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newArguments = new(Arguments);
+        for (int i = 0; i < newArguments.Count; i++)
+        {
+            newArguments[i] = newArguments[i].Duplicate(context);
+        }
+        return new BinaryChainNode(NearbyToken, newArguments, new(Operations));
+    }
+
     /// <summary>
     /// Attempts to perform a compile-time binary operation between two constants, or returns null if not possible.
     /// </summary>

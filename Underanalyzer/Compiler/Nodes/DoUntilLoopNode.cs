@@ -29,7 +29,7 @@ internal sealed class DoUntilLoopNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private DoUntilLoopNode(TokenKeyword token, IASTNode body, IASTNode condition)
+    private DoUntilLoopNode(IToken? token, IASTNode body, IASTNode condition)
     {
         NearbyToken = token;
         Body = body;
@@ -76,6 +76,16 @@ internal sealed class DoUntilLoopNode : IASTNode
         Body = Body.PostProcess(context);
         Condition = Condition.PostProcess(context);
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new DoUntilLoopNode(
+            NearbyToken, 
+            Body.Duplicate(context), 
+            Condition.Duplicate(context)
+        );
     }
 
     /// <inheritdoc/>

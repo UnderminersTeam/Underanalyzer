@@ -35,7 +35,7 @@ internal sealed class PostfixNode : IMaybeStatementASTNode
     /// <summary>
     /// Creates a postfix node, given whether or not the postfix is an increment.
     /// </summary>
-    public PostfixNode(TokenOperator token, IAssignableASTNode expression, bool isIncrement)
+    public PostfixNode(IToken? token, IAssignableASTNode expression, bool isIncrement)
     {
         NearbyToken = token;
         Expression = expression;
@@ -47,6 +47,18 @@ internal sealed class PostfixNode : IMaybeStatementASTNode
     {
         Expression = Expression.PostProcess(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable");
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new PostfixNode(
+            NearbyToken,
+            Expression.Duplicate(context) as IAssignableASTNode ?? throw new Exception("Destination no longer assignable"),
+            IsIncrement)
+        {
+            IsStatement = IsStatement
+        };
     }
 
     /// <inheritdoc/>

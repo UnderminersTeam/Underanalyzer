@@ -37,7 +37,7 @@ internal sealed class ConditionalNode : IASTNode
     /// <summary>
     /// Creates a conditional node, given the provided token and expressions for condition, true, and false.
     /// </summary>
-    public ConditionalNode(TokenOperator token, IASTNode condition, IASTNode trueExpression, IASTNode falseExpression)
+    public ConditionalNode(IToken? token, IASTNode condition, IASTNode trueExpression, IASTNode falseExpression)
     {
         Condition = condition;
         TrueExpression = trueExpression;
@@ -52,6 +52,17 @@ internal sealed class ConditionalNode : IASTNode
         TrueExpression = TrueExpression.PostProcess(context);
         FalseExpression = FalseExpression.PostProcess(context);
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new ConditionalNode(
+            NearbyToken,
+            Condition.Duplicate(context),
+            TrueExpression.Duplicate(context),
+            FalseExpression.Duplicate(context)
+        );
     }
 
     /// <inheritdoc/>

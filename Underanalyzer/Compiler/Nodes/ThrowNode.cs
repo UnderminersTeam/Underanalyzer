@@ -24,7 +24,7 @@ internal sealed class ThrowNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; private set; }
 
-    private ThrowNode(TokenKeyword nearbyToken, IASTNode expression)
+    private ThrowNode(IToken? nearbyToken, IASTNode expression)
     {
         Expression = expression;
         NearbyToken = nearbyToken;
@@ -55,7 +55,25 @@ internal sealed class ThrowNode : IASTNode
     public IASTNode PostProcess(ParseContext context)
     {
         Expression = Expression.PostProcess(context);
+
+        // If in a try statement with a finally block, generate extra code (if enabled; this is buggy behavior).
+        if (context.TryStatementContext is { HasFinally: true, ThrowFinallyGeneration: true } && 
+            context.CompileContext.GameContext.UsingFinallyBeforeThrow)
+        {
+            // Create block with latest finally node, then this throw node
+            BlockNode newBlock = BlockNode.CreateEmpty(NearbyToken, 2);
+            newBlock.Children.Add(context.CurrentScope.TryFinallyNodes[^1].Duplicate(context));
+            newBlock.Children.Add(this);
+            return newBlock;
+        }
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new ThrowNode(NearbyToken, Expression.Duplicate(context));
     }
 
     /// <inheritdoc/>

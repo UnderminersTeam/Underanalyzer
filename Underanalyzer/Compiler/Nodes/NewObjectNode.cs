@@ -33,7 +33,7 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private NewObjectNode(TokenKeyword nearbyToken, IASTNode expression, List<IASTNode> arguments)
+    private NewObjectNode(IToken? nearbyToken, IASTNode expression, List<IASTNode> arguments)
     {
         Expression = expression;
         Arguments = arguments;
@@ -91,6 +91,20 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
             Arguments[i] = Arguments[i].PostProcess(context);
         }
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newArguments = new(Arguments);
+        for (int i = 0; i < newArguments.Count; i++)
+        {
+            newArguments[i] = newArguments[i].Duplicate(context);
+        }
+        return new NewObjectNode(NearbyToken, Expression.Duplicate(context), newArguments)
+        {
+            IsStatement = IsStatement
+        };
     }
 
     /// <inheritdoc/>

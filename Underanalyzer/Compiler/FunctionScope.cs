@@ -41,6 +41,17 @@ public sealed class FunctionScope(bool isFunction)
     /// </summary>
     internal bool GeneratingStaticBlock { get; set; } = false;
 
+    /// <summary>
+    /// Whether currently post-processing a statement that requires extra logic for break/continue during code rewriting.
+    /// </summary>
+    internal bool ProcessingBreakContinueContext { get; set; } = false;
+
+    /// <summary>
+    /// List of nodes to duplicate when exiting early from a finally block.
+    /// One node per each try statement.
+    /// </summary>
+    internal List<IASTNode> TryFinallyNodes { get; set; } = [];
+
     // Set of local variables declared for this scope
     private readonly HashSet<string> _declaredLocals = new(8);
 

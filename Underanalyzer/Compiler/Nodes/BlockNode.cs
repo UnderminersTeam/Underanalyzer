@@ -125,6 +125,17 @@ internal sealed class BlockNode : IASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newChildren = new(Children);
+        for (int i = 0; i < newChildren.Count; i++)
+        {
+            newChildren[i] = newChildren[i].Duplicate(context);
+        }
+        return new BlockNode(newChildren, NearbyToken);
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         foreach (IASTNode statement in Children)

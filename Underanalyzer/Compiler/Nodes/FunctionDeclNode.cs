@@ -63,7 +63,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private FunctionDeclNode(FunctionScope scope, IToken token, string? functionName, 
+    private FunctionDeclNode(FunctionScope scope, IToken? token, string? functionName, 
                              List<string> argumentNames, BlockNode? defaultValueBlock, BlockNode body,
                              SimpleFunctionCallNode? inheritanceCall,
                              bool isStruct, bool isConstructor)
@@ -374,6 +374,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             }
         }
 
+        // Normal post-processing
         DefaultValueBlock?.PostProcessChildrenOnly(context);
         InheritanceCall?.PostProcessChildrenOnly(context);
         Body.PostProcessChildrenOnly(context);
@@ -382,6 +383,24 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         context.CurrentScope = oldScope;
 
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new FunctionDeclNode(
+            Scope,
+            NearbyToken,
+            FunctionName,
+            new(ArgumentNames),
+            (BlockNode?)DefaultValueBlock?.Duplicate(context),
+            (BlockNode)Body.Duplicate(context),
+            (SimpleFunctionCallNode?)InheritanceCall?.Duplicate(context),
+            IsStruct,
+            IsConstructor)
+        {
+            IsStatement = IsStatement
+        };
     }
 
     /// <inheritdoc/>

@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Linq.Expressions;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -50,6 +51,14 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         LeftExpression = leftExpression;
         NearbyToken = token;
         VariableName = token.Text;
+    }
+
+    private DotVariableNode(IASTNode leftExpression, string variableName, IBuiltinVariable? builtinVariable, IToken? nearbyToken)
+    {
+        LeftExpression = leftExpression;
+        VariableName = variableName;
+        BuiltinVariable = builtinVariable;
+        NearbyToken = nearbyToken;
     }
 
     /// <inheritdoc/>
@@ -105,6 +114,17 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         }
 
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new DotVariableNode(
+            LeftExpression.Duplicate(context),
+            VariableName,
+            BuiltinVariable,
+            NearbyToken
+        );
     }
 
     /// <inheritdoc/>

@@ -66,6 +66,20 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
         return this;
     }
 
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newArguments = new(Arguments);
+        for (int i = 0; i < newArguments.Count; i++)
+        {
+            newArguments[i] = newArguments[i].Duplicate(context);
+        }
+        return new FunctionCallNode(NearbyToken, Expression.Duplicate(context), newArguments)
+        {
+            IsStatement = IsStatement
+        };
+    }
+
     /// <summary>
     /// Generates code for pushing arguments to the stack for this function call node.
     /// </summary>

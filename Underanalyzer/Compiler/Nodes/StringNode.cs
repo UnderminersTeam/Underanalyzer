@@ -43,6 +43,12 @@ internal sealed class StringNode : IConstantASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         context.Emit(Opcode.Push, new StringPatch(Value), DataType.String);

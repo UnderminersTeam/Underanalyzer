@@ -65,6 +65,12 @@ internal sealed class NumberNode : IConstantASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         GenerateCode(context, Value);

@@ -39,7 +39,7 @@ internal sealed class ForLoopNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private ForLoopNode(TokenKeyword token, IASTNode initializer, IASTNode condition, IASTNode incrementor, IASTNode body)
+    private ForLoopNode(IToken? token, IASTNode initializer, IASTNode condition, IASTNode incrementor, IASTNode body)
     {
         NearbyToken = token;
         Initializer = initializer;
@@ -145,11 +145,46 @@ internal sealed class ForLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Enter for context
+        bool previousProcessingSwitch = context.ProcessingSwitch;
+        bool previousProcessingBreakContinueContext = context.CurrentScope.ProcessingBreakContinueContext;
+        bool previousShouldGenerateBreakContinueCode = true;
+        context.ProcessingSwitch = false;
+        context.CurrentScope.ProcessingBreakContinueContext = true;
+        if (context.TryStatementContext is TryStatementContext tryContext)
+        {
+            // Entering for loop, so break/continue code should no longer be generated.
+            previousShouldGenerateBreakContinueCode = tryContext.ShouldGenerateBreakContinueCode;
+            tryContext.ShouldGenerateBreakContinueCode = false;
+        }
+
+        // Normal post-processing
         Initializer = Initializer.PostProcess(context);
         Condition = Condition.PostProcess(context);
         Incrementor = Incrementor.PostProcess(context);
         Body = Body.PostProcess(context);
+
+        // Exit for context
+        context.ProcessingSwitch = previousProcessingSwitch;
+        context.CurrentScope.ProcessingBreakContinueContext = previousProcessingBreakContinueContext;
+        if (context.TryStatementContext is TryStatementContext tryContext2)
+        {
+            tryContext2.ShouldGenerateBreakContinueCode = previousShouldGenerateBreakContinueCode;
+        }
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new ForLoopNode(
+            NearbyToken,
+            Initializer.Duplicate(context),
+            Condition.Duplicate(context),
+            Incrementor.Duplicate(context),
+            Body.Duplicate(context)
+        );
     }
 
     /// <inheritdoc/>

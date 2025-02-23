@@ -4,7 +4,6 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
-using System.Diagnostics.CodeAnalysis;
 using Underanalyzer.Compiler.Bytecode;
 using static Underanalyzer.IGMInstruction;
 
@@ -13,6 +12,9 @@ namespace Underanalyzer.Compiler;
 /// <summary>
 /// Represents an implementation for building code entries and emitting instructions, during compilation.
 /// </summary>
+/// <remarks>
+/// All methods should be able to operate independently of thread; otherwise, the compiler is no longer thread-safe.
+/// </remarks>
 public interface ICodeBuilder
 {
     /// <summary>
@@ -136,9 +138,9 @@ public interface ICodeBuilder
     public void PatchInstruction(IGMInstruction instruction, string stringContent);
 
     /// <summary>
-    /// Patches an existing instruction with a branch offset.
+    /// Patches an existing instruction with an integer value (which is a branch offset for branch instructions).
     /// </summary>
-    public void PatchInstruction(IGMInstruction instruction, int branchOffset);
+    public void PatchInstruction(IGMInstruction instruction, int value);
 
     /// <summary>
     /// Returns whether a global function name of any kind exists with the given name.
@@ -147,4 +149,14 @@ public interface ICodeBuilder
     /// This should return true if the function either already exists, or can be created during (or before) instruction patching.
     /// </remarks>
     public bool IsGlobalFunctionName(string name);
+
+    /// <summary>
+    /// Generates an ID to be used for local variable names used by a try statement.
+    /// </summary>
+    /// <remarks>
+    /// These IDs should be non-negative and unique. The supplied <paramref name="internalIndex"/> 
+    /// (guaranteed to be unique per each try statement being compiled by a single context) 
+    /// may be returned directly as well, if desired.
+    /// </remarks>
+    public int GenerateTryVariableID(int internalIndex);
 }

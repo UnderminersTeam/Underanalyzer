@@ -49,6 +49,12 @@ internal sealed class Int64Node : IConstantASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         context.Emit(Opcode.Push, Value, DataType.Int64);

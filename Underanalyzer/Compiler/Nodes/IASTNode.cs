@@ -27,6 +27,14 @@ internal interface IASTNode
     public IASTNode PostProcess(ParseContext context);
 
     /// <summary>
+    /// Duplicates this node and all sub-nodes.
+    /// </summary>
+    /// <remarks>
+    /// For immutable leaf nodes, this can return the same instance.
+    /// </remarks>
+    public IASTNode Duplicate(ParseContext context);
+
+    /// <summary>
     /// Generates bytecode for this node.
     /// </summary>
     public void GenerateCode(BytecodeContext context);

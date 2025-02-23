@@ -114,6 +114,17 @@ internal sealed class IfNode : IASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new IfNode(
+            NearbyToken,
+            Condition.Duplicate(context),
+            TrueStatement.Duplicate(context),
+            FalseStatement?.Duplicate(context)
+        );
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
         // Generate condition, and convert to boolean

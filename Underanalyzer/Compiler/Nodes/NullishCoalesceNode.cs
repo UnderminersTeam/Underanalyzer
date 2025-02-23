@@ -32,7 +32,7 @@ internal sealed class NullishCoalesceNode : IASTNode
     /// <summary>
     /// Creates a nullish coalesce node, given the provided token and expressions for the left and right sides.
     /// </summary>
-    public NullishCoalesceNode(TokenOperator token, IASTNode left, IASTNode right)
+    public NullishCoalesceNode(IToken? token, IASTNode left, IASTNode right)
     {
         Left = left;
         Right = right;
@@ -45,6 +45,12 @@ internal sealed class NullishCoalesceNode : IASTNode
         Left = Left.PostProcess(context);
         Right = Right.PostProcess(context);
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new NullishCoalesceNode(NearbyToken, Left.Duplicate(context), Right.Duplicate(context));
     }
 
     /// <inheritdoc/>

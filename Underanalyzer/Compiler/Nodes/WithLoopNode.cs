@@ -29,7 +29,7 @@ internal sealed class WithLoopNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private WithLoopNode(TokenKeyword token, IASTNode expression, IASTNode body)
+    private WithLoopNode(IToken? token, IASTNode expression, IASTNode body)
     {
         NearbyToken = token;
         Expression = expression;
@@ -72,9 +72,38 @@ internal sealed class WithLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Enter with context
+        bool previousProcessingSwitch = context.ProcessingSwitch;
+        bool previousProcessingBreakContinueContext = context.CurrentScope.ProcessingBreakContinueContext;
+        bool previousShouldGenerateBreakContinueCode = true;
+        context.ProcessingSwitch = false;
+        context.CurrentScope.ProcessingBreakContinueContext = true;
+        if (context.TryStatementContext is TryStatementContext tryContext)
+        {
+            // Entering with loop, so break/continue code should no longer be generated.
+            previousShouldGenerateBreakContinueCode = tryContext.ShouldGenerateBreakContinueCode;
+            tryContext.ShouldGenerateBreakContinueCode = false;
+        }
+
+        // Normal post-processing
         Expression = Expression.PostProcess(context);
         Body = Body.PostProcess(context);
+
+        // Exit with context
+        context.ProcessingSwitch = previousProcessingSwitch;
+        context.CurrentScope.ProcessingBreakContinueContext = previousProcessingBreakContinueContext;
+        if (context.TryStatementContext is TryStatementContext tryContext2)
+        {
+            tryContext2.ShouldGenerateBreakContinueCode = previousShouldGenerateBreakContinueCode;
+        }
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new WithLoopNode(NearbyToken, Expression.Duplicate(context), Body.Duplicate(context));
     }
 
     /// <inheritdoc/>

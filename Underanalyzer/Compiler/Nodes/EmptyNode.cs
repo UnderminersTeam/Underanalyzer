@@ -49,6 +49,12 @@ internal sealed class EmptyNode : IASTNode
     }
 
     /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return this;
+    }
+
+    /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
     }

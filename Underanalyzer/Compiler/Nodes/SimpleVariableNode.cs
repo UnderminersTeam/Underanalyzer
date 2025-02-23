@@ -49,7 +49,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public bool LeftmostSideOfDot { get; set; } = false;
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; }
+    public IToken? NearbyToken { get; init; }
 
     // Set of built-in argument variables
     private static readonly HashSet<string> _builtinArgumentVariables =
@@ -81,6 +81,16 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     }
 
     /// <summary>
+    /// Creates a simple variable reference node, given the provided name, builtin variable, and instance type.
+    /// </summary>
+    public SimpleVariableNode(string variableName, IBuiltinVariable? builtinVariable, InstanceType explicitInstanceType)
+    {
+        VariableName = variableName;
+        BuiltinVariable = builtinVariable;
+        SetExplicitInstanceType(explicitInstanceType);
+    }
+
+    /// <summary>
     /// Sets an explicit instance type on this variable node.
     /// </summary>
     public void SetExplicitInstanceType(InstanceType instanceType)
@@ -93,6 +103,20 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public IASTNode PostProcess(ParseContext context)
     {
         return ResolveStandaloneType(context);
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new SimpleVariableNode(VariableName, BuiltinVariable)
+        {
+            ExplicitInstanceType = ExplicitInstanceType,
+            HasExplicitInstanceType = HasExplicitInstanceType,
+            IsFunctionCall = IsFunctionCall,
+            CollapsedFromDot = CollapsedFromDot,
+            LeftmostSideOfDot = LeftmostSideOfDot,
+            NearbyToken = NearbyToken
+        };
     }
 
     /// <summary>

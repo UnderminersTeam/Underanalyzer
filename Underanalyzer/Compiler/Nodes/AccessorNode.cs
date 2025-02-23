@@ -140,6 +140,18 @@ internal sealed class AccessorNode : IAssignableASTNode
         return this;
     }
 
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new AccessorNode(
+            NearbyToken,
+            Expression.Duplicate(context),
+            Kind,
+            AccessorExpression.Duplicate(context),
+            AccessorExpression2?.Duplicate(context)
+        );
+    }
+
     /// <summary>
     /// Generates common code for generating array accessors on <see cref="IVariableASTNode"/> expressions.
     /// </summary>

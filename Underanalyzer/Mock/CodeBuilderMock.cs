@@ -323,11 +323,18 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
-    public void PatchInstruction(IGMInstruction instruction, int branchOffset)
+    public void PatchInstruction(IGMInstruction instruction, int value)
     {
         if (instruction is GMInstruction mockInstruction)
         {
-            mockInstruction.BranchOffset = branchOffset;
+            if (mockInstruction.Kind == Opcode.Push)
+            {
+                mockInstruction.ValueInt = value;
+            }
+            else
+            {
+                mockInstruction.BranchOffset = value;
+            }
         }
     }
 
@@ -335,5 +342,11 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     public bool IsGlobalFunctionName(string name)
     {
         return gameContext.GlobalFunctions.FunctionNameExists(name);
+    }
+
+    /// <inheritdoc/>
+    public int GenerateTryVariableID(int internalIndex)
+    {
+        return internalIndex;
     }
 }

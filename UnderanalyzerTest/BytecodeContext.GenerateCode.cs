@@ -1674,4 +1674,719 @@ public class BytecodeContext_GenerateCode
             );
         });
     }
+
+    [Fact]
+    public void TestTryCatchBasic()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                throw "Error!";
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            """,
+            """
+            :[0]
+            push.i 112
+            conv.i.v
+            push.i 60
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            push.s "Error!"
+            conv.s.v
+            call.i @@throw@@ 1
+            b [2]
+
+            :[1]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushloc.v local.ex
+            pop.v.v self.a
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [3]
+
+            :[2]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[3]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchFinally1()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                throw "Error!";
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            finally
+            {
+                b = 123;
+            }
+            """,
+            """
+            :[0]
+            push.i 112
+            conv.i.v
+            push.i 60
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            push.s "Error!"
+            conv.s.v
+            call.i @@throw@@ 1
+            b [2]
+
+            :[1]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushloc.v local.ex
+            pop.v.v self.a
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [3]
+
+            :[2]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[3]
+            pushi.e 123
+            pop.v.i self.b
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [4]
+
+            :[4]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchFinally2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                throw "Error!";
+                return 456;
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            finally
+            {
+                b = 123;
+            }
+            """,
+            """
+            :[0]
+            push.i 184
+            conv.i.v
+            push.i 132
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            pushi.e 123
+            pop.v.i self.b
+            push.s "Error!"
+            conv.s.v
+            call.i @@throw@@ 1
+            pushi.e 456
+            pop.v.i local.copyVar
+            pushi.e 123
+            pop.v.i self.b
+            pushloc.v local.copyVar
+            pop.v.v local.$$$$temp$$$$
+            call.i @@try_unhook@@ 0
+            push.v local.$$$$temp$$$$
+            ret.v
+
+            :[1]
+            b [3]
+
+            :[2]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushloc.v local.ex
+            pop.v.v self.a
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [4]
+
+            :[3]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[4]
+            pushi.e 123
+            pop.v.i self.b
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [5]
+
+            :[5]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryFinally()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                return 123;
+            }
+            finally
+            {
+                a = "finally code";
+            }
+            """,
+            """
+            push.i 100
+            conv.i.v
+            push.i -1
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            pushi.e 123
+            pop.v.i local.copyVar
+            push.s "finally code"
+            pop.v.s self.a
+            pushloc.v local.copyVar
+            pop.v.v local.$$$$temp$$$$
+            call.i @@try_unhook@@ 0
+            push.v local.$$$$temp$$$$
+            ret.v
+
+            :[1]
+            call.i @@try_unhook@@ 0
+            popz.v
+            push.s "finally code"
+            pop.v.s self.a
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [2]
+
+            :[2]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryBreakContinue()
+    {
+        TestUtil.AssertBytecode(
+            """
+            repeat (123)
+            {
+                try
+                {
+                    if (c)
+                    {
+                        continue;
+                    }
+                    if (d)
+                    {
+                        break;
+                    }
+                }
+                catch (ex)
+                {
+                }
+            }
+            """,
+            """
+            :[0]
+            pushi.e 123
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [19]
+
+            :[1]
+            pushi.e 0
+            pop.v.i local.__yy_breakEx0
+            pushi.e 0
+            pop.v.i local.__yy_continueEx0
+            push.i 224
+            conv.i.v
+            push.i 188
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[2]
+            pushi.e 1
+            bf [11]
+
+            :[3]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [5]
+
+            :[4]
+            b [11]
+
+            :[5]
+            push.v self.c
+            conv.v.b
+            bf [7]
+
+            :[6]
+            pushi.e 1
+            pop.v.i local.__yy_continueEx0
+            b [2]
+
+            :[7]
+            push.v self.d
+            conv.v.b
+            bf [9]
+
+            :[8]
+            pushi.e 1
+            pop.v.i local.__yy_breakEx0
+            b [11]
+
+            :[9]
+            b [11]
+
+            :[10]
+            b [2]
+
+            :[11]
+            b [13]
+
+            :[12]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [14]
+
+            :[13]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[14]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [16]
+
+            :[15]
+            b [18]
+
+            :[16]
+            pushloc.v local.__yy_breakEx0
+            conv.v.b
+            bf [18]
+
+            :[17]
+            b [19]
+
+            :[18]
+            push.i 1
+            sub.i.i
+            dup.i 0
+            conv.i.b
+            bt [1]
+
+            :[19]
+            popz.i
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingExtraRepeatInstruction = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestTryBreakBusted()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                while (b)
+                {
+                    break;
+                }
+            }
+            catch (ex)
+            {
+            }
+            """,
+            """
+            :[0]
+            pushi.e 0
+            pop.v.i local.__yy_breakEx0
+            pushi.e 0
+            pop.v.i local.__yy_continueEx0
+            push.i 172
+            conv.i.v
+            push.i 136
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[1]
+            pushi.e 1
+            bf [9]
+
+            :[2]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [4]
+
+            :[3]
+            b [9]
+
+            :[4]
+            push.v self.b
+            conv.v.b
+            bf [7]
+
+            :[5]
+            pushi.e 1
+            pop.v.i local.__yy_breakEx0
+            b [7]
+
+            :[6]
+            b [4]
+
+            :[7]
+            b [9]
+
+            :[8]
+            b [1]
+
+            :[9]
+            b [11]
+
+            :[10]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [12]
+
+            :[11]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[12]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryBreakFixed()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                while (b)
+                {
+                    break;
+                }
+            }
+            catch (ex)
+            {
+            }
+            """,
+            """
+            :[0]
+            push.i 100
+            conv.i.v
+            push.i 64
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[1]
+            push.v builtin.b
+            conv.v.b
+            bf [4]
+
+            :[2]
+            b [4]
+
+            :[3]
+            b [1]
+
+            :[4]
+            b [6]
+
+            :[5]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [7]
+
+            :[6]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[7]
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingBetterTryBreakContinue = true,
+                UsingSelfToBuiltin = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchBreakContinue()
+    {
+        TestUtil.AssertBytecode(
+            """
+            repeat (123)
+            {
+                try
+            	{
+                    continue;
+                    break;
+                }
+                catch (ex)
+                {
+                    continue;
+                    break;
+                }
+            }
+            """,
+            """
+            :[0]
+            pushi.e 123
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [25]
+
+            :[1]
+            pushi.e 0
+            pop.v.i local.__yy_breakEx0
+            pushi.e 0
+            pop.v.i local.__yy_continueEx0
+            push.i 260
+            conv.i.v
+            push.i 156
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+
+            :[2]
+            pushi.e 1
+            bf [9]
+
+            :[3]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [5]
+
+            :[4]
+            b [9]
+
+            :[5]
+            pushi.e 1
+            pop.v.i local.__yy_continueEx0
+            b [2]
+
+            :[6]
+            pushi.e 1
+            pop.v.i local.__yy_breakEx0
+            b [9]
+
+            :[7]
+            b [9]
+
+            :[8]
+            b [2]
+
+            :[9]
+            b [19]
+
+            :[10]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[11]
+            pushi.e 1
+            bf [18]
+
+            :[12]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [14]
+
+            :[13]
+            b [18]
+
+            :[14]
+            pushi.e 1
+            pop.v.i local.__yy_continueEx0
+            b [11]
+
+            :[15]
+            pushi.e 1
+            pop.v.i local.__yy_breakEx0
+            b [18]
+
+            :[16]
+            b [18]
+
+            :[17]
+            b [11]
+
+            :[18]
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [20]
+
+            :[19]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[20]
+            pushloc.v local.__yy_continueEx0
+            conv.v.b
+            bf [22]
+
+            :[21]
+            b [24]
+
+            :[22]
+            pushloc.v local.__yy_breakEx0
+            conv.v.b
+            bf [24]
+
+            :[23]
+            b [25]
+
+            :[24]
+            push.i 1
+            sub.i.i
+            dup.i 0
+            conv.i.b
+            bt [1]
+
+            :[25]
+            popz.i
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingExtraRepeatInstruction = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestTrySwitchBreak()
+    {
+        TestUtil.AssertBytecode(
+            """
+            try
+            {
+                switch (a)
+                {
+                    default:
+                        break;
+                }
+            }
+            catch (ex)
+            {
+            }
+            """,
+            """
+            :[0]
+            push.i 100
+            conv.i.v
+            push.i 64
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            push.v self.a
+            b [2]
+
+            :[1]
+            b [3]
+
+            :[2]
+            b [3]
+
+            :[3]
+            popz.v
+            b [5]
+
+            :[4]
+            pop.v.v local.ex
+            call.i @@try_unhook@@ 0
+            popz.v
+            call.i @@finish_catch@@ 0
+            popz.v
+            b [6]
+
+            :[5]
+            call.i @@try_unhook@@ 0
+            popz.v
+
+            :[6]
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryFinallyError()
+    {
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                try
+                {
+                }
+                finally
+                {
+                    exit;
+                    return 123;
+                    break;
+                    continue;
+                }
+                """,
+                ""
+            );
+        });
+    }
 }

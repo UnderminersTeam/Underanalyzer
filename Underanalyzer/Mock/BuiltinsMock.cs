@@ -42,7 +42,11 @@ public class BuiltinsMock : IBuiltins
         { VMConstants.SetStaticFunction, new(VMConstants.SetStaticFunction, 0, 0) },
         { VMConstants.CopyStaticFunction, new(VMConstants.CopyStaticFunction, 1, 1) },
         { VMConstants.StaticGetFunction, new(VMConstants.StaticGetFunction, 1, 1) },
-        { VMConstants.ThrowFunction, new(VMConstants.ThrowFunction, 1, 1) }
+        { VMConstants.ThrowFunction, new(VMConstants.ThrowFunction, 1, 1) },
+        { VMConstants.TryHookFunction, new(VMConstants.TryHookFunction, 2, 2) },
+        { VMConstants.TryUnhookFunction, new(VMConstants.TryUnhookFunction, 0, 0) },
+        { VMConstants.FinishCatchFunction, new(VMConstants.FinishCatchFunction, 0, 0) },
+        { VMConstants.FinishFinallyFunction, new(VMConstants.FinishFinallyFunction, 0, 0) },
     };
 
     /// <inheritdoc/>

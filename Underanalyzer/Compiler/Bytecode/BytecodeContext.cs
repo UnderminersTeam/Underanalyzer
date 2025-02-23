@@ -55,6 +55,15 @@ internal sealed class BytecodeContext : ISubCompileContext
     /// </summary>
     public int Position { get; private set; } = 0;
 
+    /// <summary>
+    /// Function to call before any exit/return instructions, as part of their cleanup.
+    /// </summary>
+    /// <remarks>
+    /// Yes, due to not being attached to function scopes, this results in bugged code generation, 
+    /// but this mimics official GML compiler behavior.
+    /// </remarks>
+    public string? FunctionCallBeforeExit { get; set; } = null;
+
     // Stack used for storing data types as on the VM data stack.
     private readonly Stack<DataType> _dataTypeStack = new(16);
 
@@ -344,21 +353,6 @@ internal sealed class BytecodeContext : ISubCompileContext
     }
 
     /// <summary>
-    /// Emits an instruction with the given opcode, data types, and given function, at the current position.
-    /// </summary>
-    public IGMInstruction Emit(Opcode opcode, FunctionPatch function, DataType dataType1, DataType dataType2 = DataType.Double)
-    {
-        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, opcode, dataType1, dataType2);
-        Instructions.Add(instr);
-        Position += 8;
-
-        function.Instruction = instr;
-        Patches.FunctionPatches!.Add(function);
-
-        return instr;
-    }
-
-    /// <summary>
     /// Emits a <see cref="Opcode.Push"/> instruction with the given function, at the current position.
     /// </summary>
     public IGMInstruction EmitPushFunction(FunctionPatch function)
@@ -435,6 +429,14 @@ internal sealed class BytecodeContext : ISubCompileContext
     public void PatchBranch(IGMInstruction instruction, int branchOffset)
     {
         _codeBuilder.PatchInstruction(instruction, branchOffset);
+    }
+
+    /// <summary>
+    /// Patches a single push integer instruction with the given integer value.
+    /// </summary>
+    public void PatchPush(IGMInstruction instruction, int value)
+    {
+        _codeBuilder.PatchInstruction(instruction, value);
     }
 
     /// <summary>

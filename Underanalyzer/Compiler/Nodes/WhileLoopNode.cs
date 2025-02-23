@@ -29,7 +29,7 @@ internal sealed class WhileLoopNode : IASTNode
     /// <inheritdoc/>
     public IToken? NearbyToken { get; }
 
-    private WhileLoopNode(TokenKeyword token, IASTNode condition, IASTNode body)
+    public WhileLoopNode(IToken? token, IASTNode condition, IASTNode body)
     {
         NearbyToken = token;
         Condition = condition;
@@ -72,9 +72,30 @@ internal sealed class WhileLoopNode : IASTNode
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
     {
+        // Enter while context
+        bool previousProcessingSwitch = context.ProcessingSwitch;
+        context.ProcessingSwitch = false;
+        if (context.TryStatementContext is TryStatementContext tryContext)
+        {
+            // Entering while loop, so break/continue code should no longer be generated.
+            // BUG: This isn't reset when exiting this method, but this mimics official compiler behavior...
+            tryContext.ShouldGenerateBreakContinueCode = false;
+        }
+
+        // Normal post-processing
         Condition = Condition.PostProcess(context);
         Body = Body.PostProcess(context);
+
+        // Exit while context
+        context.ProcessingSwitch = previousProcessingSwitch;
+
         return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        return new WhileLoopNode(NearbyToken, Condition.Duplicate(context), Body.Duplicate(context));
     }
 
     /// <inheritdoc/>

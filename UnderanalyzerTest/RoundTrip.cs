@@ -1027,4 +1027,172 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestBooleanLoops()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            while (1)
+            {
+            }
+            while (true)
+            {
+            }
+            do
+            {
+            }
+            until (1);
+            do
+            {
+            }
+            until (true);
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchBasic()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            try
+            {
+                throw "Error!";
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchFinally1()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            try
+            {
+                throw "Error!";
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            finally
+            {
+                b = 123;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchFinally2()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            try
+            {
+                throw "Error!";
+                return 456;
+            }
+            catch (ex)
+            {
+                a = ex;
+            }
+            finally
+            {
+                b = 123;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryFinally()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            try
+            {
+                return 123;
+            }
+            finally
+            {
+                a = "finally code";
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryBreakContinue()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            repeat (123)
+            {
+                try
+                {
+                    if (c)
+                    {
+                        continue;
+                    }
+                    if (d)
+                    {
+                        break;
+                    }
+                }
+                catch (ex)
+                {
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryCatchBreakContinue()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            repeat (123)
+            {
+                try
+                {
+                    continue;
+                    break;
+                }
+                catch (ex)
+                {
+                    continue;
+                    break;
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTrySwitchBreak()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            try
+            {
+                switch (a)
+                {
+                    default:
+                        break;
+                }
+            }
+            catch (ex)
+            {
+            }
+            """
+        );
+    }
 }

@@ -137,6 +137,20 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
         };
     }
 
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
+        List<IASTNode> newArguments = new(Arguments);
+        for (int i = 0; i < newArguments.Count; i++)
+        {
+            newArguments[i] = newArguments[i].Duplicate(context);
+        }
+        return new SimpleFunctionCallNode(FunctionName, BuiltinFunction, newArguments)
+        {
+            IsStatement = IsStatement
+        };
+    }
+
     /// <summary>
     /// Optimizes an ord() function call if possible, returning an optimized node.
     /// </summary>

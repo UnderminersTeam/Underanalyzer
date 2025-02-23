@@ -14,15 +14,21 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a constant asset reference (by ID) in the AST.
 /// </summary>
-internal sealed class AssetReferenceNode(TokenAssetReference token) : IConstantASTNode
+internal sealed class AssetReferenceNode : IConstantASTNode
 {
     /// <summary>
     /// Asset ID for this node.
     /// </summary>
-    public int AssetId { get; } = token.AssetId;
+    public int AssetId { get; init; }
 
     /// <inheritdoc/>
-    public IToken? NearbyToken { get; } = token;
+    public IToken? NearbyToken { get; init; }
+
+    public AssetReferenceNode(TokenAssetReference token)
+    {
+        AssetId = token.AssetId;
+        NearbyToken = token;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
@@ -33,6 +39,12 @@ internal sealed class AssetReferenceNode(TokenAssetReference token) : IConstantA
             return new NumberNode(AssetId, NearbyToken);
         }
 
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
+    {
         return this;
     }
 

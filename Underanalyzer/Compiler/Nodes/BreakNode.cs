@@ -7,6 +7,7 @@
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.Compiler.Nodes.AssignNode;
 using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
@@ -14,13 +15,43 @@ namespace Underanalyzer.Compiler.Nodes;
 /// <summary>
 /// Represents a "break" statement in the AST.
 /// </summary>
-internal sealed class BreakNode(TokenKeyword token) : IASTNode
+internal sealed class BreakNode(IToken? token) : IASTNode
 {
     /// <inheritdoc/>
     public IToken? NearbyToken { get; } = token;
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
+    {
+        // Throw error if using inside of a try statement's finally block
+        if (context.ProcessingFinally)
+        {
+            context.CompileContext.PushError("Cannot use break inside of finally block", NearbyToken);
+        }
+
+        // If in a try statement, and not a switch statement, generate extra code (note: slightly buggy behavior being mimicked!)
+        if (context.TryStatementContext is TryStatementContext tryContext && !context.ProcessingSwitch)
+        {
+            // Check whether we should generate, based on control flow being used (but always generate in older versions)
+            if (!context.CompileContext.GameContext.UsingBetterTryBreakContinue || tryContext.ShouldGenerateBreakContinueCode)
+            {
+                // Generate block, setting break variable before breaking
+                BlockNode blockNode = BlockNode.CreateEmpty(NearbyToken, 2);
+                blockNode.Children.Add(new AssignNode(AssignKind.Normal, new SimpleVariableNode(tryContext.BreakVariableName, null, InstanceType.Local), new NumberNode(1, NearbyToken)));
+                blockNode.Children.Add(this);
+
+                // Let the try statement context know that break/continue variable was used
+                tryContext.HasBreakContinueVariable = true;
+
+                return blockNode;
+            }
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc/>
+    public IASTNode Duplicate(ParseContext context)
     {
         return this;
     }

@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.AST;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Decompiler.ControlFlow;
 
@@ -96,6 +97,17 @@ internal sealed class DoUntilLoop : Loop
 
         // Use newly-created condition from stack, and create statement
         IExpressionNode condition = builder.ExpressionStack.Pop();
+
+        // If condition was an int16 that was directly used without conversion, that means it was a boolean
+        if (condition is Int16Node { Value: 0 or 1, StackType: not DataType.Boolean } i16)
+        {
+            condition = new BooleanNode(i16.Value == 1)
+            {
+                StackType = i16.StackType
+            };
+        }
+
+        // Add loop node to output
         output.Add(new DoUntilLoopNode(body, condition));
 
         // Pop this loop context
