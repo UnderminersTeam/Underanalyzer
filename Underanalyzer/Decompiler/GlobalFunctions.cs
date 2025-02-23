@@ -149,7 +149,7 @@ public class GlobalFunctions : IGlobalFunctions
     /// Adds an additional function to the lookup.
     /// </summary>
     /// <remarks>
-    /// This should not be used during compilation/decompilation; this method is not thread-safe.
+    /// This should not be used during Underanalyzer compilation/decompilation; this method is not thread-safe.
     /// </remarks>
     public void DefineFunction(string functionName, IGMFunction function)
     {
@@ -161,7 +161,7 @@ public class GlobalFunctions : IGlobalFunctions
     /// Removes a function from the lookup.
     /// </summary>
     /// <remarks>
-    /// This should not be used during compilation/decompilation; this method is not thread-safe.
+    /// This should not be used during Underanalyzer compilation/decompilation; this method is not thread-safe.
     /// </remarks>
     public void UndefineFunction(string functionName, IGMFunction function)
     {
