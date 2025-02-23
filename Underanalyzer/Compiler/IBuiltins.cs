@@ -22,7 +22,7 @@ public interface IBuiltins
     /// Looks up a builtin variable.
     /// </summary>
     /// <param name="name">Name of the variable to look up.</param>
-    /// <returns>The builtin function corresponding to <paramref name="name"/>, or null if none exists.</returns>
+    /// <returns>The builtin variable corresponding to <paramref name="name"/>, or null if none exists.</returns>
     public IBuiltinVariable? LookupBuiltinVariable(string name);
 
     /// <summary>
