@@ -148,10 +148,25 @@ public class GlobalFunctions : IGlobalFunctions
     /// <summary>
     /// Adds an additional function to the lookup.
     /// </summary>
+    /// <remarks>
+    /// This should not be used during compilation/decompilation; this method is not thread-safe.
+    /// </remarks>
     public void DefineFunction(string functionName, IGMFunction function)
     {
         FunctionToName[function] = functionName;
         NameToFunction[functionName] = function;
+    }
+
+    /// <summary>
+    /// Removes a function from the lookup.
+    /// </summary>
+    /// <remarks>
+    /// This should not be used during compilation/decompilation; this method is not thread-safe.
+    /// </remarks>
+    public void UndefineFunction(string functionName, IGMFunction function)
+    {
+        FunctionToName.Remove(function);
+        NameToFunction.Remove(functionName);
     }
 
     /// <summary>
