@@ -26,10 +26,16 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
     /// </summary>
     public BlockNode? ElseBlock { get; internal set; } = elseBlock;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter => false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Condition = Condition.Clean(cleaner);
@@ -42,6 +48,7 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         Condition = Condition.PostClean(cleaner);
@@ -57,6 +64,10 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
         return this;
     }
 
+    /// <summary>
+    /// Determines whether the node can be printed without braces, recursively dependent on
+    /// the true block and else block's ability to be printed without multiple lines.
+    /// </summary>
     private bool CanPrintWithoutBraces(ASTPrinter printer)
     {
         if (TrueBlock.RequiresMultipleLines(printer))
@@ -83,6 +94,7 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
         return true;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("if (");
@@ -146,6 +158,9 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
         }
     }
 
+    /// <summary>
+    /// Variation of regular if statement printing code, for printing "else if" chains.
+    /// </summary>
     public void PrintElseIf(ASTPrinter printer, bool shouldRemoveBraces)
     {
         printer.Write("if (");
@@ -209,6 +224,7 @@ public class IfNode(IExpressionNode condition, BlockNode trueBlock, BlockNode? e
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;

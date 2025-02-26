@@ -13,35 +13,49 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public class BooleanNode(bool value) : IConstantNode<bool>, IConditionalValueNode
 {
+    /// <inheritdoc/>
     public bool Value { get; } = value;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Boolean;
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "Boolean";
+
+    /// <inheritdoc/>
     public string ConditionalValue => Value ? "true" : "false";
 
+    /// <inheritdoc/>
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write(Value ? "true" : "false");
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return false;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

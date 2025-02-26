@@ -5,6 +5,7 @@
 */
 
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Underanalyzer.Decompiler.AST;
 
@@ -29,11 +30,19 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
     /// </summary>
     public List<IStatementNode> Children { get; internal set; } = [];
 
+    /// <inheritdoc/>
     public bool SemicolonAfter { get => false; }
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public ASTFragmentContext FragmentContext { get; } = fragmentContext;
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Remove this block if empty
@@ -172,36 +181,46 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
         }
     }
 
+    /// <inheritdoc cref="IASTNode{IStatementNode}.Clean(ASTCleaner)"/>
     public IFragmentNode Clean(ASTCleaner cleaner)
     {
         CleanAll(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         CleanAll(cleaner);
         return this;
     }
 
+    /// <inheritdoc cref="IASTNode{IStatementNode}.PostClean(ASTCleaner)"/>
     public IFragmentNode PostClean(ASTCleaner cleaner)
     {
         PostCleanAll(cleaner, null, false);
         return this;
     }
 
+    /// <summary>
+    /// Same as <see cref="PostClean(ASTCleaner)"/>, but for specifically a struct block.
+    /// </summary>
     public IFragmentNode PostCleanStruct(ASTCleaner cleaner)
     {
         PostCleanAll(cleaner, null, true);
         return this;
     }
 
+    /// <summary>
+    /// Same as <see cref="PostClean(ASTCleaner)"/>, but for specifically a switch statement block.
+    /// </summary>
     public IFragmentNode PostCleanSwitch(ASTCleaner cleaner, SwitchNode parentSwitch)
     {
         PostCleanAll(cleaner, parentSwitch, false);
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         PostCleanAll(cleaner, null, false);
@@ -221,6 +240,160 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
         return this;
     }
 
+    /// <summary>
+    /// Prints a switch statement block, performing special processing for indentation.
+    /// </summary>
+    private void PrintSwitch(ASTPrinter printer)
+    {
+        printer.OpenBlock();
+
+        bool switchCaseIndent = false;
+        bool justDidAfterEmptyLine = false;
+        for (int i = 0; i < Children.Count; i++)
+        {
+            printer.StartLine();
+
+            // Print statement
+            IStatementNode current = Children[i];
+            if (current.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine && Children[i - 1] is not SwitchCaseNode)
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
+            current.Print(printer);
+            if (current.SemicolonAfter)
+            {
+                printer.Semicolon();
+            }
+            if (current.EmptyLineAfter && i != Children.Count - 1 && Children[i + 1] is not SwitchCaseNode)
+            {
+                printer.EndLine();
+                printer.StartLine();
+                justDidAfterEmptyLine = true;
+            }
+            else
+            {
+                justDidAfterEmptyLine = false;
+            }
+
+            // Check if we need to handle indents for switch
+            if ((i + 1) < Children.Count)
+            {
+                if (current is SwitchCaseNode && Children[i + 1] is not SwitchCaseNode)
+                {
+                    printer.Indent();
+                    switchCaseIndent = true;
+                }
+                else if (switchCaseIndent && current is not SwitchCaseNode && Children[i + 1] is SwitchCaseNode)
+                {
+                    printer.Dedent();
+                    switchCaseIndent = false;
+                }
+            }
+
+            printer.EndLine();
+        }
+
+        if (switchCaseIndent)
+        {
+            printer.Dedent();
+        }
+
+        printer.CloseBlock();
+    }
+
+    /// <summary>
+    /// Prints a struct initialization block, performing special processing for syntax.
+    /// </summary>
+    private void PrintStructInitialization(ASTPrinter printer)
+    {
+        printer.OpenBlock();
+
+        bool justDidAfterEmptyLine = false;
+        for (int i = 0; i < Children.Count; i++)
+        {
+            printer.StartLine();
+
+            // Print statement
+            IStatementNode child = Children[i];
+            if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
+            child.Print(printer);
+            if (i != Children.Count - 1)
+            {
+                // Write comma after struct members
+                printer.Write(',');
+
+                if (child.EmptyLineAfter)
+                {
+                    printer.EndLine();
+                    printer.StartLine();
+                    justDidAfterEmptyLine = true;
+                }
+                else
+                {
+                    justDidAfterEmptyLine = false;
+                }
+            }
+
+            printer.EndLine();
+        }
+
+        printer.CloseBlock();
+    }
+
+    /// <summary>
+    /// Prints a regular block.
+    /// </summary>
+    private void PrintRegular(ASTPrinter printer)
+    {
+        // Just a normal block
+        if (UseBraces)
+        {
+            printer.OpenBlock();
+        }
+
+        bool justDidAfterEmptyLine = false;
+        for (int i = 0; i < Children.Count; i++)
+        {
+            printer.StartLine();
+
+            // Print statement
+            IStatementNode child = Children[i];
+            if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
+            {
+                printer.EndLine();
+                printer.StartLine();
+            }
+            child.Print(printer);
+            if (child.SemicolonAfter)
+            {
+                printer.Semicolon();
+            }
+            if (child.EmptyLineAfter && i != Children.Count - 1)
+            {
+                printer.EndLine();
+                printer.StartLine();
+                justDidAfterEmptyLine = true;
+            }
+            else
+            {
+                justDidAfterEmptyLine = false;
+            }
+
+            printer.EndLine();
+        }
+
+        if (UseBraces)
+        {
+            printer.CloseBlock();
+        }
+    }
+
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         bool newFragment = FragmentContext != printer.TopFragmentContext;
@@ -229,148 +402,18 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
             printer.PushFragmentContext(FragmentContext);
         }
 
+        // Print specific type of block
         if (PartOfSwitch)
         {
-            // We're part of a switch statement, and so will do special processing for indentation
-            printer.OpenBlock();
-
-            bool switchCaseIndent = false;
-            bool justDidAfterEmptyLine = false;
-            for (int i = 0; i < Children.Count; i++)
-            {
-                printer.StartLine();
-
-                // Print statement
-                IStatementNode current = Children[i];
-                if (current.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine && Children[i - 1] is not SwitchCaseNode)
-                {
-                    printer.EndLine();
-                    printer.StartLine();
-                }
-                current.Print(printer);
-                if (current.SemicolonAfter)
-                {
-                    printer.Semicolon();
-                }
-                if (current.EmptyLineAfter && i != Children.Count - 1 && Children[i + 1] is not SwitchCaseNode)
-                {
-                    printer.EndLine();
-                    printer.StartLine();
-                    justDidAfterEmptyLine = true;
-                }
-                else
-                {
-                    justDidAfterEmptyLine = false;
-                }
-
-                // Check if we need to handle indents for switch
-                if ((i + 1) < Children.Count)
-                {
-                    if (current is SwitchCaseNode && Children[i + 1] is not SwitchCaseNode)
-                    {
-                        printer.Indent();
-                        switchCaseIndent = true;
-                    }
-                    else if (switchCaseIndent && current is not SwitchCaseNode && Children[i + 1] is SwitchCaseNode)
-                    {
-                        printer.Dedent();
-                        switchCaseIndent = false;
-                    }
-                }
-
-                printer.EndLine();
-            }
-
-            if (switchCaseIndent)
-            {
-                printer.Dedent();
-            }
-
-            printer.CloseBlock();
+            PrintSwitch(printer);
         }
         else if (printer.StructArguments is not null)
         {
-            // We're a struct initialization block
-            printer.OpenBlock();
-
-            bool justDidAfterEmptyLine = false;
-            for (int i = 0; i < Children.Count; i++)
-            {
-                printer.StartLine();
-
-                // Print statement
-                IStatementNode child = Children[i];
-                if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
-                {
-                    printer.EndLine();
-                    printer.StartLine();
-                }
-                child.Print(printer);
-                if (i != Children.Count - 1)
-                {
-                    // Write comma after struct members
-                    printer.Write(',');
-
-                    if (child.EmptyLineAfter)
-                    {
-                        printer.EndLine();
-                        printer.StartLine();
-                        justDidAfterEmptyLine = true;
-                    }
-                    else
-                    {
-                        justDidAfterEmptyLine = false;
-                    }
-                }
-
-                printer.EndLine();
-            }
-
-            printer.CloseBlock();
+            PrintStructInitialization(printer);
         }
         else
         {
-            // Just a normal block
-            if (UseBraces)
-            {
-                printer.OpenBlock();
-            }
-
-            bool justDidAfterEmptyLine = false;
-            for (int i = 0; i < Children.Count; i++)
-            {
-                printer.StartLine();
-
-                // Print statement
-                IStatementNode child = Children[i];
-                if (child.EmptyLineBefore && i != 0 && !justDidAfterEmptyLine)
-                {
-                    printer.EndLine();
-                    printer.StartLine();
-                }
-                child.Print(printer);
-                if (child.SemicolonAfter)
-                {
-                    printer.Semicolon();
-                }
-                if (child.EmptyLineAfter && i != Children.Count - 1)
-                {
-                    printer.EndLine();
-                    printer.StartLine();
-                    justDidAfterEmptyLine = true;
-                }
-                else
-                {
-                    justDidAfterEmptyLine = false;
-                }
-
-                printer.EndLine();
-            }
-
-            if (UseBraces)
-            {
-                printer.CloseBlock();
-            }
+            PrintRegular(printer);
         }
 
         if (newFragment)
@@ -379,6 +422,7 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
         }
     }
 
+    /// <inheritdoc/>
     public void PrintSingleLine(ASTPrinter printer)
     {
         printer.PushFragmentContext(FragmentContext);
@@ -400,6 +444,7 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
         printer.PopFragmentContext();
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         // If we have more than one child node, or zero child nodes, we need multiple lines

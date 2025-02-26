@@ -40,17 +40,36 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
     /// </summary>
     internal Dictionary<int, IExpressionNode> ArgumentDefaultValues { get; set; } = [];
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    /// <inheritdoc/>
     public ASTFragmentContext FragmentContext { get; } = fragmentContext;
+
+    /// <inheritdoc/>
     public bool SemicolonAfter => false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "FunctionDecl";
+
+    /// <inheritdoc/>
     public string ConditionalValue => Name ?? "";
 
+    /// <summary>
+    /// Cleans the body block of the function declaration node.
+    /// </summary>
     private void CleanBody(ASTCleaner cleaner)
     {
         Body.Clean(cleaner);
@@ -63,6 +82,9 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         }
     }
 
+    /// <summary>
+    /// Post-cleans the body block of the function declaration node.
+    /// </summary>
     private void PostCleanBody(ASTCleaner cleaner)
     {
         Body.PostClean(cleaner);
@@ -74,11 +96,17 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         }
     }
 
+    /// <summary>
+    /// Determines whether empty lines should be used for this node, depending on settings.
+    /// </summary>
     private void CleanEmptyLines(ASTCleaner cleaner)
     {
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundFunctionDeclarations;
     }
 
+    /// <summary>
+    /// Cleans up the compiler-generated code that assigns default values to arguments, if enabled by settings.
+    /// </summary>
     private void CleanDefaultArgumentValues(ASTCleaner cleaner)
     {
         if (!cleaner.Context.Settings.CleanupDefaultArgumentValues)
@@ -176,6 +204,7 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         Body.Children.RemoveRange(firstIfIndex, childIndex - firstIfIndex);
     }
 
+    /// <inheritdoc/>
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         CleanBody(cleaner);
@@ -184,6 +213,7 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         CleanBody(cleaner);
@@ -192,18 +222,21 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         return this;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode PostClean(ASTCleaner cleaner)
     {
         PostCleanBody(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         PostCleanBody(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         if (IsAnonymous)
@@ -263,11 +296,13 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         Body.Print(printer);
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

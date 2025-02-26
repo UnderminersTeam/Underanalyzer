@@ -29,13 +29,22 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
     /// </summary>
     public IExpressionNode False { get; private set; } = falseExpr;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "Conditional";
+
+    /// <inheritdoc/>
     public string ConditionalValue => ""; // TODO?
 
+    /// <inheritdoc/>
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Condition = Condition.Clean(cleaner);
@@ -59,6 +68,7 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
         return this;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode PostClean(ASTCleaner cleaner)
     {
         Condition = Condition.PostClean(cleaner);
@@ -67,6 +77,7 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         if (Group)
@@ -86,6 +97,7 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return Condition.RequiresMultipleLines(printer) || 
@@ -93,6 +105,7 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
                False.RequiresMultipleLines(printer);
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

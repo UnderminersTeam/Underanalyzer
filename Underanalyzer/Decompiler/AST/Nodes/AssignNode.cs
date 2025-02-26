@@ -39,9 +39,16 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     /// </summary>
     public bool DeclareLocalVar { get; set; } = false;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter { get => true; }
+
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore 
     { 
         get => Value is IStatementNode stmt && stmt.EmptyLineBefore; 
@@ -53,6 +60,8 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
             }
         }
     }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter
     {
         get => Value is IStatementNode stmt && stmt.EmptyLineAfter;
@@ -64,6 +73,8 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
             }
         }
     }
+
+    /// <inheritdoc/>
     public DataType StackType { get; set; } = DataType.Variable;
 
     /// <summary>
@@ -102,6 +113,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         // TODO: do we need a special StackType to prevent nesting stack size issues?
     }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         if (AssignKind == AssignType.Normal)
@@ -156,6 +168,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         if (cleaner.Context.Settings.CleanupLocalVarDeclarations &&
@@ -182,18 +195,21 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         return this;
     }
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         Variable = Variable.Clean(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
     {
         Variable = Variable.PostClean(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Check if our variable is a local that needs to be purged
@@ -274,6 +290,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         return i - 1;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         switch (AssignKind)
@@ -349,6 +366,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         if (Variable.RequiresMultipleLines(printer))

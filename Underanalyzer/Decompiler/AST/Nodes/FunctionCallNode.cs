@@ -25,17 +25,34 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
     /// </summary>
     public List<IExpressionNode> Arguments { get; } = arguments;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    /// <inheritdoc/>
     public bool SemicolonAfter => true;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public string FunctionName { get => Function.Name.Content; }
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "FunctionCall";
+
+    /// <inheritdoc/>
     public string ConditionalValue => Function.Name.Content;
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         // Clean up all arguments
@@ -66,6 +83,7 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return CleanupMacroTypes(cleaner);
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         // Just clean up arguments here - special calls are only in expressions
@@ -77,6 +95,7 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return CleanupMacroTypes(cleaner);
     }
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
     {
         for (int i = 0; i < Arguments.Count; i++)
@@ -86,6 +105,7 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         for (int i = 0; i < Arguments.Count; i++)
@@ -95,6 +115,9 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
+    /// <summary>
+    /// During cleanup, determines/resolves macro types for this node if possible.
+    /// </summary>
     private IFunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
     {
         string functionName = Function.Name.Content;
@@ -142,6 +165,9 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
+    /// <summary>
+    /// Same as <see cref="Print(ASTPrinter)"/>, but with an overridable fragment context for function name lookup.
+    /// </summary>
     public void Print(ASTPrinter printer, ASTFragmentContext? overrideFunctionLookupContext = null)
     {
         printer.Write(printer.LookupFunction(Function, overrideFunctionLookupContext));
@@ -157,11 +183,13 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         printer.Write(')');
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         Print(printer, null);
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         foreach (IExpressionNode arg in Arguments)
@@ -174,11 +202,13 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return false;
     }
 
+    /// <inheritdoc/>
     public IMacroType? GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveReturnValueType(cleaner, Function.Name.Content);
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

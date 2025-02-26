@@ -16,22 +16,30 @@ public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBloc
     /// </summary>
     public IExpressionNode? Expression { get; internal set; } = expression;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter => false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Expression = Expression?.Clean(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         Expression = Expression?.PostClean(cleaner);
         return this;
     }
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         if (cleaner.Context.Settings.EmptyLineBeforeSwitchCases)
@@ -52,6 +60,7 @@ public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBloc
         return i;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         if (Expression is not null)
@@ -66,6 +75,7 @@ public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBloc
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return Expression?.RequiresMultipleLines(printer) ?? false;

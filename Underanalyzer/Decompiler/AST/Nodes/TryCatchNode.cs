@@ -43,11 +43,18 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
     /// </summary>
     public string? ContinueVariableName { get; internal set; } = null;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter => false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
-    // Cleans out compiler-generated control flow from individual try or catch blocks.
+    /// <summary>
+    /// Cleans out compiler-generated control flow from individual try or catch blocks.
+    /// </summary>
     private void CleanPart(BlockNode node)
     {
         // Verify we're removing the right compiler-generated code
@@ -74,6 +81,7 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         node.Children = whileLoop.Body.Children;
     }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         if (Finally is not null)
@@ -126,6 +134,7 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
@@ -145,6 +154,7 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("try");
@@ -193,6 +203,7 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;
@@ -204,33 +215,49 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
     /// </summary>
     public class FinishFinallyNode : IStatementNode, IExpressionNode, IBlockCleanupNode
     {
+        /// <inheritdoc/>
         public bool SemicolonAfter => false;
+
+        /// <inheritdoc/>
         public bool EmptyLineBefore { get => false; set => _ = value; }
+
+        /// <inheritdoc/>
         public bool EmptyLineAfter { get => false; set => _ = value; }
+
+        /// <inheritdoc/>
         public bool Duplicated { get; set; }
+
+        /// <inheritdoc/>
         public bool Group { get; set; } = false;
+
+        /// <inheritdoc/>
         public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
+        /// <inheritdoc/>
         public IStatementNode Clean(ASTCleaner cleaner)
         {
             return this;
         }
 
+        /// <inheritdoc/>
         IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
         {
             return this;
         }
 
+        /// <inheritdoc/>
         public IStatementNode PostClean(ASTCleaner cleaner)
         {
             return this;
         }
 
+        /// <inheritdoc/>
         IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
         {
             return this;
         }
 
+        /// <inheritdoc/>
         public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
         {
             // Search for the try statement this is associated with, and build a block for its finally
@@ -260,11 +287,13 @@ public class TryCatchNode(BlockNode tryBlock, BlockNode? catchBlock, VariableNod
             return i - 1;
         }
 
+        /// <inheritdoc/>
         public void Print(ASTPrinter printer)
         {
             throw new InvalidOperationException();
         }
 
+        /// <inheritdoc/>
         public bool RequiresMultipleLines(ASTPrinter printer)
         {
             return false;

@@ -11,20 +11,28 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public class ExitNode : IStatementNode, IBlockCleanupNode
 {
+    /// <inheritdoc/>
     public bool SemicolonAfter => true;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get => false; set => _ = value; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Remove duplicated finally statements
@@ -45,12 +53,14 @@ public class ExitNode : IStatementNode, IBlockCleanupNode
         return i;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         // TODO: check if we're inside of a function (or script in GMS2) and use "return" instead
         printer.Write("exit");
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return false;

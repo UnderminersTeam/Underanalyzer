@@ -13,22 +13,33 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 public class LocalVarDeclNode : IStatementNode
 {
+    /// <summary>
+    /// List of local variable names declared in this local variable declaration.
+    /// </summary>
     public List<string> Locals { get; } = new(4);
 
+    /// <inheritdoc/>
     public bool SemicolonAfter => true;
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; } = false;
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("var ");
@@ -42,6 +53,7 @@ public class LocalVarDeclNode : IStatementNode
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return false;

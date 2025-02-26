@@ -30,17 +30,34 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
     /// </summary>
     public List<IExpressionNode> Arguments { get; } = arguments;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; }
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
+
+    /// <inheritdoc/>
     public bool SemicolonAfter => true;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public string? FunctionName => null;
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "VariableCall";
+
+    /// <inheritdoc/>
     public string ConditionalValue => ""; // TODO?
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         Function = Function.Clean(cleaner);
@@ -53,6 +70,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         Function = Function.Clean(cleaner);
@@ -65,6 +83,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         return this;
     }
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
     {
         Function = Function.PostClean(cleaner);
@@ -77,6 +96,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         Function = Function.PostClean(cleaner);
@@ -89,6 +109,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         bool canGenerateParentheses = true;
@@ -131,6 +152,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         printer.Write(')');
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         if (Instance is not null)
@@ -155,6 +177,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         return false;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

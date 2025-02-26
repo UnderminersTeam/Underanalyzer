@@ -32,10 +32,16 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
     /// </summary>
     public BlockNode Body { get; private set; } = body;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter { get => false; }
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Initializer = Initializer?.Clean(cleaner);
@@ -72,6 +78,7 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         return res;
     }
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Check if this for loop needs an initializer, and if so (and there's a readable one), add it
@@ -89,6 +96,7 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         return i;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         cleaner.TopFragmentContext!.PushLocalScope(cleaner.Context, cleaner.TopFragmentContext!.CurrentPostCleanupBlock!, this);
@@ -106,6 +114,7 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("for (");
@@ -148,6 +157,7 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;

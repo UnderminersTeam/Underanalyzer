@@ -23,13 +23,22 @@ public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : 
     /// </summary>
     public IExpressionNode Right { get; private set; } = right;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; }
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Variable;
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "NullishCoalesce";
+
+    /// <inheritdoc/>
     public string ConditionalValue => ""; // TODO?
 
+    /// <inheritdoc/>
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         Left = Left.Clean(cleaner);
@@ -47,6 +56,7 @@ public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : 
         return this;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode PostClean(ASTCleaner cleaner)
     {
         Left = Left.PostClean(cleaner);
@@ -54,6 +64,7 @@ public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : 
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         if (Group)
@@ -71,11 +82,13 @@ public class NullishCoalesceNode(IExpressionNode left, IExpressionNode right) : 
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return Left.RequiresMultipleLines(printer) || Right.RequiresMultipleLines(printer);
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

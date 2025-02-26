@@ -27,10 +27,16 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
     /// </summary>
     public bool MustBeWhileLoop { get; } = mustBeWhileLoop;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter { get => false; }
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         Condition = Condition.Clean(cleaner);
@@ -55,6 +61,7 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         return this;
     }
 
+    /// <inheritdoc/>
     public int BlockClean(ASTCleaner cleaner, BlockNode block, int i)
     {
         // Check if we should convert this loop into a for loop
@@ -100,6 +107,7 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         return i;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         Condition = Condition.PostClean(cleaner);
@@ -112,6 +120,7 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("while (");
@@ -131,6 +140,7 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;

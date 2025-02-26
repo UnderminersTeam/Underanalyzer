@@ -29,11 +29,19 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
     /// </summary>
     public IGMInstruction Instruction { get; }
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public DataType StackType { get; set; }
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "Binary";
+
+    /// <inheritdoc/>
     public string ConditionalValue => ""; // TODO?
 
     public BinaryNode(IExpressionNode left, IExpressionNode right, IGMInstruction instruction)

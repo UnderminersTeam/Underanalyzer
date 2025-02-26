@@ -18,36 +18,55 @@ public class VariableHashNode(IGMVariable variable) : IExpressionNode, IStatemen
     /// </summary>
     public IGMVariable Variable = variable;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; }
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public IGMInstruction.DataType StackType { get; set; } = IGMInstruction.DataType.Int32;
+
+    /// <inheritdoc/>
     public bool SemicolonAfter => true;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get => false; set => _ = value; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get => false; set => _ = value; }
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "VariableHash";
+
+    /// <inheritdoc/>
     public string ConditionalValue => Variable.Name.Content; // TODO?
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.Clean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.Clean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     IExpressionNode IASTNode<IExpressionNode>.PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     IStatementNode IASTNode<IStatementNode>.PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         if (Group)
@@ -65,11 +84,13 @@ public class VariableHashNode(IGMVariable variable) : IExpressionNode, IStatemen
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return false;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

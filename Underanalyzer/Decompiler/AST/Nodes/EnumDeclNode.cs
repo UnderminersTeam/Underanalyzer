@@ -19,21 +19,29 @@ public class EnumDeclNode(GMEnum gmEnum) : IStatementNode
     /// </summary>
     public GMEnum Enum { get; } = gmEnum;
 
+    /// <inheritdoc/>
     public bool SemicolonAfter => false;
+
+    /// <inheritdoc/>
     public bool EmptyLineBefore { get; set; }
+
+    /// <inheritdoc/>
     public bool EmptyLineAfter { get; set; }
 
+    /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundEnums;
         return this;
     }
 
+    /// <inheritdoc/>
     public IStatementNode PostClean(ASTCleaner cleaner)
     {
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         printer.Write("enum ");
@@ -98,6 +106,7 @@ public class EnumDeclNode(GMEnum gmEnum) : IStatementNode
         printer.CloseBlock();
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;

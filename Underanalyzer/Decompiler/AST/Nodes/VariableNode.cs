@@ -49,11 +49,19 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
     /// </summary>
     public bool ForceSelf { get; set; } = false;
 
+    /// <inheritdoc/>
     public bool Duplicated { get; set; } = false;
+
+    /// <inheritdoc/>
     public bool Group { get; set; } = false;
+
+    /// <inheritdoc/>
     public DataType StackType { get; set; } = DataType.Variable;
 
+    /// <inheritdoc/>
     public string ConditionalTypeName => "Variable";
+
+    /// <inheritdoc/>
     public string ConditionalValue => Variable.Name.Content;
 
     /// <summary>
@@ -200,6 +208,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         return true;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode Clean(ASTCleaner cleaner)
     {
         // Clean up left side of variable, and get basic instance type, or 0 if none
@@ -276,6 +285,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         return this;
     }
 
+    /// <inheritdoc/>
     public IExpressionNode PostClean(ASTCleaner cleaner)
     {
         Left = Left.PostClean(cleaner);
@@ -310,6 +320,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         return this;
     }
 
+    /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
         // Print out left side, if necessary
@@ -453,6 +464,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         }
     }
 
+    /// <inheritdoc/>
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         if (Left.RequiresMultipleLines(printer))
@@ -472,11 +484,13 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         return false;
     }
 
+    /// <inheritdoc/>
     public IMacroType? GetExpressionMacroType(ASTCleaner cleaner)
     {
         return cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, Variable.Name.Content);
     }
 
+    /// <inheritdoc/>
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
         if (type is IMacroTypeConditional conditional)

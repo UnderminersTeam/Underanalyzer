@@ -121,7 +121,7 @@ public interface IGameContext
 
     /// <summary>
     /// <see langword="true"/> if the compiler is aware of functions before they are declared in the same object code event entry (this is 
-    /// always true for global scripts & room creation code); <see langword="false"/> otherwise.
+    /// always true for global scripts &amp; room creation code); <see langword="false"/> otherwise.
     /// </summary>
     /// <remarks>
     /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
