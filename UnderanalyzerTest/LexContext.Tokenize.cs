@@ -61,6 +61,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -77,6 +78,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("func_name", typeof(TokenFunction)),
             ("(", typeof(TokenSeparator)),
@@ -105,6 +107,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("123", typeof(TokenNumber)),
             ("123", typeof(TokenNumber)),
@@ -125,6 +128,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -140,6 +144,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -155,6 +160,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -169,6 +175,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("a", typeof(TokenVariable)),
             ("=", typeof(TokenOperator)),
@@ -187,6 +194,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -199,6 +207,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -214,6 +223,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -226,6 +236,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("\"\\\\\\a\\b\\f\\n\\r\\t\\v\\u00e2\\u61\\x41\\101\"", typeof(TokenString)),
         ], context.Tokens);
@@ -244,6 +255,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Equal(3, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -263,6 +275,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("\"this is a\n'multiline' string!\"", typeof(TokenString)),
             ("'this is \"another\"\nstring!'", typeof(TokenString)),
@@ -284,6 +297,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("@\"this is a\n'multiline' string!\"", typeof(TokenString)),
             ("@'this is \"another\"\nstring!'", typeof(TokenString)),
@@ -304,6 +318,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("0x1234abcd", typeof(TokenNumber)),
             ("$4567abcd", typeof(TokenNumber)),
@@ -325,6 +340,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("0xFFFFFFFFFF", typeof(TokenInt64)),
             ("#FFFFFFFF", typeof(TokenInt64)),
@@ -349,6 +365,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("123", typeof(TokenNumber)),
             (".1", typeof(TokenNumber)),
@@ -394,6 +411,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("a", typeof(TokenVariable)),
             ("b", typeof(TokenVariable)),
@@ -410,6 +428,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -423,6 +442,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("\"test\\nstring\"", typeof(TokenString)),
         ], context.Tokens);
@@ -441,6 +461,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("\"test\\nstring\\\\ \"", typeof(TokenString)),
             ("second_line", typeof(TokenVariable)),
@@ -459,6 +480,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -473,6 +495,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("a", typeof(TokenVariable)),
         ], context.Tokens);
@@ -490,6 +513,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Equal(3, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -506,6 +530,7 @@ public class LexContext_Tokenize
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("sprite", typeof(TokenVariable)),
             ("=", typeof(TokenOperator)),

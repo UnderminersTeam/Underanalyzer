@@ -38,6 +38,7 @@ public class ParseContext_ParseAndPostProcess
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -92,6 +93,7 @@ public class ParseContext_ParseAndPostProcess
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) => Assert.Equal(4, ((NumberNode)((AssignNode)node).Expression).Value),
             (node) => Assert.Equal(6, ((NumberNode)((AssignNode)node).Expression).Value),
@@ -131,6 +133,7 @@ public class ParseContext_ParseAndPostProcess
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) => Assert.IsType<EmptyNode>(node),
             (node) => Assert.IsType<EmptyNode>(node),
@@ -189,6 +192,7 @@ public class ParseContext_ParseAndPostProcess
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {

@@ -23,6 +23,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -83,6 +84,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -124,6 +126,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -204,6 +207,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) => Assert.Equal(AssignNode.AssignKind.Normal, ((AssignNode)node).Kind),
             (node) => Assert.Equal(AssignNode.AssignKind.Normal, ((AssignNode)node).Kind),
@@ -237,6 +241,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -298,6 +303,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -347,6 +353,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) => Assert.IsType<ExitNode>(node),
             (node) => Assert.IsType<ExitNode>(node),
@@ -370,6 +377,7 @@ public class ParseContext_Parse
             """
         );
         Assert.Equal(2, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -381,6 +389,7 @@ public class ParseContext_Parse
             """
         );
         Assert.Equal(2, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -392,6 +401,7 @@ public class ParseContext_Parse
             """
         );
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -403,6 +413,7 @@ public class ParseContext_Parse
             """
         );
         Assert.Equal(2, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -414,6 +425,7 @@ public class ParseContext_Parse
             """
         );
         Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
     }
 
     [Fact]
@@ -426,6 +438,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Single(((BlockNode)context.Root!).Children);
         AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
         AccessorNode accessor1 = (AccessorNode)assign.Destination;
@@ -457,6 +470,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Single(((BlockNode)context.Root!).Children);
         AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
         ConditionalNode conditional = (ConditionalNode)assign.Expression;
@@ -475,6 +489,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Single(((BlockNode)context.Root!).Children);
         AssignNode assign = (AssignNode)((BlockNode)context.Root!).Children[0];
         NullishCoalesceNode conditional = (NullishCoalesceNode)assign.Expression;
@@ -498,6 +513,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -561,6 +577,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -606,6 +623,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -720,6 +738,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -821,6 +840,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -908,6 +928,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Single(((BlockNode)context.Root!).Children);
         FunctionDeclNode decl = (FunctionDeclNode)((BlockNode)context.Root!).Children[0];
         Assert.Equal("test", decl.FunctionName);
@@ -963,6 +984,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.True(context.RootScope.IsLocalDeclared("ex1"));
         Assert.True(context.RootScope.IsLocalDeclared("ex2"));
         Assert.Collection(((BlockNode)context.Root!).Children,
@@ -1006,6 +1028,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -1030,6 +1053,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {
@@ -1074,6 +1098,7 @@ public class ParseContext_Parse
         );
 
         Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
         Assert.Collection(((BlockNode)context.Root!).Children,
             (node) =>
             {

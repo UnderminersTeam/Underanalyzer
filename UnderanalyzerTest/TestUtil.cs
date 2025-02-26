@@ -151,7 +151,7 @@ internal static class TestUtil
         context.Compile();
 
         // Throw if errors encountered
-        if (context.Errors.Count > 0)
+        if (context.HasErrors)
         {
             throw new TestCompileErrorException("Compile errors occurred");
         }
@@ -208,7 +208,7 @@ internal static class TestUtil
         context.Link();
 
         // Throw if errors encountered
-        if (context.Errors.Count > 0)
+        if (context.HasErrors)
         {
             throw new TestCompileErrorException("Link errors occurred");
         }
