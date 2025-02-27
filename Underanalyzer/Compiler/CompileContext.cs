@@ -202,8 +202,9 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     /// Links resulting bytecode to data, if a successful compile was completed.
     /// </summary>
     /// <remarks>
-    /// Before linking, if the code is a global script, all locally-declared global function names should be registered.
-    /// This can be done by iterating over <see cref="OutputFunctionEntries"/>.
+    /// Before linking, <see cref="OutputFunctionEntries"/> should be iterated over. Each entry should have its function resolved,
+    /// and struct instantiations should have their struct names resolved.
+    /// If the code is a global script, all locally-declared global function names should be registered.
     /// </remarks>
     public void Link()
     {
