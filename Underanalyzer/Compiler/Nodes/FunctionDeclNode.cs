@@ -417,8 +417,8 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         FunctionEntry? parentEntry = context.CurrentFunctionEntry;
         FunctionEntry entry = new(
             parentEntry,
+            Scope,
             context.Position,
-            Scope.LocalCount,
             ArgumentNames.Count,
             FunctionName,
             oldScope == context.RootScope,

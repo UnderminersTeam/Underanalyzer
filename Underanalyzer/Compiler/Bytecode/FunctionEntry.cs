@@ -19,14 +19,14 @@ public sealed record FunctionEntry
     public FunctionEntry? Parent { get; }
 
     /// <summary>
+    /// Function scope corresponding to this function entry.
+    /// </summary>
+    public FunctionScope Scope { get; }
+
+    /// <summary>
     /// Byte offset of the function entry in the bytecode.
     /// </summary>
     public int BytecodeOffset { get; }
-
-    /// <summary>
-    /// Number of local variables declared in the function entry.
-    /// </summary>
-    public int LocalCount { get; }
 
     /// <summary>
     /// Number of arguments passed into the function entry.
@@ -68,12 +68,12 @@ public sealed record FunctionEntry
     /// </summary>
     public string? StructName { get; private set; }
 
-    internal FunctionEntry(FunctionEntry? parent, int bytecodeOffset, int localCount, int argumentCount, string? functionName, 
+    internal FunctionEntry(FunctionEntry? parent, FunctionScope scope, int bytecodeOffset, int argumentCount, string? functionName, 
                            bool declaredInRootScope, string? staticVariableName, FunctionEntryKind kind)
     {
         Parent = parent;
+        Scope = scope;
         BytecodeOffset = bytecodeOffset;
-        LocalCount = localCount;
         ArgumentCount = argumentCount;
         FunctionName = functionName;
         DeclaredInRootScope = declaredInRootScope;

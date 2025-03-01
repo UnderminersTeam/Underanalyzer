@@ -22,6 +22,11 @@ public sealed class FunctionScope(bool isFunction)
     public bool IsFunction { get; } = isFunction;
 
     /// <summary>
+    /// Number of locals declared in this scope.
+    /// </summary>
+    public int LocalCount => _declaredLocals.Count;
+
+    /// <summary>
     /// If not <see langword="null"/>, this is the block used for initializing static variables for this scope.
     /// </summary>
     internal BlockNode? StaticInitializerBlock { get; set; } = null;
@@ -30,11 +35,6 @@ public sealed class FunctionScope(bool isFunction)
     /// Stack of control flow contexts used during bytecode generation.
     /// </summary>
     internal Stack<IControlFlowContext>? ControlFlowContexts { get; set; } = null;
-
-    /// <summary>
-    /// Number of locals declared in this scope.
-    /// </summary>
-    internal int LocalCount => _declaredLocals.Count;
 
     /// <summary>
     /// Whether bytecode is currently being generated for a static block.

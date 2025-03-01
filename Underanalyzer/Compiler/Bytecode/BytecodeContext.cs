@@ -349,10 +349,14 @@ internal sealed class BytecodeContext : ISubCompileContext
         variable.Instruction = instr;
         Patches.VariablePatches!.Add(variable);
 
-        // If this is a local variable, declare local variable on overall compile context if necessary.
+        // If this is a local variable, declare it if not already done.
         // This is done at this stage to match the order produced by the official compiler.
         if (variable.InstanceType == InstanceType.Local)
         {
+            // Add to current scope's locals
+            CurrentScope.DeclareLocal(variable.Name);
+
+            // Add to overall context's locals
             if (DeclaredLocals.Add(variable.Name))
             {
                 LocalsOrder.Add(variable.Name);

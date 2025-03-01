@@ -227,7 +227,7 @@ internal static class TestUtil
             {
                 Parent = rootEntry,
                 StartOffset = func.BytecodeOffset,
-                LocalCount = func.LocalCount,
+                LocalCount = func.Scope.LocalCount,
                 ArgumentCount = func.ArgumentCount,
                 Length = rootEntry.Length
             };
