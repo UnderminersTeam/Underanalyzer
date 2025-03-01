@@ -77,6 +77,11 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     public IReadOnlyList<IGMInstruction>? OutputInstructions { get; private set; } = null;
 
     /// <summary>
+    /// Root function scope, set after code generation.
+    /// </summary>
+    public FunctionScope? OutputRootScope { get; private set; } = null;
+
+    /// <summary>
     /// List of local variables, in order, set after produced by code generation.
     /// </summary>
     public IReadOnlyList<string>? OutputLocalsOrder { get; private set; } = null;
@@ -194,6 +199,7 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
         // Successful code generation! Store results.
         OutputInstructions = bytecodeContext.Instructions;
         OutputFunctionEntries = bytecodeContext.FunctionEntries;
+        OutputRootScope = _parseRootScope;
         OutputLocalsOrder = bytecodeContext.LocalsOrder;
         OutputLength = bytecodeContext.Position;
         _compilePatches = bytecodeContext.Patches;
