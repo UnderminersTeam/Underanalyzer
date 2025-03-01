@@ -211,6 +211,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             InstanceType.Local =>   Opcode.PushLocal,
             InstanceType.Global =>  Opcode.PushGlobal,
             InstanceType.Builtin => Opcode.PushBuiltin,
+            InstanceType.Argument => Opcode.Push,
             _ => (BuiltinVariable is null || !BuiltinVariable.IsGlobal) ? Opcode.Push : Opcode.PushBuiltin,
         };
 
