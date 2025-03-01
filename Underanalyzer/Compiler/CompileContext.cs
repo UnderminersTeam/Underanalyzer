@@ -86,6 +86,11 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     /// </summary>
     public IReadOnlyList<FunctionEntry>? OutputFunctionEntries { get; private set; } = null;
 
+    /// <summary>
+    /// Length of code (in bytes), set after produced by code generation.
+    /// </summary>
+    public int OutputLength { get; private set; } = 0;
+
     // List of errors
     private readonly List<ICompileError> _errors = new(4);
 
@@ -190,6 +195,7 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
         OutputInstructions = bytecodeContext.Instructions;
         OutputFunctionEntries = bytecodeContext.FunctionEntries;
         OutputLocalsOrder = bytecodeContext.LocalsOrder;
+        OutputLength = bytecodeContext.Position;
         _compilePatches = bytecodeContext.Patches;
 
         // Remove references that we no longer need
