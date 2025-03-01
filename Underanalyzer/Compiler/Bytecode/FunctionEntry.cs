@@ -34,6 +34,14 @@ public sealed record FunctionEntry
     public int ArgumentCount { get; }
 
     /// <summary>
+    /// Whether this function declaration is generated as a constructor function.
+    /// </summary>
+    /// <remarks>
+    /// This is always <see langword="true"/> for struct instantiations.
+    /// </remarks>
+    public bool IsConstructor { get; }
+
+    /// <summary>
     /// Name of the function, if one exists; <see langword="null"/> otherwise.
     /// </summary>
     public string? FunctionName { get; }
@@ -68,13 +76,14 @@ public sealed record FunctionEntry
     /// </summary>
     public string? StructName { get; private set; }
 
-    internal FunctionEntry(FunctionEntry? parent, FunctionScope scope, int bytecodeOffset, int argumentCount, string? functionName, 
-                           bool declaredInRootScope, string? staticVariableName, FunctionEntryKind kind)
+    internal FunctionEntry(FunctionEntry? parent, FunctionScope scope, int bytecodeOffset, int argumentCount, bool isConstructor,
+                           string? functionName, bool declaredInRootScope, string? staticVariableName, FunctionEntryKind kind)
     {
         Parent = parent;
         Scope = scope;
         BytecodeOffset = bytecodeOffset;
         ArgumentCount = argumentCount;
+        IsConstructor = isConstructor;
         FunctionName = functionName;
         DeclaredInRootScope = declaredInRootScope;
         StaticVariableName = staticVariableName;

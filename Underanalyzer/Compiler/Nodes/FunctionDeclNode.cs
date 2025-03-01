@@ -55,6 +55,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <summary>
     /// Whether this function declaration is a constructor function.
     /// </summary>
+    /// <remarks>
+    /// This is always <see langword="true"/> when <see cref="IsStruct"/> is <see langword="true"/>.
+    /// </remarks>
     public bool IsConstructor { get; }
 
     /// <inheritdoc/>
@@ -420,6 +423,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             Scope,
             context.Position,
             ArgumentNames.Count,
+            IsConstructor,
             FunctionName,
             oldScope == context.RootScope,
             oldScope.StaticVariableName,
