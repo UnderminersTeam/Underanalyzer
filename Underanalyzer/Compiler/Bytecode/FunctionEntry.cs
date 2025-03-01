@@ -14,6 +14,11 @@ namespace Underanalyzer.Compiler.Bytecode;
 public sealed record FunctionEntry
 {
     /// <summary>
+    /// Parent function entry, or <see langword="null"/> if none exists.
+    /// </summary>
+    public FunctionEntry? Parent { get; }
+
+    /// <summary>
     /// Byte offset of the function entry in the bytecode.
     /// </summary>
     public int BytecodeOffset { get; }
@@ -49,12 +54,18 @@ public sealed record FunctionEntry
     public IGMFunction? Function { get; private set; }
 
     /// <summary>
+    /// Name that child functions can reference this function entry as, when resolved using <see cref="ResolveFunction(IGMFunction)"/>.
+    /// </summary>
+    public string? ChildFunctionName { get; private set; }
+
+    /// <summary>
     /// Name of the struct function, if applicable, and when resolved using <see cref="ResolveStructName(string)"/>.
     /// </summary>
     public string? StructName { get; private set; }
 
-    internal FunctionEntry(int bytecodeOffset, int localCount, int argumentCount, string? functionName, bool declaredInRootScope, FunctionEntryKind kind)
+    internal FunctionEntry(FunctionEntry? parent, int bytecodeOffset, int localCount, int argumentCount, string? functionName, bool declaredInRootScope, FunctionEntryKind kind)
     {
+        Parent = parent;
         BytecodeOffset = bytecodeOffset;
         LocalCount = localCount;
         ArgumentCount = argumentCount;
@@ -66,7 +77,7 @@ public sealed record FunctionEntry
     /// <summary>
     /// Resolves the actual function for this function entry. <see cref="Function"/> must be <see langword="null"/> (as initialized).
     /// </summary>
-    public void ResolveFunction(IGMFunction function)
+    public void ResolveFunction(IGMFunction function, string childFunctionName)
     {
         // Usage checks
         if (Function is not null)
@@ -75,6 +86,7 @@ public sealed record FunctionEntry
         }
 
         Function = function;
+        ChildFunctionName = childFunctionName;
     }
 
     /// <summary>

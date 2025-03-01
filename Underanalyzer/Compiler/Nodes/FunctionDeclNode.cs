@@ -414,7 +414,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         SingleForwardBranchPatch skipFunctionPatch = new(context.Emit(Opcode.Branch));
 
         // Register FunctionEntry instance
+        FunctionEntry? parentEntry = context.CurrentFunctionEntry;
         FunctionEntry entry = new(
+            parentEntry,
             context.Position,
             Scope.LocalCount,
             ArgumentNames.Count,
@@ -422,6 +424,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             oldScope == context.RootScope,
             IsStruct ? FunctionEntryKind.StructInstantiation : FunctionEntryKind.FunctionDeclaration
         );
+        context.CurrentFunctionEntry = entry;
         context.FunctionEntries.Add(entry);
 
         // Assign function entry in the current scope if named
@@ -499,8 +502,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
 
         // Clean up control flow context stack for this scope (no longer need it)
         Scope.ControlFlowContexts = null;
-            
+
         // Exit scope of this function
+        context.CurrentFunctionEntry = parentEntry;
         context.CurrentScope = oldScope;
 
         // Skip function patch ends up here

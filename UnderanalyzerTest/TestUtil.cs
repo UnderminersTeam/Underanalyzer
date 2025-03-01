@@ -170,21 +170,21 @@ internal static class TestUtil
                 {
                     string name = $"global_func_{globalFuncName}";
                     GMFunction actualFunction = new(name);
-                    functionEntry.ResolveFunction(actualFunction);
+                    functionEntry.ResolveFunction(actualFunction, "unused for tests");
                     ((GlobalFunctions)gameContext.GlobalFunctions).DefineFunction(globalFuncName, actualFunction);
                     gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
                 }
                 else
                 {
                     string name = $"regular_func_{globalFuncName}";
-                    functionEntry.ResolveFunction(new GMFunction(name));
+                    functionEntry.ResolveFunction(new GMFunction(name), "unused for tests");
                     gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
                 }
             }
             else if (functionEntry.FunctionName is string regularFuncName)
             {
                 string name = $"regular_func_{regularFuncName}";
-                functionEntry.ResolveFunction(new GMFunction(name));
+                functionEntry.ResolveFunction(new GMFunction(name), "unused for tests");
                 gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
             else if (functionEntry.Kind == FunctionEntryKind.StructInstantiation)
@@ -193,13 +193,13 @@ internal static class TestUtil
                 functionEntry.ResolveStructName(structName);
 
                 string name = $"struct_func_{structName}";
-                functionEntry.ResolveFunction(new GMFunction(name));
+                functionEntry.ResolveFunction(new GMFunction(name), "unused for tests");
                 gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
             else
             {
                 string name = $"anon_func_{anonCounter++}";
-                functionEntry.ResolveFunction(new GMFunction(name));
+                functionEntry.ResolveFunction(new GMFunction(name), "unused for tests");
                 gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }
         }

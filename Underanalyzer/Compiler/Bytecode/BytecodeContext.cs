@@ -56,6 +56,11 @@ internal sealed class BytecodeContext : ISubCompileContext
     public List<FunctionEntry> FunctionEntries { get; } = new(4);
 
     /// <summary>
+    /// Current function entry being generated, or <see langword="null"/> if none exists.
+    /// </summary>
+    public FunctionEntry? CurrentFunctionEntry { get; set; }
+
+    /// <summary>
     /// List of instruction patches generated during code generation.
     /// </summary>
     public InstructionPatches Patches { get; } = InstructionPatches.Create();
