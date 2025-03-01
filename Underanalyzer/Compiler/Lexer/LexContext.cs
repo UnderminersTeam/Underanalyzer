@@ -255,7 +255,7 @@ internal sealed class LexContext : ISubCompileContext
 
         // Usually, lineIndex will be negative, which is the bitwise complement of the next line index.
         lineIndex = ~lineIndex - 1;
-        int column = 1 + (textPosition - _lineIndices[lineIndex]);
+        int column = textPosition - _lineIndices[lineIndex] - 1;
         return (lineIndex + 2, column);
     }
 }
