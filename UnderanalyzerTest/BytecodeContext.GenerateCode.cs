@@ -1364,8 +1364,8 @@ public class BytecodeContext_GenerateCode
             }
             """,
             """
-            pushref.i 123 Script
-            pop.v.v builtin.test
+            push.i [function]ExampleFunction
+            pop.v.i builtin.test
             push.i [function]script_execute
             pop.v.i builtin.test2
             pushref.i 1 Script
@@ -1455,8 +1455,8 @@ public class BytecodeContext_GenerateCode
             }
             """,
             """
-            pushref.i 123 Script
-            pop.v.v builtin.test
+            push.i [function]ExampleFunction
+            pop.v.i builtin.test
             push.i [function]script_execute
             pop.v.i builtin.test2
             push.i [function]regular_func_LocalFunction

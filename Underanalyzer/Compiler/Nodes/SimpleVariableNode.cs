@@ -145,8 +145,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         // Check if this is a function and generate code accordingly
         if (ExplicitInstanceType == InstanceType.Self && !CollapsedFromDot && 
             (context.IsFunctionDeclaredInCurrentScope(VariableName) || context.IsGlobalFunctionName(VariableName) ||
-             context.CompileContext.GameContext.GetScriptId(VariableName, out _) ||
-             context.CompileContext.GameContext.GetScriptIdByFunctionName(VariableName, out _)))
+             context.CompileContext.GameContext.GetScriptId(VariableName, out _)))
         {
             if (context.CompileContext.GameContext.UsingAssetReferences)
             {
@@ -160,8 +159,8 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
                     context.PushDataType(DataType.Variable);
                 }
                 else if (!LeftmostSideOfDot && 
-                        (context.CompileContext.GameContext.GetScriptIdByFunctionName(VariableName, out int assetId) ||
-                         context.CompileContext.GameContext.GetScriptId(VariableName, out assetId)))
+                        (context.CompileContext.GameContext.GetScriptIdByFunctionName(VariableName, out int assetId) &&
+                         context.CompileContext.GameContext.GetScriptId(VariableName, out _)))
                 {
                     // Push script reference (for existing global functions with scripts associated with them)
                     context.Emit(ExtendedOpcode.PushReference, assetId);
