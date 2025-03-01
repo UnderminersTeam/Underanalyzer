@@ -23,7 +23,7 @@ internal static class Tags
         ReadOnlySpan<char> text = context.Text;
 
         // Read directive type
-        int pos = ContiguousTextReader.ReadUntilWhitespace(text, startPosition + 1, out ReadOnlySpan<char> directiveType);
+        int pos = ContiguousTextReader.ReadWhileIdentifier(text, startPosition + 1, out ReadOnlySpan<char> directiveType);
 
         // Read specific types
         switch (directiveType)

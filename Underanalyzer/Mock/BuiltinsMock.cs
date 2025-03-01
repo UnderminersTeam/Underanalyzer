@@ -27,7 +27,7 @@ public class BuiltinsMock : IBuiltins
     };
 
     /// <summary>
-    /// Mock map of builtin functions
+    /// Mock map of builtin functions.
     /// </summary>
     public Dictionary<string, BuiltinFunctionMock> BuiltinFunctions = new()
     {
@@ -49,6 +49,14 @@ public class BuiltinsMock : IBuiltins
         { VMConstants.FinishFinallyFunction, new(VMConstants.FinishFinallyFunction, 0, 0) },
     };
 
+    /// <summary>
+    /// Mock map of builtin variables.
+    /// </summary>
+    public Dictionary<string, BuiltinVariableMock> BuiltinVariables = new()
+    {
+        { "sprite_index", new("sprite_index") }
+    };
+
     /// <inheritdoc/>
     public IBuiltinFunction? LookupBuiltinFunction(string name)
     {
@@ -58,8 +66,7 @@ public class BuiltinsMock : IBuiltins
     /// <inheritdoc/>
     public IBuiltinVariable? LookupBuiltinVariable(string name)
     {
-        // TODO: implement
-        return null;
+        return BuiltinVariables.GetValueOrDefault(name);
     }
 
     /// <inheritdoc/>
@@ -79,4 +86,16 @@ public class BuiltinFunctionMock(string name, int minArguments, int maxArguments
 
     /// <inheritdoc/>
     public int MaxArguments { get; } = maxArguments;
+}
+
+public class BuiltinVariableMock(string name, bool canSet = true, bool isGlobal = false) : IBuiltinVariable
+{
+    /// <inheritdoc/>
+    public string Name { get; } = name;
+
+    /// <inheritdoc/>
+    public bool CanSet { get; } = canSet;
+
+    /// <inheritdoc/>
+    public bool IsGlobal { get; } = isGlobal;
 }

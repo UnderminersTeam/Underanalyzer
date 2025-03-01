@@ -236,13 +236,6 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
                 instructionInstanceType = InstanceType.Self;
             }
 
-            // If the variable is builtin, use builtin instance type
-            if (isBuiltin)
-            {
-                variableInstanceType = InstanceType.Builtin;
-                instructionInstanceType = InstanceType.Builtin;
-            }
-
             if (gameContext.MockVariables.TryGetValue((variableName, variableInstanceType), out GMVariable? existingVariable))
             {
                 mockInstruction.Variable = existingVariable;

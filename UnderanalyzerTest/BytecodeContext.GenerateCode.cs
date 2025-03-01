@@ -2417,4 +2417,18 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestHexColor()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = #123456;
+            """,
+            """
+            push.i 5649426
+            pop.v.i self.a
+            """
+        );
+    }
 }
