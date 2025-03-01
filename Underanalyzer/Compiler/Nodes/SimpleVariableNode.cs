@@ -311,14 +311,16 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
                 if (argumentIndex < 16)
                 {
                     // Arguments 0 through 15 have unique variable names
-                    SimpleVariableNode argVar = new($"argument{argumentIndex}", null);
+                    string argName = $"argument{argumentIndex}";
+                    SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
                     argVar.SetExplicitInstanceType(InstanceType.Argument);
                     return argVar;
                 }
                 else
                 {
                     // Arguments 16 and above use array accessors
-                    SimpleVariableNode argVar = new("argument", null);
+                    const string argName = "argument";
+                    SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
                     argVar.SetExplicitInstanceType(InstanceType.Argument);
                     NumberNode argNumberNode = new(argumentIndex, NearbyToken);
                     AccessorNode accessorArgVar = new(NearbyToken, argVar, AccessorNode.AccessorKind.Array, argNumberNode);
