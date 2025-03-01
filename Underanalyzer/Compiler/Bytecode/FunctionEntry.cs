@@ -44,6 +44,11 @@ public sealed record FunctionEntry
     public bool DeclaredInRootScope { get; }
 
     /// <summary>
+    /// Static variable name being assigned to around the function entry, if one exists; <see langword="null"/> otherwise.
+    /// </summary>
+    public string? StaticVariableName { get; }
+
+    /// <summary>
     /// Kind of function entry. Useful for generating a final code entry name.
     /// </summary>
     public FunctionEntryKind Kind { get; }
@@ -63,7 +68,8 @@ public sealed record FunctionEntry
     /// </summary>
     public string? StructName { get; private set; }
 
-    internal FunctionEntry(FunctionEntry? parent, int bytecodeOffset, int localCount, int argumentCount, string? functionName, bool declaredInRootScope, FunctionEntryKind kind)
+    internal FunctionEntry(FunctionEntry? parent, int bytecodeOffset, int localCount, int argumentCount, string? functionName, 
+                           bool declaredInRootScope, string? staticVariableName, FunctionEntryKind kind)
     {
         Parent = parent;
         BytecodeOffset = bytecodeOffset;
@@ -71,6 +77,7 @@ public sealed record FunctionEntry
         ArgumentCount = argumentCount;
         FunctionName = functionName;
         DeclaredInRootScope = declaredInRootScope;
+        StaticVariableName = staticVariableName;
         Kind = kind;
     }
 
@@ -90,7 +97,8 @@ public sealed record FunctionEntry
     }
 
     /// <summary>
-    /// Resolves the struct name for this function entry. <see cref="Kind"/> must be <see cref="FunctionEntryKind.StructInstantiation"/>, and <see cref="StructName"/> must be <see langword="null"/> (as initialized).
+    /// Resolves the struct name for this function entry. <see cref="Kind"/> must be <see cref="FunctionEntryKind.StructInstantiation"/>, 
+    /// and <see cref="StructName"/> must be <see langword="null"/> (as initialized).
     /// </summary>
     public void ResolveStructName(string name)
     {

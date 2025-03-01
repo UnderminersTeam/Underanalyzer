@@ -143,4 +143,27 @@ internal sealed class BlockNode : IASTNode
             statement.GenerateCode(context);
         }
     }
+
+    /// <summary>
+    /// Same as <see cref="GenerateCode(BytecodeContext)"/>, but for static initializer blocks.
+    /// </summary>
+    public void GenerateStaticCode(BytecodeContext context)
+    {
+        context.CurrentScope.GeneratingStaticBlock = true;
+        foreach (IASTNode statement in Children)
+        {
+            if (statement is AssignNode { Expression: SimpleVariableNode { VariableName: string staticName } } assign)
+            {
+                // Set new static name, used to assign to function entries
+                context.CurrentScope.StaticVariableName = staticName;
+                assign.GenerateCode(context);
+                context.CurrentScope.StaticVariableName = null;
+            }
+            else
+            {
+                statement.GenerateCode(context);
+            }
+        }
+        context.CurrentScope.GeneratingStaticBlock = false;
+    }
 }

@@ -47,6 +47,12 @@ public sealed class FunctionScope(bool isFunction)
     internal bool ProcessingBreakContinueContext { get; set; } = false;
 
     /// <summary>
+    /// If generating code inside of a static variable assignment, this is the name of the
+    /// static variable being assigned to.
+    /// </summary>
+    internal string? StaticVariableName { get; set; } = null;
+
+    /// <summary>
     /// List of nodes to duplicate when exiting early from a finally block.
     /// One node per each try statement.
     /// </summary>

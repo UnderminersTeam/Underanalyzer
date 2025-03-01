@@ -422,6 +422,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             ArgumentNames.Count,
             FunctionName,
             oldScope == context.RootScope,
+            oldScope.StaticVariableName,
             IsStruct ? FunctionEntryKind.StructInstantiation : FunctionEntryKind.FunctionDeclaration
         );
         context.CurrentFunctionEntry = entry;
@@ -481,10 +482,8 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
                 context.Emit(ExtendedOpcode.SetStaticInitialized);
             }
 
-            // Compile block
-            Scope.GeneratingStaticBlock = true;
-            staticBlock.GenerateCode(context);
-            Scope.GeneratingStaticBlock = false;
+            // Compile block (as a static block, specifically)
+            staticBlock.GenerateStaticCode(context);
 
             // If allowing re-entrant static, set the static flag here
             if (allowReentrantStatic)
