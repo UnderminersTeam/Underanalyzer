@@ -2389,4 +2389,32 @@ public class BytecodeContext_GenerateCode
             );
         });
     }
+
+    [Fact]
+    public void TestBuiltinSelfOther()
+    {
+        TestUtil.AssertBytecode(
+            """
+            sprite_index = other.sprite_index;
+            image_blend = other.image_blend;
+            image_xscale = other.image_xscale;
+            image_yscale = other.image_yscale;
+            depth = other.depth - 1;
+            """,
+            """
+            push.v other.sprite_index
+            pop.v.v self.sprite_index
+            push.v other.image_blend
+            pop.v.v self.image_blend
+            push.v other.image_xscale
+            pop.v.v self.image_xscale
+            push.v other.image_yscale
+            pop.v.v self.image_yscale
+            push.v other.depth
+            pushi.e 1
+            sub.i.v
+            pop.v.v self.depth
+            """
+        );
+    }
 }
