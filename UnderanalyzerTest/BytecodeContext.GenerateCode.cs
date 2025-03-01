@@ -2431,4 +2431,18 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestStringOptimization()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = "b" + "c" + "d";
+            """,
+            """
+            push.s "bcd"
+            pop.v.s self.a
+            """
+        );
+    }
 }

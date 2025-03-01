@@ -183,7 +183,7 @@ internal sealed class BinaryChainNode : IASTNode
                 new NumberNode(leftInt64.Value + rightNumber.Value, leftInt64.NearbyToken),
             (BinaryOperation.Add, Int64Node leftInt64, Int64Node rightInt64) =>
                 new Int64Node(leftInt64.Value + rightInt64.Value, leftInt64.NearbyToken),
-            (BinaryOperation.Add, StringNode leftString, Int64Node rightString) =>
+            (BinaryOperation.Add, StringNode leftString, StringNode rightString) =>
                 new StringNode(leftString.Value + rightString.Value, leftString.NearbyToken),
 
             (BinaryOperation.Subtract, NumberNode leftNumber, NumberNode rightNumber) =>
