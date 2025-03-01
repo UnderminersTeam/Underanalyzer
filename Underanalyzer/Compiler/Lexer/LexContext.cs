@@ -250,12 +250,12 @@ internal sealed class LexContext : ISubCompileContext
         {
             // Exact match of the newline character itself (this is rare).
             // We want to be one-indexed, so add one to the raw index.
-            return (lineIndex + 1, 0);
+            return (lineIndex + 1, 1);
         }
 
         // Usually, lineIndex will be negative, which is the bitwise complement of the next line index.
         lineIndex = ~lineIndex - 1;
-        int column = textPosition - _lineIndices[lineIndex];
-        return (lineIndex + 1, column);
+        int column = 1 + (textPosition - _lineIndices[lineIndex]);
+        return (lineIndex + 2, column);
     }
 }
