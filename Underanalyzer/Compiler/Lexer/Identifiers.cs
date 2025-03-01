@@ -21,6 +21,7 @@ internal static class Identifiers
         int pos = ContiguousTextReader.ReadWhileIdentifier(context.Text, startPosition, out ReadOnlySpan<char> identifier);
 
         // Try to identify a keyword
+        bool isGMLv2 = context.CompileContext.GameContext.UsingGMLv2;
         KeywordKind keywordKind = identifier switch
         {
             "if" => KeywordKind.If,       
@@ -46,15 +47,15 @@ internal static class Identifiers
             "not" => KeywordKind.Not,      
             "div" => KeywordKind.Div,      
             "mod" => KeywordKind.Mod,      
-            "enum" => KeywordKind.Enum,     
-            "try" => KeywordKind.Try,      
-            "catch" => KeywordKind.Catch,    
-            "finally" => KeywordKind.Finally,  
-            "throw" => KeywordKind.Throw,    
-            "new" => KeywordKind.New,      
-            "delete" => KeywordKind.Delete,   
-            "function" => KeywordKind.Function, 
-            "static" => KeywordKind.Static,
+            "enum" => KeywordKind.Enum,
+            "try" when isGMLv2 => KeywordKind.Try,
+            "catch" when isGMLv2 => KeywordKind.Catch,
+            "finally" when isGMLv2 => KeywordKind.Finally,
+            "throw" when isGMLv2 => KeywordKind.Throw,
+            "new" when isGMLv2 => KeywordKind.New,
+            "delete" when isGMLv2 => KeywordKind.Delete,
+            "function" when isGMLv2 => KeywordKind.Function, 
+            "static" when isGMLv2 => KeywordKind.Static,
             _ => KeywordKind.None
         };
 
