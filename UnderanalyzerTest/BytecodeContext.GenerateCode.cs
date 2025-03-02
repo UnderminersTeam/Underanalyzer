@@ -2400,6 +2400,7 @@ public class BytecodeContext_GenerateCode
             image_xscale = other.image_xscale;
             image_yscale = other.image_yscale;
             depth = other.depth - 1;
+            a *= a;
             """,
             """
             push.v other.sprite_index
@@ -2414,6 +2415,10 @@ public class BytecodeContext_GenerateCode
             pushi.e 1
             sub.i.v
             pop.v.v self.depth
+            push.v self.a
+            push.v self.a
+            mul.v.v
+            pop.v.v self.a
             """
         );
     }

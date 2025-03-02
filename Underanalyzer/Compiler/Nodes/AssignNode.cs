@@ -70,7 +70,8 @@ internal sealed class AssignNode : IASTNode
         Expression = Expression.PostProcess(context);
 
         // Remove variable assignments to themselves
-        if (Destination is SimpleVariableNode { VariableName: string destName, CollapsedFromDot: false } && 
+        if (Kind == AssignKind.Normal &&
+            Destination is SimpleVariableNode { VariableName: string destName, CollapsedFromDot: false } && 
             Expression is SimpleVariableNode { VariableName: string exprName, CollapsedFromDot: false } &&
             destName == exprName)
         {
