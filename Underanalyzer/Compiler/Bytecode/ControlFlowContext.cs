@@ -106,8 +106,11 @@ internal sealed class RepeatLoopContext(IMultiBranchPatch breakPatch, IMultiBran
     /// <inheritdoc/>
     public override void GenerateCleanupCode(BytecodeContext context)
     {
-        // Clear loop counter from stack
-        context.Emit(Opcode.PopDelete, DataType.Int32);
+        // Clear loop counter from stack (only in GMLv2, apparently)
+        if (context.CompileContext.GameContext.UsingGMLv2)
+        {
+            context.Emit(Opcode.PopDelete, DataType.Int32);
+        }
     }
 }
 
