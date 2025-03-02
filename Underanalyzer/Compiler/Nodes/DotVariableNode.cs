@@ -68,7 +68,19 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
         if (LeftExpression is NumberNode { Value: double numberValue } && (int)numberValue == numberValue)
         {
             SimpleVariableNode combined = new(VariableName, BuiltinVariable);
-            combined.SetExplicitInstanceType((InstanceType)(int)numberValue);
+
+            // If value is over 100000, that's an instance ID, so subtract the base ID
+            int intValue = (int)numberValue;
+            if (intValue >= 100000)
+            {
+                intValue -= 100000;
+                combined.RoomInstanceVariable = true;
+            }
+
+            // Wrap around as a signed 16-bit integer as well
+            short shortValue = (short)intValue;
+
+            combined.SetExplicitInstanceType((InstanceType)shortValue);
             combined.CollapsedFromDot = true;
             return combined;
         }

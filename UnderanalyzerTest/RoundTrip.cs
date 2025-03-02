@@ -1232,4 +1232,21 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestRoomInstances()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true
+        };
+        TestUtil.VerifyRoundTrip(
+            """
+            a = (101234).b;
+            (101234).c = d;
+            """,
+            false,
+            gameContext
+        );
+    }
 }

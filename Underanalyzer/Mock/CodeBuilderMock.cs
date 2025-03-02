@@ -230,7 +230,7 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
         if (instruction is GMInstruction mockInstruction)
         {
             // Transform instance type into Self in GMLv2 (or when using object/instance ID) when not using simple variables
-            if (!isStructVariable && (gameContext.UsingGMLv2 || variableInstanceType >= 0) && variableType != VariableType.Normal)
+            if (!isStructVariable && (gameContext.UsingGMLv2 || variableInstanceType >= 0) && variableType != VariableType.Normal && variableType != VariableType.Instance)
             {
                 variableInstanceType = InstanceType.Self;
                 instructionInstanceType = InstanceType.Self;

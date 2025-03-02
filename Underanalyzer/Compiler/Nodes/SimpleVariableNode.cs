@@ -53,6 +53,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     public bool StructVariable { get; set; } = false;
 
+    /// <summary>
+    /// Whether this is a variable node that was collapsed from a <see cref="DotVariableNode"/> with a room instance ID on the left side.
+    /// </summary>
+    public bool RoomInstanceVariable { get; set; } = false;
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; init; }
 
@@ -128,7 +133,12 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     private VariablePatch CreateVariablePatch(BytecodeContext context)
     {
-        VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
+        VariablePatch varPatch = new(
+            VariableName, 
+            ExplicitInstanceType, 
+            RoomInstanceVariable ? VariableType.Instance : VariableType.Normal, 
+            BuiltinVariable is not null
+        );
 
         if (ExplicitInstanceType == InstanceType.Self && !StructVariable)
         {

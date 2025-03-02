@@ -2585,4 +2585,27 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestRoomInstances()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true
+        };
+        TestUtil.AssertBytecode(
+            """
+            a = (101234).b;
+            (101234).c = d;
+            """,
+            """
+            push.v [instance]1234.b
+            pop.v.v builtin.a
+            push.v builtin.d
+            pop.v.v [instance]1234.c
+            """,
+            false,
+            gameContext
+        );
+    }
 }
