@@ -299,7 +299,16 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                 if (printer.StructArguments is not null)
                 {
                     // We're inside a struct initialization block
-                    Variable.Print(printer);
+                    if (Variable is VariableNode variable)
+                    {
+                        // Write just the variable name if possible
+                        // TODO: detect if we need to add quotes around the name
+                        printer.Write(variable.Variable.Name.Content);
+                    }
+                    else
+                    {
+                        Variable.Print(printer);
+                    }
                     printer.Write(": ");
                     Value!.Print(printer);
                 }

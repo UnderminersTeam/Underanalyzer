@@ -253,6 +253,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     private static AccessorNode HoistStructValue(List<IASTNode> args, IASTNode toHoist)
     {
         SimpleVariableNode argumentVariable = new("argument", null);
+        argumentVariable.SetExplicitInstanceType(InstanceType.Argument);
         AccessorNode accessor = new(toHoist.NearbyToken, argumentVariable, AccessorNode.AccessorKind.Array, new NumberNode(args.Count - 1, toHoist.NearbyToken));
         args.Add(toHoist);
         return accessor;
@@ -276,6 +277,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         // Read assignments from struct literal
         while (!context.EndOfCode && !context.IsCurrentToken(SeparatorKind.BlockClose, KeywordKind.End))
         {
+            // TODO: support strings here
             if (context.Tokens[context.Position] is not TokenVariable variable)
             {
                 // Failed to find a variable here... stop parsing
@@ -327,7 +329,11 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             }
 
             // Create assignment statement
-            block.Children.Add(new AssignNode(AssignNode.AssignKind.Normal, new SimpleVariableNode(variable), value));
+            SimpleVariableNode destination = new(variable)
+            {
+                StructVariable = true
+            };
+            block.Children.Add(new AssignNode(AssignNode.AssignKind.Normal, destination, value));
 
             // Expect "," or "}"
             if (context.IsCurrentToken(SeparatorKind.Comma))

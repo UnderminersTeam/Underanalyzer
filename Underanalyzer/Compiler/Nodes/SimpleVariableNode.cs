@@ -48,6 +48,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     /// </summary>
     public bool LeftmostSideOfDot { get; set; } = false;
 
+    /// <summary>
+    /// Whether this is a variable node that is assigned to as part of a struct instantiation.
+    /// </summary>
+    public bool StructVariable { get; set; } = false;
+
     /// <inheritdoc/>
     public IToken? NearbyToken { get; init; }
 
@@ -126,7 +131,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     {
         VariablePatch varPatch = new(VariableName, ExplicitInstanceType, VariableType.Normal, BuiltinVariable is not null);
 
-        if (ExplicitInstanceType == InstanceType.Self)
+        if (ExplicitInstanceType == InstanceType.Self && !StructVariable)
         {
             // Change instruction encoding to builtin (weird compiler quirk), when either a function call,
             // or in newer GML versions when not on the RHS of a dot variable.

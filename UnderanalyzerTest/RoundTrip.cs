@@ -1211,4 +1211,24 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestStruct()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true,
+            UsingNewFunctionVariables = true
+        };
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 
+            {
+                b: c + d
+            };
+            """,
+            false,
+            gameContext
+        );
+    }
 }

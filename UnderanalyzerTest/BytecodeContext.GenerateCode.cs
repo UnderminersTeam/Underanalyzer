@@ -2521,4 +2521,49 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestStruct()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true,
+            UsingNewFunctionVariables = true
+        };
+        TestUtil.AssertBytecode(
+            """
+            a = 
+            {
+                b: c + d
+            };
+            """,
+            """
+            push.v builtin.c
+            push.v builtin.d
+            add.v.v
+            b [2]
+
+            > struct_func___struct__1 (locals=0, argc=0)
+            :[1]
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v self.b
+            exit.i
+
+            :[2]
+            push.i [function]struct_func___struct__1
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -5
+            pop.v.v [stacktop]global.__struct__1
+            call.i @@NewGMLObject@@ 2
+            pop.v.v builtin.a
+            """,
+            false,
+            gameContext
+        );
+    }
 }

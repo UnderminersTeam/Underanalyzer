@@ -126,7 +126,7 @@ internal sealed class BytecodeContext : ISubCompileContext
         // Resolve variable patches
         foreach (VariablePatch variablePatch in patches.VariablePatches!)
         {
-            codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, variablePatch.IsBuiltin);
+            codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.Name, variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, variablePatch.IsBuiltin, false);
         }
 
         // Resolve function patches
@@ -158,7 +158,7 @@ internal sealed class BytecodeContext : ISubCompileContext
         foreach (StructVariablePatch variablePatch in patches.StructVariablePatches!)
         {
             codeBuilder.PatchInstruction(variablePatch.Instruction!, variablePatch.FunctionEntry.StructName ?? throw new InvalidOperationException("Struct name not resolved on function entry"), 
-                                         variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, false);
+                                         variablePatch.InstanceType, variablePatch.InstructionInstanceType, variablePatch.VariableType, false, true);
         }
 
         // Resolve string patches
