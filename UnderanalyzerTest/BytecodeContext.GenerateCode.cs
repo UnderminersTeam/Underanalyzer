@@ -2445,4 +2445,28 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestAssetArray()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = false,
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Object, 123, "obj_test");
+        TestUtil.AssertBytecode(
+            """
+            obj_test.a[0] = 1;
+            """,
+            """
+            pushi.e 1
+            pushi.e 123
+            pushi.e 0
+            pop.v.i [array]self.a
+            """,
+            false,
+            gameContext
+        );
+    }
 }
