@@ -2469,4 +2469,56 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestArguments()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true
+        };
+        TestUtil.AssertBytecode(
+            """
+            function args(a)
+            {
+                test = a;
+                test2 = a[0];
+                test3 = argument0;
+                test4 = argument0[0];
+            }
+            """,
+            """
+            b [2]
+
+            > regular_func_args (locals=0, argc=1)
+            :[1]
+            push.v arg.argument0
+            pop.v.v builtin.test
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument0
+            pop.v.v builtin.test2
+            pushbltn.v builtin.argument0
+            pop.v.v builtin.test3
+            pushi.e -6
+            pushi.e 0
+            push.v [array]self.argument0
+            pop.v.v builtin.test4
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_args
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.args
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
 }

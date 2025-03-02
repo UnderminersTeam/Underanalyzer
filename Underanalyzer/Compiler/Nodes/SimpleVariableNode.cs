@@ -331,7 +331,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             // Resolve old builtin argument variables
             if (_builtinArgumentVariables.Contains(VariableName))
             {
-                SetExplicitInstanceType(InstanceType.Argument);
+                SetExplicitInstanceType(InstanceType.Builtin);
                 return this;
             }
 

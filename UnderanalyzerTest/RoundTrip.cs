@@ -1195,4 +1195,20 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestArguments()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function args(arg0)
+            {
+                test = arg0;
+                test2 = arg0[0];
+                test3 = argument0;
+                test4 = argument0[0];
+            }
+            """
+        );
+    }
 }
