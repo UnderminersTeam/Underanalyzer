@@ -1207,6 +1207,7 @@ public class RoundTrip
                 test2 = arg0[0];
                 test3 = argument0;
                 test4 = argument0[0];
+                test5 = argument[0];
             }
             """
         );

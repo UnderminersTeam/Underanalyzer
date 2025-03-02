@@ -62,8 +62,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         "argument0", "argument1", "argument2", "argument3",
         "argument4", "argument5", "argument6", "argument7",
         "argument8", "argument9", "argument10", "argument11",
-        "argument12", "argument13", "argument14", "argument15",
-        "argument"
+        "argument12", "argument13", "argument14", "argument15"
     ];
 
     /// <summary>
@@ -337,6 +336,13 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             if (_builtinArgumentVariables.Contains(VariableName))
             {
                 SetExplicitInstanceType(InstanceType.Builtin);
+                return this;
+            }
+
+            // Resolve argument array
+            if (VariableName == "argument")
+            {
+                SetExplicitInstanceType(InstanceType.Argument);
                 return this;
             }
 

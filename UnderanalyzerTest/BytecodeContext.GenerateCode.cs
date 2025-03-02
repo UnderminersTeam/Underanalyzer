@@ -2485,6 +2485,7 @@ public class BytecodeContext_GenerateCode
                 test2 = a[0];
                 test3 = argument0;
                 test4 = argument0[0];
+                test5 = argument[0];
             }
             """,
             """
@@ -2504,6 +2505,10 @@ public class BytecodeContext_GenerateCode
             pushi.e 0
             push.v [array]self.argument0
             pop.v.v builtin.test4
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v builtin.test5
             exit.i
 
             :[2]
