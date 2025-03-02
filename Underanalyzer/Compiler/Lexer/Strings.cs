@@ -203,7 +203,7 @@ internal static class Strings
                             else
                             {
                                 // Verbatim character
-                                sb.Append(c);
+                                sb.Append(escapedChar);
                             }
                         }
                         break;

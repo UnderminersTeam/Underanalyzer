@@ -2566,4 +2566,18 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestEscapeQuotes()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = "This is a \"test!\"";
+            """,
+            """
+            push.s "This is a \"test!\""
+            pop.v.s self.a
+            """
+        );
+    }
 }
