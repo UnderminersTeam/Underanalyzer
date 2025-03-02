@@ -127,7 +127,14 @@ internal sealed class RepeatLoopNode : IASTNode
 
         // Decrement loop counter
         decrementorPatch.Patch(context);
-        context.Emit(Opcode.Push, (int)1, DataType.Int32);
+        if (context.CompileContext.GameContext.UsingExtraRepeatInstruction)
+        {
+            context.Emit(Opcode.Push, (int)1, DataType.Int32);
+        }
+        else
+        {
+            context.Emit(Opcode.PushImmediate, (short)1, DataType.Int16);
+        }
         context.Emit(Opcode.Subtract, DataType.Int32, DataType.Int32);
         context.Emit(Opcode.Duplicate, DataType.Int32);
         if (context.CompileContext.GameContext.UsingExtraRepeatInstruction)

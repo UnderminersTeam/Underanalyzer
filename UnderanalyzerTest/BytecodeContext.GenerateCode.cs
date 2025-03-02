@@ -2658,4 +2658,52 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestNewRepeatGeneration()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true,
+            UsingExtraRepeatInstruction = false
+        };
+        TestUtil.AssertBytecode(
+            """
+            repeat (123)
+            {
+            	if (a)
+            	{
+            		exit;
+            	}
+            }
+            """,
+            """
+            pushi.e 123
+            dup.i 0
+            push.i 0
+            cmp.i.i LTE
+            bt [4]
+
+            :[1]
+            push.v builtin.a
+            conv.v.b
+            bf [3]
+
+            :[2]
+            popz.i
+            exit.i
+
+            :[3]
+            pushi.e 1
+            sub.i.i
+            dup.i 0
+            bt [1]
+
+            :[4]
+            popz.i
+            """,
+            false,
+            gameContext
+        );
+    }
 }
