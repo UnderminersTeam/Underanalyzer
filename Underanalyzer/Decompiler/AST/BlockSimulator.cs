@@ -178,6 +178,21 @@ internal sealed class BlockSimulator
                     $"Dup read too much data from stack ({(dupSize + 1) * dupTypeSize} -> {size})");
             }
 
+            // If duplication type is boolean, then cast all non-converted int16s being duplicated to booleans
+            if (dupType == DataType.Boolean)
+            {
+                for (int i = 0; i < toDuplicate.Count; i++)
+                {
+                    if (toDuplicate[i] is Int16Node { Value: 0 or 1, StackType: not DataType.Boolean } i16)
+                    {
+                        toDuplicate[i] = new BooleanNode(i16.Value == 1)
+                        {
+                            StackType = i16.StackType
+                        };
+                    }
+                }
+            }
+
             // Push data back to the stack twice (duplicating it, while maintaining internal order)
             for (int i = 0; i < 2; i++)
             {

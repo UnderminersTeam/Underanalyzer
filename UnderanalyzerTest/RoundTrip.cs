@@ -1029,7 +1029,7 @@ public class RoundTrip
     }
 
     [Fact]
-    public void TestBooleanLoops()
+    public void TestBooleanControlFlow()
     {
         TestUtil.VerifyRoundTrip(
             """
@@ -1047,6 +1047,34 @@ public class RoundTrip
             {
             }
             until (true);
+            if (a && 1 && b)
+            {
+            }
+            if (a && true && b)
+            {
+            }
+            switch (1)
+            {
+                case true:
+                    break;
+                case false:
+                    break;
+                case 1:
+                    break;
+                case 0:
+                    break;
+            }
+            switch (true)
+            {
+                case true:
+                    break;
+                case false:
+                    break;
+                case 1:
+                    break;
+                case 0:
+                    break;
+            }
             """
         );
     }
