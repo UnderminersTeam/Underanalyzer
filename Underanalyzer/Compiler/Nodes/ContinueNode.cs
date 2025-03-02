@@ -36,6 +36,7 @@ internal sealed class ContinueNode(IToken? token) : IASTNode
             if (!context.CompileContext.GameContext.UsingBetterTryBreakContinue || tryContext.ShouldGenerateBreakContinueCode)
             {
                 // Generate block, setting continue variable before continuing
+                context.CurrentScope.DeclareLocal(tryContext.ContinueVariableName);
                 BlockNode blockNode = BlockNode.CreateEmpty(NearbyToken, 2);
                 blockNode.Children.Add(new AssignNode(AssignKind.Normal, new SimpleVariableNode(tryContext.ContinueVariableName, null, InstanceType.Local), new NumberNode(1, NearbyToken)));
                 blockNode.Children.Add(this);

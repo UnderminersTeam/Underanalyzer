@@ -131,12 +131,13 @@ internal sealed class TryCatchNode : IASTNode
     /// <summary>
     /// Generates a loop around a block, for purposes of preventing break/continue from escaping.
     /// </summary>
-    private WhileLoopNode GenerateBlockLoop(TryStatementContext tryContext, IASTNode block)
+    private WhileLoopNode GenerateBlockLoop(ParseContext context, TryStatementContext tryContext, IASTNode block)
     {
         // Create block inside of loop
         BlockNode innerBlock = BlockNode.CreateEmpty(NearbyToken, 3);
 
         // If continue variable is set at the top of the loop, break out of loop
+        context.CurrentScope.DeclareLocal(tryContext.ContinueVariableName);
         innerBlock.Children.Add(new IfNode(NearbyToken, new SimpleVariableNode(tryContext.ContinueVariableName, null, InstanceType.Local), new BreakNode(NearbyToken), null));
 
         // Actual original block
@@ -171,27 +172,25 @@ internal sealed class TryCatchNode : IASTNode
         int uniqueIndex = context.CompileContext.GameContext.CodeBuilder.GenerateTryVariableID(context.TryStatementProcessIndex++);
         string breakName = $"{VMConstants.TryBreakVariable}{uniqueIndex}";
         string continueName = $"{VMConstants.TryContinueVariable}{uniqueIndex}";
-        context.CurrentScope.DeclareLocal(breakName);
-        context.CurrentScope.DeclareLocal(continueName);
 
         // Create context for this try statement
-        TryStatementContext? previousContext = context.TryStatementContext;
-        TryStatementContext newContext = new(breakName, continueName, Finally is not null);
-        context.TryStatementContext = newContext;
+        TryStatementContext? previousTryContext = context.TryStatementContext;
+        TryStatementContext newTryContext = new(breakName, continueName, Finally is not null);
+        context.TryStatementContext = newTryContext;
         bool breakContinueUsedAnywhere = false;
 
         // Only generate finally code before throw if either an escape keyword was detected inside of
         // try block during parsing, or if there's no catch block.
-        newContext.ThrowFinallyGeneration = TryEscape || Catch is null;
+        newTryContext.ThrowFinallyGeneration = TryEscape || Catch is null;
 
         // Post-process main try block
-        newContext.ShouldGenerateBreakContinueCode = true;
-        newContext.HasBreakContinueVariable = false;
+        newTryContext.ShouldGenerateBreakContinueCode = true;
+        newTryContext.HasBreakContinueVariable = false;
         Try = Try.PostProcess(context);
-        if (newContext.HasBreakContinueVariable)
+        if (newTryContext.HasBreakContinueVariable)
         {
             // Break/continue used: generate loop around block to prevent escape
-            Try = GenerateBlockLoop(newContext, Try);
+            Try = GenerateBlockLoop(context, newTryContext, Try);
             breakContinueUsedAnywhere = true;
         }
 
@@ -200,21 +199,21 @@ internal sealed class TryCatchNode : IASTNode
         {
             // Only generate finally code before throw if an escape keyword was detected inside of
             // catch block during parsing.
-            newContext.ThrowFinallyGeneration = CatchEscape;
+            newTryContext.ThrowFinallyGeneration = CatchEscape;
 
-            newContext.ShouldGenerateBreakContinueCode = true;
-            newContext.HasBreakContinueVariable = false;
+            newTryContext.ShouldGenerateBreakContinueCode = true;
+            newTryContext.HasBreakContinueVariable = false;
             Catch = Catch.PostProcess(context);
-            if (newContext.HasBreakContinueVariable)
+            if (newTryContext.HasBreakContinueVariable)
             {
                 // Break/continue used: generate loop around block to prevent escape
-                Catch = GenerateBlockLoop(newContext, Catch);
+                Catch = GenerateBlockLoop(context, newTryContext, Catch);
                 breakContinueUsedAnywhere = true;
             }
         }
 
         // Restore previous try statement context
-        context.TryStatementContext = previousContext;
+        context.TryStatementContext = previousTryContext;
 
         // Remove from finally nodes
         if (Finally is not null)
@@ -232,6 +231,8 @@ internal sealed class TryCatchNode : IASTNode
             BlockNode newBlock = BlockNode.CreateEmpty(NearbyToken, insideBreakContinueContext ? 5 : 3);
 
             // Generate initial assignments
+            context.CurrentScope.DeclareLocal(breakName);
+            context.CurrentScope.DeclareLocal(continueName);
             newBlock.Children.Add(new AssignNode(AssignKind.Normal, new SimpleVariableNode(breakName, null, InstanceType.Local), new NumberNode(0, NearbyToken)));
             newBlock.Children.Add(new AssignNode(AssignKind.Normal, new SimpleVariableNode(continueName, null, InstanceType.Local), new NumberNode(0, NearbyToken)));
 
