@@ -2608,4 +2608,49 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestStatic()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function statictest()
+            {
+                static a = 123;
+                static b = a + 1;
+            }
+            """,
+            """
+            b [4]
+
+            > regular_func_statictest (locals=0, args=0)
+            :[1]
+            isstaticok.e
+            bt [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i static.a
+            push.v static.a
+            pushi.e 1
+            add.i.v
+            pop.v.v static.b
+
+            :[3]
+            setstatic.e
+            exit.i
+
+            :[4]
+            push.i [function]regular_func_statictest
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.statictest
+            popz.v
+            """
+        );
+    }
 }

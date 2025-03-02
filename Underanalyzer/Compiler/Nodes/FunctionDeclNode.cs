@@ -386,6 +386,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         // Normal post-processing
         DefaultValueBlock?.PostProcessChildrenOnly(context);
         InheritanceCall?.PostProcessChildrenOnly(context);
+        Scope.StaticInitializerBlock?.PostProcessChildrenOnly(context);
         Body.PostProcessChildrenOnly(context);
 
         // Exit function scope
@@ -495,14 +496,14 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             // Compile block (as a static block, specifically)
             staticBlock.GenerateStaticCode(context);
 
+            // Skip static patch ends up here
+            skipStaticPatch.Patch(context);
+
             // If allowing re-entrant static, set the static flag here
             if (allowReentrantStatic)
             {
                 context.Emit(ExtendedOpcode.SetStaticInitialized);
             }
-
-            // Skip static patch ends up here
-            skipStaticPatch.Patch(context);
         }
 
         // Generate main body
