@@ -95,6 +95,11 @@ public class GlobalFunctions : IGlobalFunctions
             for (int i = 1; i < fragments.Count; i++)
             {
                 Fragment fragment = fragments[i];
+                if (!fragment.RootScope)
+                {
+                    // If the fragment isn't at the root scope, it can't be a global function
+                    continue;
+                }
                 if (fragment.Successors.Count == 0)
                 {
                     // If no successors, assume code is corrupt and don't consider it
