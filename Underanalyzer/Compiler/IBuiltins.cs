@@ -71,6 +71,12 @@ public interface IBuiltinVariable
     public bool IsGlobal { get; }
 
     /// <summary>
+    /// Whether or not the builtin variable will automatically 
+    /// add an array index when compiled, if one is not already present.
+    /// </summary>
+    public bool IsAutomaticArray { get; }
+
+    /// <summary>
     /// Whether or not the builtin variable can be set.
     /// </summary>
     public bool CanSet { get; }

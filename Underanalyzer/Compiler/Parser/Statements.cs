@@ -166,7 +166,9 @@ internal static class Statements
             context.Position++;
 
             // If left side is assigning to a read-only builtin variable, push an error
-            if (assignable is IVariableASTNode variable && !(variable.BuiltinVariable?.CanSet ?? true))
+            // (but this check only works pre-GMLv2)
+            if (!context.CompileContext.GameContext.UsingGMLv2 &&
+                assignable is IVariableASTNode variable && !(variable.BuiltinVariable?.CanSet ?? true))
             {
                 context.CompileContext.PushError($"Attempting to assign read-only variable '{variable.VariableName}'", variable.NearbyToken);
             }

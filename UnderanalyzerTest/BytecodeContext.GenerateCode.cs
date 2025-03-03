@@ -2773,4 +2773,87 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestReadOnlyError()
+    {
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                id = 123;
+                a.id = 456;
+                """,
+                "",
+                false,
+                new Underanalyzer.Mock.GameContextMock()
+                {
+                    UsingGMLv2 = false
+                }
+            );
+        });
+        TestUtil.AssertBytecode(
+            """
+            id = 123;
+            a.id = 456;
+            """,
+            """
+            pushi.e 123
+            pop.v.i self.id
+            pushi.e 456
+            push.v self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.id
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingGMLv2 = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestAutomaticArray()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = view_xview;
+            """,
+            """
+            pushi.e -1
+            push.l 0
+            conv.l.i
+            push.v [array]self.view_xview
+            pop.v.v self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestAutomaticArrayGMLv2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = view_camera;
+            """,
+            """
+            pushi.e -6
+            push.l 0
+            conv.l.i
+            push.v [array]self.view_camera
+            pop.v.v self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingGMLv2 = true
+            }
+        );
+    }
 }

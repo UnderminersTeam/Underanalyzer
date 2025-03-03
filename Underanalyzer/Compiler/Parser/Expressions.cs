@@ -656,6 +656,17 @@ internal static class Expressions
             break;
         }
 
+        // Handle builtin automatic arrays
+        if (lhs is SimpleVariableNode { BuiltinVariable.IsAutomaticArray: true } simpleVariable)
+        {
+            lhs = new AccessorNode(
+                simpleVariable.NearbyToken, 
+                simpleVariable, 
+                AccessorNode.AccessorKind.Array, 
+                new Int64Node(0, simpleVariable.NearbyToken)
+            );
+        }
+
         // Check for and parse postfix
         if (!context.EndOfCode && lhs is IAssignableASTNode lhsAssignable && 
             context.Tokens[context.Position] is TokenOperator 

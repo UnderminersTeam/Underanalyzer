@@ -55,7 +55,10 @@ public class BuiltinsMock : IBuiltins
     /// </summary>
     public Dictionary<string, BuiltinVariableMock> BuiltinVariables = new()
     {
-        { "sprite_index", new("sprite_index") }
+        { "sprite_index", new("sprite_index") },
+        { "id", new("id", false) },
+        { "view_xview", new("view_xview", true, true, true) },
+        { "view_camera", new("view_camera", true, true, true) }
     };
 
     /// <inheritdoc/>
@@ -89,7 +92,7 @@ public class BuiltinFunctionMock(string name, int minArguments, int maxArguments
     public int MaxArguments { get; } = maxArguments;
 }
 
-public class BuiltinVariableMock(string name, bool canSet = true, bool isGlobal = false) : IBuiltinVariable
+public class BuiltinVariableMock(string name, bool canSet = true, bool isGlobal = false, bool isAutomaticArray = false) : IBuiltinVariable
 {
     /// <inheritdoc/>
     public string Name { get; } = name;
@@ -99,4 +102,7 @@ public class BuiltinVariableMock(string name, bool canSet = true, bool isGlobal 
 
     /// <inheritdoc/>
     public bool IsGlobal { get; } = isGlobal;
+
+    /// <inheritdoc/>
+    public bool IsAutomaticArray { get; } = isAutomaticArray;
 }
