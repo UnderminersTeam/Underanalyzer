@@ -73,7 +73,8 @@ internal sealed class AssignNode : IASTNode
         if (Kind == AssignKind.Normal &&
             Destination is SimpleVariableNode { VariableName: string destName, CollapsedFromDot: false } && 
             Expression is SimpleVariableNode { VariableName: string exprName, CollapsedFromDot: false } &&
-            destName == exprName)
+            destName == exprName &&
+            !context.CompileContext.GameContext.Bytecode14OrLower)
         {
             return EmptyNode.Create();
         }

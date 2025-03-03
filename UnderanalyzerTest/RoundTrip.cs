@@ -1275,4 +1275,35 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestSelfAssignOld()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            x = x;
+            """,
+            false,
+            new GameContextMock()
+            {
+                Bytecode14OrLower = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestSelfAssign()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            x = x;
+            """,
+            "",
+            false,
+            new GameContextMock()
+            {
+                Bytecode14OrLower = false
+            }
+        );
+    }
 }
