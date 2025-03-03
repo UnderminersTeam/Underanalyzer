@@ -82,11 +82,6 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     public FunctionScope? OutputRootScope { get; private set; } = null;
 
     /// <summary>
-    /// List of local variables, in order, set after produced by code generation.
-    /// </summary>
-    public IReadOnlyList<string>? OutputLocalsOrder { get; private set; } = null;
-
-    /// <summary>
     /// List of sub-function entries, set after produced by code generation.
     /// </summary>
     public IReadOnlyList<FunctionEntry>? OutputFunctionEntries { get; private set; } = null;
@@ -200,7 +195,6 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
         OutputInstructions = bytecodeContext.Instructions;
         OutputFunctionEntries = bytecodeContext.FunctionEntries;
         OutputRootScope = _parseRootScope;
-        OutputLocalsOrder = bytecodeContext.LocalsOrder;
         OutputLength = bytecodeContext.Position;
         _compilePatches = bytecodeContext.Patches;
 
