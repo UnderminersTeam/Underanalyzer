@@ -615,6 +615,16 @@ internal static class Expressions
                     context.Position++;
                     lhs = new DotVariableNode(lhs, tokenVariable);
                 }
+                else if (nextToken is TokenAssetReference tokenAssetReference)
+                {
+                    context.Position++;
+                    lhs = new DotVariableNode(lhs, new TokenVariable(tokenAssetReference));
+                }
+                else if (nextToken is TokenNumber { IsConstant: true } tokenNumber)
+                {
+                    context.Position++;
+                    lhs = new DotVariableNode(lhs, new TokenVariable(tokenNumber));
+                }
                 else if (nextToken is TokenFunction tokenFunction)
                 {
                     context.Position++;

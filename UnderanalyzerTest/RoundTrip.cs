@@ -319,8 +319,6 @@ public class RoundTrip
         });
     }
 
-    // TODO: test for @@Global@@ rewriting for things like global.a[0] = 1 becoming @@Global@@().a[0] = 1
-
     [Fact]
     public void TestAssignments2dArray()
     {

@@ -24,6 +24,7 @@ public class BuiltinsMock : IBuiltins
         { "all", -3 },
         { "noone", -4 },
         { "global", -5 },
+        { "test_constant", 128 }
     };
 
     /// <summary>

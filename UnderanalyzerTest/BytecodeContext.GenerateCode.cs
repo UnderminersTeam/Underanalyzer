@@ -2706,4 +2706,71 @@ public class BytecodeContext_GenerateCode
             gameContext
         );
     }
+
+    [Fact]
+    public void TestConstantConflicts()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingAssetReferences = false
+        };
+        gameContext.DefineMockAsset(AssetType.Sprite, 123, "spr_test");
+        TestUtil.AssertBytecode(
+            """
+            a = spr_test;
+            self.spr_test = 456;
+            global.spr_test = 789;
+            b = global.spr_test;
+            spr_test();
+            global.spr_test();
+            
+            a = test_constant;
+            self.test_constant = 456;
+            global.test_constant = 789;
+            b = global.test_constant;
+            test_constant();
+            global.test_constant();
+            """,
+            """
+            pushi.e 123
+            pop.v.i self.a
+            pushi.e 456
+            pop.v.i self.spr_test
+            pushi.e 789
+            pop.v.i global.spr_test
+            pushglb.v global.spr_test
+            pop.v.v self.b
+            call.i @@This@@ 0
+            push.v builtin.spr_test
+            callv.v 0
+            popz.v
+            call.i @@Global@@ 0
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.spr_test
+            callv.v 0
+            popz.v
+            pushi.e 128
+            pop.v.i self.a
+            pushi.e 456
+            pop.v.i self.test_constant
+            pushi.e 789
+            pop.v.i global.test_constant
+            pushglb.v global.test_constant
+            pop.v.v self.b
+            call.i @@This@@ 0
+            push.v builtin.test_constant
+            callv.v 0
+            popz.v
+            call.i @@Global@@ 0
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test_constant
+            callv.v 0
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
 }

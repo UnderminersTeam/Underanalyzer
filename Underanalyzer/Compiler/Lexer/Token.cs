@@ -363,9 +363,48 @@ internal sealed record TokenFunction(LexContext Context, int TextPosition, strin
 /// <summary>
 /// Token representing a simple variable in code.
 /// </summary>
-/// <param name="Text">Verbatim text used for the variable identifier.</param>
-internal sealed record TokenVariable(LexContext Context, int TextPosition, string Text, IBuiltinVariable? BuiltinVariable) : IToken
+internal sealed record TokenVariable : IToken
 {
+    /// <inheritdoc/>
+    public LexContext Context { get; }
+
+    /// <inheritdoc/>
+    public int TextPosition { get; }
+
+    /// <summary>
+    /// Verbatim text used for the variable identifier.
+    /// </summary>
+    public string Text { get; }
+
+    /// <summary>
+    /// Builtin variable associated with the identifier, if one exists.
+    /// </summary>
+    public IBuiltinVariable? BuiltinVariable { get; }
+
+    public TokenVariable(LexContext context, int textPosition, string text, IBuiltinVariable? builtinVariable)
+    {
+        Context = context;
+        TextPosition = textPosition;
+        Text = text;
+        BuiltinVariable = builtinVariable;
+    }
+
+    public TokenVariable(TokenAssetReference assetReference)
+    {
+        Context = assetReference.Context;
+        TextPosition = assetReference.TextPosition;
+        Text = assetReference.Text;
+        BuiltinVariable = Context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(assetReference.Text);
+    }
+
+    public TokenVariable(TokenNumber number)
+    {
+        Context = number.Context;
+        TextPosition = number.TextPosition;
+        Text = number.Text;
+        BuiltinVariable = Context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(number.Text);
+    }
+
     public override string ToString()
     {
         return Text;
