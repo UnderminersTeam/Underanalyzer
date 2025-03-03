@@ -2987,4 +2987,30 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestOtherArrayPreGMLv2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = other.b[123];
+            other.c[123] = d;
+            """,
+            """
+            pushi.e -2
+            pushi.e 123
+            push.v [array]self.b
+            pop.v.v self.a
+            push.v self.d
+            pushi.e -2
+            pushi.e 123
+            pop.v.v [array]self.c
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingGMLv2 = false
+            }
+        );
+    }
 }

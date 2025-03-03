@@ -184,6 +184,12 @@ internal sealed class AccessorNode : IAssignableASTNode
 
             // Use variable's instance type
             instanceType = simpleVariable.ExplicitInstanceType;
+            
+            // Prior to GMLv2, Other becomes Self for arrays in particular
+            if (instanceType == InstanceType.Other && !context.CompileContext.GameContext.UsingGMLv2)
+            {
+                instanceType = InstanceType.Self;
+            }
         }
         else if (variable is DotVariableNode dotVariable)
         {
