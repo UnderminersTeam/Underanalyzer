@@ -161,9 +161,25 @@ internal sealed class AssignNode : IASTNode
         DataType operationDataType = context.PeekDataType();
         if (operationOpcode is Opcode.And or Opcode.Or or Opcode.Xor)
         {
-            // Bitwise operations convert to 64-bit integers
-            context.ConvertDataType(DataType.Int64);
-            operationDataType = DataType.Int64;
+            // Bitwise operations convert to 64-bit integers (32-bit integers in older versions)
+            if (context.CompileContext.GameContext.UsingLongCompoundBitwise)
+            {
+                context.ConvertDataType(DataType.Int64);
+                operationDataType = DataType.Int64;
+            }
+            else
+            {
+                if (operationDataType == DataType.Int64)
+                {
+                    // Don't want operation type on stack anymore, so just remove it
+                    context.PopDataType();
+                }
+                else
+                {
+                    context.ConvertDataType(DataType.Int32);
+                    operationDataType = DataType.Int32;
+                }
+            }
         }
         else if (operationDataType == DataType.Boolean)
         {

@@ -83,6 +83,14 @@ public interface IGameContext
     public bool UsingLogicalShortCircuit { get; }
 
     /// <summary>
+    /// <see langword="true"/> if this game uses the 64-bit version of compound bitwise AND/OR/XOR operators; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This should be <see langword="true"/> for GameMaker 2.3.2 and above.
+    /// </remarks>
+    public bool UsingLongCompoundBitwise { get; }
+
+    /// <summary>
     /// <see langword="true"/> if this game uses the older repeat loop code generation (as of GM 2022.11); <see langword="false"/> otherwise.
     /// </summary>
     public bool UsingExtraRepeatInstruction { get; }

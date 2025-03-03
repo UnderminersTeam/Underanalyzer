@@ -3013,4 +3013,48 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestCompoundBitwisePre2_3_2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a ^= b;
+            """,
+            """
+            push.v self.a
+            push.v self.b
+            conv.v.i
+            xor.i.v
+            pop.v.v self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingLongCompoundBitwise = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestCompoundBitwisePost2_3_2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a ^= b;
+            """,
+            """
+            push.v self.a
+            push.v self.b
+            conv.v.l
+            xor.l.v
+            pop.v.v self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingLongCompoundBitwise = true
+            }
+        );
+    }
 }

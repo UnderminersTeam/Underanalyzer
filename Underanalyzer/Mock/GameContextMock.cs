@@ -27,6 +27,8 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingLogicalShortCircuit { get; set; } = true;
     /// <inheritdoc/>
+    public bool UsingLongCompoundBitwise { get; set; } = true;
+    /// <inheritdoc/>
     public bool UsingFinallyBeforeThrow { get; set; } = true;
     /// <inheritdoc/>
     public bool UsingConstructorSetStatic { get; set; } = false;
