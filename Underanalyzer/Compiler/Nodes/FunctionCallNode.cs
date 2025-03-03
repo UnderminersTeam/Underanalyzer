@@ -265,6 +265,12 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 context.EmitDuplicate(DataType.Variable, 0);
             }
 
+            // Push error if not using GMLv2
+            if (!context.CompileContext.GameContext.UsingGMLv2)
+            {
+                context.CompileContext.PushError("Cannot call variables as functions before GMLv2 (GameMaker 2.3+)", Expression.NearbyToken);
+            }
+
             // Emit actual call
             context.EmitCallVariable(Arguments.Count);
             context.PushDataType(DataType.Variable);
@@ -294,6 +300,12 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
 
         // Compile final variable
         context.Emit(Opcode.Push, finalVariable, DataType.Variable);
+
+        // Push error if not using GMLv2
+        if (!context.CompileContext.GameContext.UsingGMLv2)
+        {
+            context.CompileContext.PushError("Cannot call variables as functions before GMLv2 (GameMaker 2.3+)", Expression.NearbyToken);
+        }
 
         // Emit actual call
         context.EmitCallVariable(Arguments.Count);

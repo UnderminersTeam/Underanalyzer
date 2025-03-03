@@ -47,6 +47,14 @@ public interface IGameContext
     public bool UsingGMLv2 { get; }
 
     /// <summary>
+    /// <see langword="true"/> if this game optimizes calls to string/real functions at compile time, where possible; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This is always true in GMS 2 and above, but is not true in some older 1.4 versions (observed 1.4.x.1763+, and 1.4.x.1539).
+    /// </remarks>
+    public bool UsingStringRealOptimizations { get; }
+
+    /// <summary>
     /// <see langword="true"/> if the game is using typed booleans in code; <see langword="false"/> otherwise.
     /// This should be <see langword="true"/> for GMS 2.3.7 and above.
     /// </summary>

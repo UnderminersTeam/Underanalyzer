@@ -2931,4 +2931,60 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestOldVariableCallsError()
+    {
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                a();
+                a.b.c();
+                a.b()();
+                """,
+                "",
+                false,
+                new Underanalyzer.Mock.GameContextMock()
+                {
+                    UsingGMLv2 = false
+                }
+            );
+        });
+    }
+
+    [Fact]
+    public void TestInstrinsicsOld()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = real(123);
+            b = string(123);
+            c = string("123");
+            d = ord("A");
+            """,
+            """
+            pushi.e 123
+            conv.i.v
+            call.i real 1
+            pop.v.v self.a
+            pushi.e 123
+            conv.i.v
+            call.i string 1
+            pop.v.v self.b
+            push.s "123"
+            conv.s.v
+            call.i string 1
+            pop.v.v self.c
+            pushi.e 65
+            pop.v.i self.d
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingStringRealOptimizations = false,
+                UsingGMLv2 = false
+            }
+        );
+    }
 }

@@ -132,7 +132,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
             "chr" => OptimizeChr(context),
             "int64" => OptimizeInt64(),
             "real" => OptimizeReal(context),
-            "string" => OptimizeString(),
+            "string" => OptimizeString(context),
             _ => this,
         };
     }
@@ -286,6 +286,12 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
             return this;
         }
 
+        // Can only optimize if enabled
+        if (!context.CompileContext.GameContext.UsingStringRealOptimizations)
+        {
+            return this;
+        }
+
         // Convert to double value
         double value;
         switch (constant)
@@ -367,12 +373,18 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <summary>
     /// Optimizes a string() function call if possible, returning an optimized node.
     /// </summary>
-    private IASTNode OptimizeString()
+    private IASTNode OptimizeString(ParseContext context)
     {
         // TODO: handle string interpolation here as well?
 
         // Can only optimize if a string is passed in
         if (Arguments is not [StringNode str])
+        {
+            return this;
+        }
+
+        // Can only optimize if enabled
+        if (!context.CompileContext.GameContext.UsingStringRealOptimizations)
         {
             return this;
         }
