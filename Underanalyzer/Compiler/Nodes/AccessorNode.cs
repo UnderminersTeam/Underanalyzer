@@ -452,14 +452,15 @@ internal sealed class AccessorNode : IAssignableASTNode
             else
             {
                 // Just two 32-bit integers to duplicate
-                if (context.CompileContext.GameContext.UsingGMLv2)
+                if (context.CompileContext.GameContext.UsingGMLv2 ||
+                    context.CompileContext.GameContext.Bytecode14OrLower)
                 {
-                    // New versions output this
+                    // New versions (and *really* old versions) output this
                     context.EmitDuplicate(DataType.Int32, 1);
                 }
                 else
                 {
-                    // Old versions output this
+                    // Old versions (but not *really* old versions) output this
                     context.EmitDuplicate(DataType.Int64, 0);
                 }
             }

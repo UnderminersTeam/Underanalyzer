@@ -2856,4 +2856,79 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestArrayIncrementOld()
+    {
+        TestUtil.AssertBytecode(
+            """
+            global.arr[123]++;
+            """,
+            """
+            pushi.e -5
+            pushi.e 123
+            dup.i 1
+            push.v [array]global.arr
+            push.e 1
+            add.i.v
+            pop.i.v [array]global.arr
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                Bytecode14OrLower = true,
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestArrayIncrementMid()
+    {
+        TestUtil.AssertBytecode(
+            """
+            global.arr[123]++;
+            """,
+            """
+            pushi.e -5
+            pushi.e 123
+            dup.l 0
+            push.v [array]global.arr
+            push.e 1
+            add.i.v
+            pop.i.v [array]global.arr
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                Bytecode14OrLower = false,
+                UsingGMLv2 = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestArrayIncrementNew()
+    {
+        TestUtil.AssertBytecode(
+            """
+            global.arr[123]++;
+            """,
+            """
+            pushi.e -5
+            pushi.e 123
+            dup.i 1
+            push.v [array]self.arr
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.arr
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                Bytecode14OrLower = false,
+                UsingGMLv2 = true
+            }
+        );
+    }
 }
