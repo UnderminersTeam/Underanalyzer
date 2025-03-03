@@ -53,7 +53,7 @@ internal sealed class ShortCircuit(int startAddress, int endAddress, ShortCircui
                     {
                         Instructions: [
                         {
-                            Kind: IGMInstruction.Opcode.PushImmediate,
+                            Kind: IGMInstruction.Opcode.Push or IGMInstruction.Opcode.PushImmediate,
                             Type1: IGMInstruction.DataType.Int16
                         }]
                     }
