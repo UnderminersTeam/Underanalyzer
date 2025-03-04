@@ -360,7 +360,7 @@ public static class VMAssembly
                             case IGMInstruction.DataType.Int32:
                                 if (!int.TryParse(data, out int dataInt32))
                                 {
-                                    if (data.StartsWith("[function]"))
+                                    if (data.StartsWith("[function]", StringComparison.Ordinal))
                                     {
                                         // We're pushing a function index instead
                                         GMFunction function = new(data["[function]".Length..]);
@@ -375,7 +375,7 @@ public static class VMAssembly
                                         }
                                         break;
                                     }
-                                    if (data.StartsWith("[variable]"))
+                                    if (data.StartsWith("[variable]", StringComparison.Ordinal))
                                     {
                                         // We're pushing a variable hash instead
                                         instr.Variable = new GMVariable(new GMString(data["[variable]".Length..]));

@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
@@ -239,13 +240,13 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
             return i;
         }
         if (Variable is not VariableNode breakVariable ||
-            !breakVariable.Variable.Name.Content.StartsWith(VMConstants.TryBreakVariable) ||
+            !breakVariable.Variable.Name.Content.StartsWith(VMConstants.TryBreakVariable, StringComparison.Ordinal) ||
             Value is not Int16Node { Value: 0 })
         {
             return i;
         }
         if (assign2.Variable is not VariableNode continueVariable ||
-            !continueVariable.Variable.Name.Content.StartsWith(VMConstants.TryContinueVariable) ||
+            !continueVariable.Variable.Name.Content.StartsWith(VMConstants.TryContinueVariable, StringComparison.Ordinal) ||
             assign2.Value is not Int16Node { Value: 0 })
         {
             return i;

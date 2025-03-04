@@ -517,7 +517,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
 
         // Check variable name and array accessor
         string variableName = Variable.Name.Content;
-        if (variableName.StartsWith("argument", StringComparison.InvariantCulture))
+        if (variableName.StartsWith("argument", StringComparison.Ordinal))
         {
             if (variableName.Length >= "argument".Length + 1 &&
                 variableName.Length <= "argument".Length + 2)
