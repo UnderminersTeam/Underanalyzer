@@ -284,7 +284,35 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
         }
         else
         {
-            throw new NotImplementedException();
+            // Only push arguments if not already pushed
+            if (!inChain)
+            {
+                // Push arguments to stack
+                GenerateArguments(context);
+            }
+
+            // General expression - use self instance, and generate expression to call.
+            // NOTE: expression is not converted to variable type, which is an official compiler bug/quirk
+            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SelfFunction), 0);
+            Expression.GenerateCode(context);
+            context.PopDataType();
+
+            // Push error if not using GMLv2
+            if (!context.CompileContext.GameContext.UsingGMLv2)
+            {
+                context.CompileContext.PushError("Cannot call variables as functions before GMLv2 (GameMaker 2.3+)", Expression.NearbyToken);
+            }
+
+            // Emit actual call
+            context.EmitCallVariable(Arguments.Count);
+            context.PushDataType(DataType.Variable);
+
+            // If this node is a statement, remove result from stack
+            if (IsStatement)
+            {
+                context.Emit(Opcode.PopDelete, context.PopDataType());
+            }
+            return;
         }
 
         // In the common case, generate arguments after instance and swap/duplicate

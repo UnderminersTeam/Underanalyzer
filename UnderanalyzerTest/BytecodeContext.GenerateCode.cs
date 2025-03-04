@@ -3057,4 +3057,73 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestExpressionVariableFunctionCalls()
+    {
+        TestUtil.AssertBytecode(
+            """
+            (0)(123, 456);
+
+            (function()
+            {
+            })(123, 456);
+
+            (function()
+            {
+            } + 1)(123, 456);
+            """,
+            """
+            :[0]
+            pushi.e 456
+            conv.i.v
+            pushi.e 123
+            conv.i.v
+            call.i @@This@@ 0
+            pushi.e 0
+            callv.v 2
+            popz.v
+            pushi.e 456
+            conv.i.v
+            pushi.e 123
+            conv.i.v
+            call.i @@This@@ 0
+            b [2]
+
+            > anon_func_1 (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]anon_func_1
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            callv.v 2
+            popz.v
+            pushi.e 456
+            conv.i.v
+            pushi.e 123
+            conv.i.v
+            call.i @@This@@ 0
+            b [4]
+
+            > anon_func_2 (locals=0, args=0)
+            :[3]
+            exit.i
+
+            :[4]
+            push.i [function]anon_func_2
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            pushi.e 1
+            add.i.v
+            callv.v 2
+            popz.v
+            """
+        );
+    }
 }
