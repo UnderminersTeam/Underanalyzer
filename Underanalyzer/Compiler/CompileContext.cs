@@ -162,7 +162,7 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     /// <summary>
     /// Compiles the GML code with the given game context. Will re-use earlier parse results if available.
     /// </summary>
-    public void Compile()
+    public void Compile(int initialPosition = 0)
     {
         // Ensure compile only occurs once
         if (_startedCompile)
@@ -183,7 +183,7 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
 
         // Generate bytecode
         BytecodeContext bytecodeContext = new(this, _parseRootNode, _parseRootScope, _parseGlobalFunctions);
-        bytecodeContext.GenerateCode();
+        bytecodeContext.GenerateCode(initialPosition);
 
         // Exit if any errors occurred
         if (HasErrors)

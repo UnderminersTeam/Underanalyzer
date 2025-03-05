@@ -94,8 +94,9 @@ internal sealed class BytecodeContext : ISubCompileContext
     /// <summary>
     /// Performs bytecode generation for a full code entry, from the root.
     /// </summary>
-    public void GenerateCode()
+    public void GenerateCode(int initialPosition)
     {
+        Position = initialPosition;
         RootNode.GenerateCode(this);
 
 #if DEBUG
