@@ -108,7 +108,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
                 context.CompileContext.PushError(
                     $"Expected '{TokenSeparator.KindToString(SeparatorKind.Comma)}' or " +
                     $"'{TokenSeparator.KindToString(SeparatorKind.ArrayClose)}', " +
-                    $"got {currentToken}", currentToken);
+                    $"got '{currentToken}'", currentToken);
                 break;
             }
         }

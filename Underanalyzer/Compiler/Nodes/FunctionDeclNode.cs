@@ -177,7 +177,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
                 context.CompileContext.PushError(
                     $"Expected '{TokenSeparator.KindToString(SeparatorKind.Comma)}' or " +
                     $"'{TokenSeparator.KindToString(SeparatorKind.GroupClose)}', " +
-                    $"got {currentToken}", currentToken);
+                    $"got '{currentToken}'", currentToken);
                 break;
             }
         }
