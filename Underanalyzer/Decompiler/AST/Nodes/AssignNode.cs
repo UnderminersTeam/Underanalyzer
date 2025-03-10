@@ -387,6 +387,10 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         {
             return true;
         }
+        if (DeclareLocalVar && printer.Context.Settings.CleanupLocalVarDeclarations && Variable is VariableNode { ArrayIndices: not null })
+        {
+            return true;
+        }
         return false;
     }
 }

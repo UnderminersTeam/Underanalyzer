@@ -1306,4 +1306,24 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestInnerLoopLocalArray()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            while (a)
+            {
+                var arr;
+                arr[0] = 1;
+            }
+            """,
+            false,
+            null,
+            new Underanalyzer.Decompiler.DecompileSettings()
+            {
+                RemoveSingleLineBlockBraces = true
+            }
+        );
+    }
 }
