@@ -39,10 +39,6 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
     /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
-        Condition = Condition.Clean(cleaner);
-        Condition.Group = false;
-        Body.Clean(cleaner);
-
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
         if (!MustBeWhileLoop)
@@ -50,13 +46,18 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
             // Check if we can turn into a for (;;) loop
             if (Condition is Int64Node i64 && i64.Value == 1)
             {
-                return new ForLoopNode(null, null, null, Body)
+                ElseToContinueCleanup.Clean(cleaner, Body);
+                return new ForLoopNode(null, null, null, (BlockNode)Body.Clean(cleaner))
                 {
                     EmptyLineBefore = EmptyLineBefore,
                     EmptyLineAfter = EmptyLineAfter
                 };
             }
         }
+
+        Condition = Condition.Clean(cleaner);
+        Condition.Group = false;
+        Body.Clean(cleaner);
 
         return this;
     }
@@ -89,6 +90,12 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
                 return i;
             }
             if (!initVariable.SimilarToInForIncrementor(incVariable))
+            {
+                return i;
+            }
+
+            // Finally, if the for loop body would be empty, there's no need to convert over
+            if (Body.Children.Count == 1)
             {
                 return i;
             }

@@ -68,6 +68,13 @@ internal sealed class ContinueNode(IToken? token) : IASTNode
         }
 
         // Use control flow context's continue branch
-        context.GetTopControlFlowContext().UseContinue(context, context.Emit(Opcode.Branch));
+        IControlFlowContext topContext = context.GetTopControlFlowContext();
+        if (!topContext.CanContinueBeUsed)
+        {
+            // Can't actually use the continue branch!
+            context.CompileContext.PushError($"Continue used in an invalid context", NearbyToken);
+            return;
+        }
+        topContext.UseContinue(context, context.Emit(Opcode.Branch));
     }
 }

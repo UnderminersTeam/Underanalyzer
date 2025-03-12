@@ -206,11 +206,13 @@ internal sealed class ForLoopNode : IASTNode
         tailPatch.AddInstruction(context, context.Emit(Opcode.BranchFalse));
 
         // Enter loop context, and generate body
-        context.PushControlFlowContext(new BasicLoopContext(tailPatch, incrementorPatch));
+        BasicLoopContext loopContext = new(tailPatch, incrementorPatch);
+        context.PushControlFlowContext(loopContext);
         Body.GenerateCode(context);
 
         // Incrementor, then exit loop context
         incrementorPatch.Patch(context);
+        loopContext.CanContinueBeUsed = false;
         Incrementor.GenerateCode(context);
         context.PopControlFlowContext();
 

@@ -24,6 +24,11 @@ internal interface IControlFlowContext
     public bool IsLoop { get; }
 
     /// <summary>
+    /// Whether "continue" is allowed to be used (this can change).
+    /// </summary>
+    public bool CanContinueBeUsed { get; set; }
+
+    /// <summary>
     /// Generates cleanup code for the control flow context, using the given bytecode context.
     /// </summary>
     public void GenerateCleanupCode(BytecodeContext context);
@@ -49,6 +54,9 @@ internal abstract class LoopContext(IMultiBranchPatch breakPatch, IMultiBranchPa
 
     /// <inheritdoc/>
     public bool IsLoop => true;
+
+    /// <inheritdoc/>
+    public bool CanContinueBeUsed { get; set; } = true;
 
     /// <inheritdoc/>
     public abstract void GenerateCleanupCode(BytecodeContext context);
@@ -124,6 +132,9 @@ internal sealed class SwitchContext(DataType expressionType, IMultiBranchPatch b
 
     /// <inheritdoc/>
     public bool IsLoop => false;
+
+    /// <inheritdoc/>
+    public bool CanContinueBeUsed { get; set; } = true;
 
     /// <inheritdoc/>
     public void GenerateCleanupCode(BytecodeContext context)

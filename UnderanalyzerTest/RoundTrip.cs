@@ -1326,4 +1326,92 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestForWhileEdgeCases()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 0;
+            while (a < 10)
+            {
+                a++;
+            }
+            for (c = 0; c < 10; c++)
+            {
+                test = test2;
+            }
+            for (d = 10; d > 0; d--)
+            {
+                test2 = test;
+            }
+            for (;;)
+            {
+            }
+            for (; a;)
+            {
+                continue;
+            }
+            i = 0;
+            for (;;)
+            {
+                i++;
+            }
+            for (;;)
+            {
+                if (a)
+                {
+                    continue;
+                }
+            }
+            i = 0;
+            for (;;)
+            {
+                if (a)
+                {
+                }
+                else
+                {
+                }
+                i++;
+            }
+            for (;;)
+            {
+                if (a)
+                {
+                    if (b)
+                    {
+                        continue;
+                    }
+                }
+                c = 1;
+            }
+            for (i = 0; ; i++)
+            {
+                if (a)
+                {
+                    if (b)
+                    {
+                        continue;
+                    }
+                }
+                if (c)
+                {
+                }
+            }
+            while (UnknownEnum.Value_1)
+            {
+                if (a)
+                {
+                    continue;
+                }
+            }
+
+            enum UnknownEnum
+            {
+                Value_1 = 1
+            }
+            """
+        );
+    }
 }

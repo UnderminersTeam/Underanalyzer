@@ -44,34 +44,34 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
     /// <inheritdoc/>
     public IStatementNode Clean(ASTCleaner cleaner)
     {
-        Initializer = Initializer?.Clean(cleaner);
-        Condition = Condition!.Clean(cleaner);
-        Condition.Group = false;
-        Incrementor?.Clean(cleaner);
-
-        ElseToContinueCleanup.Clean(cleaner, Body);
-        Body.Clean(cleaner);
-
         IStatementNode res = this;
 
-        // Check if we're a for (;;) loop
-        if (Condition is Int64Node i64 && i64.Value == 1 && Incrementor is { Children: [] })
+        // Clean up initializer, if we have one
+        Initializer = Initializer?.Clean(cleaner);
+
+        // Check if we're a for (;;) loop, or similar, for the condition
+        if (Condition is Int64Node i64 && i64.Value == 1)
         {
-            // We have no condition or incrementor, so rewrite this as for (;;)
             Condition = null;
-            Incrementor = null;
-
-            if (Initializer is not null && (Initializer is not BlockNode || Initializer is BlockNode block && block.Children is not []))
-            {
-                // Move initializer above loop
-                BlockNode newBlock = new(cleaner.TopFragmentContext!);
-                newBlock.Children.Add(Initializer);
-                newBlock.Children.Add(this);
-                res = newBlock;
-            }
-
-            Initializer = null;
         }
+
+        // Remove incrementor if empty
+        if (Incrementor is { Children: [] })
+        {
+            Incrementor = null;
+        }
+
+        // Clean up condition and incrementor, if we have them
+        if (Condition is not null)
+        {
+            Condition = Condition.Clean(cleaner);
+            Condition.Group = false;
+        }
+        Incrementor?.Clean(cleaner);
+
+        // Clean up body
+        ElseToContinueCleanup.Clean(cleaner, Body);
+        Body.Clean(cleaner);
 
         EmptyLineAfter = EmptyLineBefore = cleaner.Context.Settings.EmptyLineAroundBranchStatements;
 
@@ -84,8 +84,37 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         // Check if this for loop needs an initializer, and if so (and there's a readable one), add it
         if (Initializer is null && i > 0 && block.Children[i - 1] is AssignNode assign &&
             assign.Value is (Int16Node or Int32Node or Int64Node or VariableNode) &&
-            Condition is not null)
+            (Condition is not null || Incrementor is { Children: [.., AssignNode] }))
         {
+            // Perform additional check to see if incrementor and initializer are similar/readable
+            if (Incrementor is { Children: [.., AssignNode incrementor] })
+            {
+                // For readability, just stick to integer and variable assignments/compound operations
+                if (incrementor.Value is not (Int16Node or Int32Node or Int64Node or VariableNode) &&
+                    incrementor.AssignKind != AssignNode.AssignType.Prefix &&
+                    incrementor.AssignKind != AssignNode.AssignType.Postfix)
+                {
+                    return i;
+                }
+                if (incrementor.AssignKind is not (AssignNode.AssignType.Compound or
+                    AssignNode.AssignType.Prefix or AssignNode.AssignType.Postfix))
+                {
+                    return i;
+                }
+
+                // Also for readability, make sure the initializer and incrementor variables are similar
+                if (assign.Variable is not VariableNode initVariable ||
+                    incrementor.Variable is not VariableNode incVariable)
+                {
+                    return i;
+                }
+                if (!initVariable.SimilarToInForIncrementor(incVariable))
+                {
+                    return i;
+                }
+            }
+
+            // Move the initializer in!
             Initializer = assign;
             block.Children.RemoveAt(i - 1);
             block.Children[i - 1] = Clean(cleaner);
@@ -120,21 +149,22 @@ public class ForLoopNode(IStatementNode? initializer, IExpressionNode? condition
         printer.Write("for (");
         if (Condition is null && Incrementor is null)
         {
-            if (Initializer is not null)
-            {
-                throw new DecompilerException("Expected initializer to be null in for (;;) loop");
-            }
+            Initializer?.Print(printer);
             printer.Write(";;");
         }
         else
         {
             Initializer?.Print(printer);
             printer.Write("; ");
-            Condition!.Print(printer);
+            Condition?.Print(printer);
             if (Incrementor is not null)
             {
                 printer.Write("; ");
-                Incrementor.GetShortestStatement().Print(printer);
+                IStatementNode shortestStatement = Incrementor.GetShortestStatement();
+                if (shortestStatement is not BlockNode { Children: [] })
+                {
+                    shortestStatement.Print(printer);
+                }
             }
             else
             {

@@ -3126,4 +3126,18 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestContinueError()
+    {
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                for (var i = 0; i < 10; { i++; continue; }) {}
+                """,
+                ""
+            );
+        });
+    }
 }
