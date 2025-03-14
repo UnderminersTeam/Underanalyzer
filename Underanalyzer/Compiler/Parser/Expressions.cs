@@ -77,6 +77,12 @@ internal static class Expressions
         {
             context.Position++;
 
+            // Throw error if this feature is not enabled
+            if (!context.CompileContext.GameContext.UsingNullishOperator)
+            {
+                context.CompileContext.PushError("Nullish coalesce operator (??) is not supported in this GameMaker version (must be 2.3.7+)", tokenNullishCoalesce);
+            }
+
             // Parse right expression
             if (ParseOrExpression(context) is IASTNode rightExpr)
             {
@@ -581,6 +587,11 @@ internal static class Expressions
                 if (context.CompileContext.GameContext.UsingGMLv2)
                 {
                     accessor = accessor.Convert2DArrayToTwoAccessors();
+                }
+                else if (lhs is AccessorNode)
+                {
+                    // Throw error if using this syntax prior to GMLv2; it's unsupported
+                    context.CompileContext.PushError("Multidimensional array syntax not supported before GMLv2 (GameMaker 2.3+)", tokenArrayOpen);
                 }
 
                 // This accessor is now the left side of the chain

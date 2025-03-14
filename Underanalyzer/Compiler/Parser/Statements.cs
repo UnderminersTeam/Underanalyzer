@@ -173,6 +173,12 @@ internal static class Statements
                 context.CompileContext.PushError($"Attempting to assign read-only variable '{variable.VariableName}'", variable.NearbyToken);
             }
 
+            // Throw error if using nullish coalesce, and the feature is not enabled
+            if (tokenOperator.Kind == OperatorKind.CompoundNullishCoalesce && !context.CompileContext.GameContext.UsingNullishOperator)
+            {
+                context.CompileContext.PushError("Nullish coalesce operator (??=) is not supported in this GameMaker version (must be 2.3.7+)", tokenOperator);
+            }
+
             // Parse expression on right side and make assignment if possible
             if (Expressions.ParseExpression(context) is IASTNode rhs)
             {

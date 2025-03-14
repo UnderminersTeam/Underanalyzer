@@ -3140,4 +3140,64 @@ public class BytecodeContext_GenerateCode
             );
         });
     }
+
+    [Fact]
+    public void TestNullishErrors()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingNullishOperator = false
+        };
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                a = b ?? c;
+                """,
+                "",
+                false,
+                gameContext
+            );
+        });
+    }
+
+    [Fact]
+    public void TestNullishErrors2()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingNullishOperator = false
+        };
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                a ??= b;
+                """,
+                "",
+                false,
+                gameContext
+            );
+        });
+    }
+
+    [Fact]
+    public void TestMultiDimensionalErrors()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingGMLv2 = false
+        };
+        Assert.Throws<TestCompileErrorException>(() =>
+        {
+            TestUtil.AssertBytecode(
+                """
+                a[b][c] = 123;
+                """,
+                "",
+                false,
+                gameContext
+            );
+        });
+    }
 }

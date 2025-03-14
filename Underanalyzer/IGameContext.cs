@@ -61,6 +61,12 @@ public interface IGameContext
     public bool UsingTypedBooleans { get; }
 
     /// <summary>
+    /// <see langword="true"/> if the game is able to use the nullish operator (??, ??=); <see langword="false"/> otherwise.
+    /// This should be <see langword="true"/> for GMS 2.3.7 and above.
+    /// </summary>
+    public bool UsingNullishOperator { get; }
+
+    /// <summary>
     /// <see langword="true"/> if the game is using the <see cref="IGMInstruction.ExtendedOpcode.PushReference"/> instruction to use asset references in code; <see langword="false"/> otherwise.
     /// This should be <see langword="true"/> for GameMaker 2023.8 and above.
     /// </summary>
