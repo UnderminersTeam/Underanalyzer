@@ -198,7 +198,15 @@ internal static class TestUtil
             }
             else
             {
-                string name = $"anon_func_{anonCounter++}";
+                string name;
+                if (functionEntry.StaticVariableName is not null)
+                {
+                    name = $"{functionEntry.StaticVariableName}_anon_func_{anonCounter++}";
+                }
+                else
+                {
+                    name = $"anon_func_{anonCounter++}";
+                }
                 functionEntry.ResolveFunction(new GMFunction(name), "unused for tests");
                 gameContext.DefineMockAsset(AssetType.Script, scriptIndexCounter++, name);
             }

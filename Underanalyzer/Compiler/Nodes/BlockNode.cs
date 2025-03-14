@@ -152,7 +152,7 @@ internal sealed class BlockNode : IASTNode
         context.CurrentScope.GeneratingStaticBlock = true;
         foreach (IASTNode statement in Children)
         {
-            if (statement is AssignNode { Expression: SimpleVariableNode { VariableName: string staticName } } assign)
+            if (statement is AssignNode { Destination: SimpleVariableNode { VariableName: string staticName } } assign)
             {
                 // Set new static name, used to assign to function entries
                 context.CurrentScope.StaticVariableName = staticName;

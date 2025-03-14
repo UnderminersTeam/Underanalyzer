@@ -3200,4 +3200,58 @@ public class BytecodeContext_GenerateCode
             );
         });
     }
+
+    [Fact]
+    public void TestStaticAnonymousName()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function Test()
+            {
+                static myStaticFunc = function()
+                {
+                };
+            }
+            """,
+            """
+            :[0]
+            b [6]
+
+            > regular_func_Test (locals=0, args=0)
+            :[1]
+            isstaticok.e
+            bt [5]
+
+            :[2]
+            b [4]
+
+            > myStaticFunc_anon_func_1 (locals=0, args=0)
+            :[3]
+            exit.i
+
+            :[4]
+            push.i [function]myStaticFunc_anon_func_1
+            conv.i.v
+            pushi.e -16
+            conv.i.v
+            call.i method 2
+            pop.v.v static.myStaticFunc
+
+            :[5]
+            setstatic.e
+            exit.i
+
+            :[6]
+            push.i [function]regular_func_Test
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.Test
+            popz.v
+            """
+        );
+    }
 }
