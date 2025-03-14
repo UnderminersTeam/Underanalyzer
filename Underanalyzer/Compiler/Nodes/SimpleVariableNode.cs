@@ -62,7 +62,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     public IToken? NearbyToken { get; init; }
 
     // Set of built-in argument variables
-    private static readonly HashSet<string> _builtinArgumentVariables =
+    public static readonly HashSet<string> BuiltinArgumentVariables =
     [
         "argument0", "argument1", "argument2", "argument3",
         "argument4", "argument5", "argument6", "argument7",
@@ -343,9 +343,12 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             }
 
             // Resolve old builtin argument variables
-            if (_builtinArgumentVariables.Contains(VariableName))
+            if (BuiltinArgumentVariables.Contains(VariableName))
             {
-                SetExplicitInstanceType(InstanceType.Builtin);
+                SetExplicitInstanceType(
+                    context.CompileContext.GameContext.UsingSelfToBuiltin && context.CurrentScope == context.RootScope ? 
+                    InstanceType.Argument : 
+                    InstanceType.Builtin);
                 return this;
             }
 

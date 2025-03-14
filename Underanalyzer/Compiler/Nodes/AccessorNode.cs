@@ -131,6 +131,15 @@ internal sealed class AccessorNode : IAssignableASTNode
             dotVariableNode.LeftExpression = numberNode.PostProcess(context);
         }
 
+        // Another strange compiler quirk with arguments in root scope...
+        if (Expression is SimpleVariableNode { CollapsedFromDot: false, HasExplicitInstanceType: false } simpleVariableNode &&
+            SimpleVariableNode.BuiltinArgumentVariables.Contains(simpleVariableNode.VariableName) &&
+            context.CurrentScope == context.RootScope &&
+            !context.CompileContext.GameContext.UsingSelfToBuiltin)
+        {
+            simpleVariableNode.SetExplicitInstanceType(InstanceType.Argument);
+        }
+
         Expression = Expression.PostProcess(context);
         AccessorExpression = AccessorExpression.PostProcess(context);
         AccessorExpression2 = AccessorExpression2?.PostProcess(context);

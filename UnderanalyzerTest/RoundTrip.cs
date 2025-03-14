@@ -1225,8 +1225,16 @@ public class RoundTrip
     [Fact]
     public void TestArguments()
     {
+        GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true
+        };
         TestUtil.VerifyRoundTrip(
             """
+            a = argument0;
+            b = argument0[1];
+            c = argument[1];
+
             function args(arg0)
             {
                 test = arg0;
@@ -1235,7 +1243,36 @@ public class RoundTrip
                 test4 = argument0[0];
                 test5 = argument[0];
             }
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestArgumentsOld()
+    {
+        GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = false
+        };
+        TestUtil.VerifyRoundTrip(
             """
+            a = argument0;
+            b = argument0[1];
+            c = argument[1];
+
+            function args(arg0)
+            {
+                test = arg0;
+                test2 = arg0[0];
+                test3 = argument0;
+                test4 = argument0[0];
+                test5 = argument[0];
+            }
+            """,
+            false,
+            gameContext
         );
     }
 

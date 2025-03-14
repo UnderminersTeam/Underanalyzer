@@ -2476,14 +2476,17 @@ public class BytecodeContext_GenerateCode
     }
 
     [Fact]
-    public void TestArguments()
+    public void TestArgumentsOld()
     {
         Underanalyzer.Mock.GameContextMock gameContext = new()
         {
-            UsingSelfToBuiltin = true
+            UsingSelfToBuiltin = false
         };
         TestUtil.AssertBytecode(
             """
+            a = argument0;
+            b = argument0[1];
+            c = argument[1];
             function args(a)
             {
                 test = a;
@@ -2494,6 +2497,86 @@ public class BytecodeContext_GenerateCode
             }
             """,
             """
+            pushbltn.v builtin.argument0
+            pop.v.v self.a
+            pushi.e -15
+            pushi.e 1
+            push.v [array]self.argument0
+            pop.v.v self.b
+            pushi.e -15
+            pushi.e 1
+            push.v [array]self.argument
+            pop.v.v self.c
+            b [2]
+
+            > regular_func_args (locals=0, argc=1)
+            :[1]
+            push.v arg.argument0
+            pop.v.v self.test
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument0
+            pop.v.v self.test2
+            pushbltn.v builtin.argument0
+            pop.v.v self.test3
+            pushi.e -6
+            pushi.e 0
+            push.v [array]self.argument0
+            pop.v.v self.test4
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v self.test5
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_args
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.args
+            popz.v
+            """,
+            false,
+            gameContext
+        );
+    }
+
+    [Fact]
+    public void TestArguments()
+    {
+        Underanalyzer.Mock.GameContextMock gameContext = new()
+        {
+            UsingSelfToBuiltin = true
+        };
+        TestUtil.AssertBytecode(
+            """
+            a = argument0;
+            b = argument0[1];
+            c = argument[1];
+            function args(a)
+            {
+                test = a;
+                test2 = a[0];
+                test3 = argument0;
+                test4 = argument0[0];
+                test5 = argument[0];
+            }
+            """,
+            """
+            push.v arg.argument0
+            pop.v.v builtin.a
+            pushi.e -15
+            pushi.e 1
+            push.v [array]self.argument0
+            pop.v.v builtin.b
+            pushi.e -15
+            pushi.e 1
+            push.v [array]self.argument
+            pop.v.v builtin.c
             b [2]
 
             > regular_func_args (locals=0, argc=1)

@@ -177,19 +177,18 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
             // Also, process macro resolution for the default value expression, based on the argument name.
             IExpressionNode? expr = assign.Value;
             string? argName = Body.FragmentContext.GetNamedArgumentName(cleaner.Context, argIndex);
-            if (argName is null)
+            if (argName is not null)
             {
-                break;
+                cleaner.PushFragmentContext(Body.FragmentContext);
+                if (expr is IMacroResolvableNode valueResolvable &&
+                    cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, argName) is IMacroType variableMacroType &&
+                    valueResolvable.ResolveMacroType(cleaner, variableMacroType) is IExpressionNode valueResolved)
+                {
+                    expr = valueResolved;
+                }
+                cleaner.PopFragmentContext();
             }
-            cleaner.PushFragmentContext(Body.FragmentContext);
-            if (expr is IMacroResolvableNode valueResolvable &&
-                cleaner.GlobalMacroResolver.ResolveVariableType(cleaner, argName) is IMacroType variableMacroType &&
-                valueResolvable.ResolveMacroType(cleaner, variableMacroType) is IExpressionNode valueResolved)
-            {
-                expr = valueResolved;
-            }
-            cleaner.PopFragmentContext();
-            
+
             if (expr is null)
             {
                 break;

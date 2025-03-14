@@ -20,6 +20,11 @@ public sealed class ASTFragmentContext
     private Fragment Fragment { get; }
 
     /// <summary>
+    /// Whether this context belongs to the root fragment of the corresponding root code entry.
+    /// </summary>
+    public bool IsRootFragment { get => Fragment.StartAddress == 0; }
+
+    /// <summary>
     /// The name of the code entry this fragment belongs to.
     /// </summary>
     public string? CodeEntryName { get => Fragment.CodeEntry.Name?.Content; }

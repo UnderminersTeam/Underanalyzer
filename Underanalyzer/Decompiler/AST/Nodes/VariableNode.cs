@@ -277,8 +277,11 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
                     cleaner.TopFragmentContext.MaxReferencedArgument = num;
                 }
 
-                // Generate named argument for later, in case it hasn't already been generated
-                cleaner.TopFragmentContext.GetNamedArgumentName(cleaner.Context, num);
+                if (!cleaner.TopFragmentContext.IsRootFragment)
+                {
+                    // Generate named argument for later, in case it hasn't already been generated
+                    cleaner.TopFragmentContext.GetNamedArgumentName(cleaner.Context, num);
+                }
             }
         }
 
@@ -399,7 +402,7 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
 
         int argIndex = GetArgumentIndex(printer.TopFragmentContext!.MaxReferencedArgument);
         bool namedArgumentArray = false;
-        if (argIndex == -1)
+        if (argIndex == -1 || printer.TopFragmentContext.IsRootFragment)
         {
             // Variable name
             printer.Write(Variable.Name.Content);
