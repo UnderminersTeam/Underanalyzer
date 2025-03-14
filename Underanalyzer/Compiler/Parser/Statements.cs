@@ -86,7 +86,7 @@ internal static class Statements
                         // Parse expression for return value, if one exists
                         IToken nextToken = context.Tokens[context.Position];
                         if (nextToken is not TokenSeparator { Kind: SeparatorKind.Semicolon } and
-                                         not TokenKeyword { Kind: not KeywordKind.Function })
+                                         not TokenKeyword { Kind: not (KeywordKind.Function or KeywordKind.New) })
                         {
                             if (Expressions.ParseExpression(context) is IASTNode returnValue)
                             {

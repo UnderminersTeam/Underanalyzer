@@ -1434,4 +1434,14 @@ public class RoundTrip
             gameContext
         );
     }
+
+    [Fact]
+    public void TestReturnNewObject()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            return new Test();
+            """
+        );
+    }
 }
