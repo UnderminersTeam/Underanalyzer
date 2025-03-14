@@ -1444,4 +1444,46 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestWithWhileContinue()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            with (a)
+            {
+                while (b)
+                {
+                    if (c)
+                    {
+                        continue;
+                    }
+                }
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestWithWhileBreakContinue()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            with (a)
+            {
+                while (b)
+                {
+                    if (c)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
+            """
+        );
+    }
 }
