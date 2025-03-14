@@ -291,6 +291,43 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
         return i - 1;
     }
 
+    /// <summary>
+    /// Returns whether a variable name is a valid GML identifier or not.
+    /// </summary>
+    private bool VariableNameIsValidIdentifier(string name)
+    {
+        // If name is empty, it's clearly not valid
+        if (name.Length == 0)
+        {
+            return false;
+        }
+
+        // Check first character
+        char firstChar = name[0];
+        if ((firstChar < 'a' || firstChar > 'z') && 
+            (firstChar < 'A' || firstChar > 'Z') && 
+            firstChar != '_')
+        {
+            return false;
+        }
+
+        // Check all other characters
+        for (int i = 1; i < name.Length; i++)
+        {
+            char c = name[i];
+            if ((c < 'a' || c > 'z') &&
+                (c < 'A' || c > 'Z') &&
+                (c < '0' || c > '9') &&
+                c != '_')
+            {
+                return false;
+            }
+        }
+
+        // Every character was valid!
+        return true;
+    }
+
     /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
@@ -300,11 +337,17 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                 if (printer.StructArguments is not null)
                 {
                     // We're inside a struct initialization block
-                    if (Variable is VariableNode variable)
+                    if (Variable is VariableNode { Variable.Name.Content: string variableName })
                     {
                         // Write just the variable name if possible
-                        // TODO: detect if we need to add quotes around the name
-                        printer.Write(variable.Variable.Name.Content);
+                        if (VariableNameIsValidIdentifier(variableName))
+                        {
+                            printer.Write(variableName);
+                        }
+                        else
+                        {
+                            StringNode.PrintGMS2String(printer, variableName);
+                        }
                     }
                     else
                     {

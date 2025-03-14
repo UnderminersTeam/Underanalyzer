@@ -44,6 +44,51 @@ public class StringNode(IGMString value) : IConstantNode<IGMString>, IConditiona
         return this;
     }
 
+    /// <summary>
+    /// Helper to print a GMS2-style escaped string.
+    /// </summary>
+    public static void PrintGMS2String(ASTPrinter printer, ReadOnlySpan<char> content)
+    {
+        printer.Write('"');
+        foreach (char c in content)
+        {
+            switch (c)
+            {
+                case '\n':
+                    printer.Write("\\n");
+                    break;
+                case '\r':
+                    printer.Write("\\r");
+                    break;
+                case '\b':
+                    printer.Write("\\b");
+                    break;
+                case '\f':
+                    printer.Write("\\f");
+                    break;
+                case '\t':
+                    printer.Write("\\t");
+                    break;
+                case '\v':
+                    printer.Write("\\v");
+                    break;
+                case '\a':
+                    printer.Write("\\a");
+                    break;
+                case '\\':
+                    printer.Write("\\\\");
+                    break;
+                case '\"':
+                    printer.Write("\\\"");
+                    break;
+                default:
+                    printer.Write(c);
+                    break;
+            }
+        }
+        printer.Write('"');
+    }
+
     /// <inheritdoc/>
     public void Print(ASTPrinter printer)
     {
@@ -51,44 +96,7 @@ public class StringNode(IGMString value) : IConstantNode<IGMString>, IConditiona
         if (printer.Context.GameContext.UsingGMS2OrLater)
         {
             // Handle string escaping.
-            printer.Write('"');
-            foreach (char c in content)
-            {
-                switch (c)
-                {
-                    case '\n':
-                        printer.Write("\\n");
-                        break;
-                    case '\r':
-                        printer.Write("\\r");
-                        break;
-                    case '\b':
-                        printer.Write("\\b");
-                        break;
-                    case '\f':
-                        printer.Write("\\f");
-                        break;
-                    case '\t':
-                        printer.Write("\\t");
-                        break;
-                    case '\v':
-                        printer.Write("\\v");
-                        break;
-                    case '\a':
-                        printer.Write("\\a");
-                        break;
-                    case '\\':
-                        printer.Write("\\\\");
-                        break;
-                    case '\"':
-                        printer.Write("\\\"");
-                        break;
-                    default:
-                        printer.Write(c);
-                        break;
-                }
-            }
-            printer.Write('"');
+            PrintGMS2String(printer, content);
         }
         else
         {

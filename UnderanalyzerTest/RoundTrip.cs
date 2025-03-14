@@ -1414,4 +1414,24 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestStructKeys()
+    {
+        GameContextMock gameContext = new();
+        gameContext.DefineMockAsset(AssetType.Sprite, 16, "spr_test");
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 
+            {
+                b: 1,
+                spr_test: 2,
+                test_constant: 3,
+                "even whitespace": 4
+            };
+            """,
+            false,
+            gameContext
+        );
+    }
 }

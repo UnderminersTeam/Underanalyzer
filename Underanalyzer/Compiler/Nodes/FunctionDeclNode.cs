@@ -277,11 +277,26 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         // Read assignments from struct literal
         while (!context.EndOfCode && !context.IsCurrentToken(SeparatorKind.BlockClose, KeywordKind.End))
         {
-            // TODO: support strings here
             if (context.Tokens[context.Position] is not TokenVariable variable)
             {
-                // Failed to find a variable here... stop parsing
-                break;
+                // Failed to find a variable here... check if a constant/asset reference or string
+                if (context.Tokens[context.Position] is TokenAssetReference assetReference)
+                {
+                    variable = new TokenVariable(assetReference);
+                }
+                else if (context.Tokens[context.Position] is TokenNumber { IsConstant: true } number)
+                {
+                    variable = new TokenVariable(number);
+                }
+                else if (context.Tokens[context.Position] is TokenString str)
+                {
+                    variable = new TokenVariable(str);
+                }
+                else
+                {
+                    // Nothing matched; stop parsing
+                    break;
+                }
             }
             context.Position++;
 
