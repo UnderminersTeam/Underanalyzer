@@ -3004,7 +3004,7 @@ public class BytecodeContext_GenerateCode
             push.v [array]self.arr
             push.e 1
             add.i.v
-            pop.i.v [array]self.arr
+            pop.i.v [array]global.arr
             """,
             false,
             new Underanalyzer.Mock.GameContextMock()
@@ -3801,6 +3801,39 @@ public class BytecodeContext_GenerateCode
                 UsingArrayCopyOnWrite = true,
                 UsingNewArrayOwners = true
             }
+        );
+    }
+
+    [Fact]
+    public void TestGlobalAssignIncrement()
+    {
+        TestUtil.AssertBytecode(
+            """
+            global.a[0] = 1;
+            global.a[0] += 1;
+            global.a[0]++;
+            """,
+            """
+            pushi.e 1
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e -5
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.a
+            pushi.e 1
+            add.i.v
+            pop.i.v [array]self.a
+            pushi.e -5
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.a
+            push.e 1
+            add.i.v
+            pop.i.v [array]global.a
+            """
         );
     }
 }

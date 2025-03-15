@@ -226,12 +226,12 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     }
 
     /// <inheritdoc/>
-    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType variableInstanceType, InstanceType instructionInstanceType, VariableType variableType, bool isBuiltin, bool isStructVariable)
+    public void PatchInstruction(IGMInstruction instruction, string variableName, InstanceType variableInstanceType, InstanceType instructionInstanceType, VariableType variableType, bool isBuiltin, bool keepInstanceType)
     {
         if (instruction is GMInstruction mockInstruction)
         {
             // Transform instance type into Self in GMLv2 (or when using object/instance ID) when not using simple variables
-            if (!isStructVariable && (gameContext.UsingGMLv2 || variableInstanceType >= 0) && variableType != VariableType.Normal && variableType != VariableType.Instance)
+            if (!keepInstanceType && (gameContext.UsingGMLv2 || variableInstanceType >= 0) && variableType != VariableType.Normal && variableType != VariableType.Instance)
             {
                 variableInstanceType = InstanceType.Self;
                 instructionInstanceType = InstanceType.Self;

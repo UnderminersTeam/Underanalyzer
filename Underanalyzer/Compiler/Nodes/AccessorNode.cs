@@ -503,6 +503,12 @@ internal sealed class AccessorNode : IAssignableASTNode
                 PrePostDuplicateAndSwap(context, instanceConversionType);
             }
 
+            // Odd quirk in GMLv2, where the instance type is maintained for the pop only
+            if (context.CompileContext.GameContext.UsingGMLv2)
+            {
+                varPatch.KeepInstanceType = true;
+            }
+
             // Simple variable store, but denote pop order using data types
             context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
         }

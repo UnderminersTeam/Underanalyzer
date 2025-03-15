@@ -78,6 +78,11 @@ internal record struct VariablePatch(string Name, InstanceType InstanceType, Var
     /// Instance type to use for instruction. Sometimes differs from <see cref="InstanceType"/>, due to compiler quirks.
     /// </summary>
     public InstanceType InstructionInstanceType { get; set; } = InstanceType;
+
+    /// <summary>
+    /// For cases where the variable type being not <see cref="VariableType.Normal"/> would cause instance type to be ignored, this can be set to disable that behavior.
+    /// </summary>
+    public bool KeepInstanceType { get; set; } = false;
 }
 
 /// <summary>
