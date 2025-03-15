@@ -3337,4 +3337,470 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestArrayOwners()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a[0] = 1;
+            a[0] = 1;
+            a.b[0] = 1;
+            a.b[0] = 1;
+            array_set(a(), 0, 1);
+            c = [1];
+            d = array_create(15);
+            e[0]++;
+            e[0]++;
+            e.f[0]++;
+            e.f[0]++;
+            ++e[0];
+            ++e[0];
+            ++e.f[0];
+            ++e.f[0];
+
+            function TestFunc()
+            {
+            	a[0] = 1;
+            	a[0] = 1;
+            	a.b[0] = 1;
+            	a.b[0] = 1;
+            	array_set(a(), 0, 1);
+            	c = [1];
+            	d = array_create(15);
+            	e[0]++;
+            	e[0]++;
+            	e.f[0]++;
+            	e.f[0]++;
+            	++e[0];
+            	++e[0];
+            	++e.f[0];
+            	++e.f[0];
+            }
+            """,
+            """
+            push.i 165536
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            push.i 231073
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            push.i 65536
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e 0
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            call.i array_set 3
+            popz.v
+            push.i 165538
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            call.i @@NewGMLArray@@ 1
+            pop.v.v self.c
+            push.i 65536
+            setowner.e
+            pushi.e 15
+            conv.i.v
+            call.i array_create 1
+            pop.v.v self.d
+            push.i 165540
+            setowner.e
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.e
+            popz.v
+            push.i 231077
+            setowner.e
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.f
+            popz.v
+            push.i 165540
+            setowner.e
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.e
+            popz.v
+            push.i 231077
+            setowner.e
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.f
+            popz.v
+            b [2]
+
+            > regular_func_TestFunc (locals=0, args=0)
+            :[1]
+            push.i 231072
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            push.i 362145
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            pushi.e 1
+            conv.i.v
+            push.v self.a
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.b
+            push.i 131072
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e 0
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 0
+            call.i array_set 3
+            popz.v
+            push.i 231074
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            call.i @@NewGMLArray@@ 1
+            pop.v.v self.c
+            push.i 131072
+            setowner.e
+            pushi.e 15
+            conv.i.v
+            call.i array_create 1
+            pop.v.v self.d
+            push.i 231076
+            setowner.e
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            dup.v 0
+            dup.i 4 6
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.e
+            popz.v
+            push.i 362149
+            setowner.e
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            dup.v 0
+            dup.i 4 10
+            push.e 1
+            add.i.v
+            pop.i.v [array]self.f
+            popz.v
+            push.i 231076
+            setowner.e
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.e
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            dup.i 1
+            push.v [array]self.e
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 6
+            pop.i.v [array]self.e
+            popz.v
+            push.i 362149
+            setowner.e
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.f
+            popz.v
+            push.v self.e
+            pushi.e -9
+            pushi.e 0
+            dup.i 5
+            push.v [array]self.f
+            push.e 1
+            add.i.v
+            dup.v 0
+            dup.i 4 10
+            pop.i.v [array]self.f
+            popz.v
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_TestFunc
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.TestFunc
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestArrayOwnerInvalidation()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a[0] = 1;
+            while (a)
+            {
+            	a[0] = 1;
+            }
+            a[0] = 1;
+            while (a)
+            {
+            	a[0] = 1;
+            	break;
+            }
+            a[0] = 1;
+            """,
+            """
+            push.i 165536
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+
+            :[1]
+            push.v self.a
+            conv.v.b
+            bf [3]
+
+            :[2]
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            b [1]
+
+            :[3]
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+
+            :[4]
+            push.v self.a
+            conv.v.b
+            bf [7]
+
+            :[5]
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            b [7]
+
+            :[6]
+            b [4]
+
+            :[7]
+            push.i 165536
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
 }

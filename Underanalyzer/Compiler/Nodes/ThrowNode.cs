@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -85,5 +86,11 @@ internal sealed class ThrowNode : IASTNode
         // Convert to variable, and call built-in throw function (no stack cleanup necessary)
         context.ConvertDataType(DataType.Variable);
         context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.ThrowFunction), 1);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
     }
 }

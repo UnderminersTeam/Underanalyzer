@@ -5,9 +5,11 @@
 */
 
 using System;
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
+using static Underanalyzer.IGMInstruction;
 
 namespace Underanalyzer.Compiler.Nodes;
 
@@ -83,6 +85,42 @@ internal sealed class PrefixNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
+        // Handle array copy-on-write
+        if (context.CanGenerateArrayOwners)
+        {
+            if (ArrayOwners.ContainsArrayAccessor(Expression) || ArrayOwners.IsArraySetFunctionOrContainsSubLiteral(Expression))
+            {
+                // Disable array owner generation for expression
+                context.CanGenerateArrayOwners = false;
+
+                if (!ArrayOwners.GenerateSetArrayOwner(context, Expression))
+                {
+                    // Really weird official compiler bug - generate expression an extra time
+                    Expression.GenerateCode(context);
+                    context.Emit(Opcode.PopDelete, context.PopDataType());
+                }
+
+                // Really weird compiler quirk - generate as if this is an expression, always
+                Expression.GeneratePrePostAssignCode(context, IsIncrement, true, false);
+
+                // If we're a statement, though, make sure to get rid of the result
+                if (IsStatement)
+                {
+                    context.Emit(Opcode.PopDelete, context.PopDataType());
+                }
+
+                // Restore array owner generation
+                context.CanGenerateArrayOwners = true;
+                return;
+            }
+        }
+
         Expression.GeneratePrePostAssignCode(context, IsIncrement, true, IsStatement);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
     }
 }

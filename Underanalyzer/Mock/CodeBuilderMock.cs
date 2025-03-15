@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using Underanalyzer.Compiler;
 using Underanalyzer.Compiler.Bytecode;
 using static Underanalyzer.IGMInstruction;
@@ -341,5 +342,46 @@ public class CodeBuilderMock(GameContextMock gameContext) : ICodeBuilder
     public int GenerateTryVariableID(int internalIndex)
     {
         return internalIndex;
+    }
+
+    // Variable ID storage and tracking for array owners
+    private int _currentVariableId = 100000;
+    private Dictionary<string, int> _variableIds = [];
+
+    /// <inheritdoc/>
+    public long GenerateArrayOwnerID(string? variableName, long functionIndex, bool isDot)
+    {
+        // Determine base function ID number
+        long id = gameContext.UsingNewArrayOwners ? (functionIndex << 16) : 0;
+        if (isDot)
+        {
+            // Double the ID, apparently...
+            id += id;
+        }
+
+        // Add variable ID
+        if (variableName is not null)
+        {
+            if (_variableIds.TryGetValue(variableName, out int variableId))
+            {
+                id += variableId;
+            }
+            else
+            {
+                id += _currentVariableId;
+                _variableIds.Add(variableName, _currentVariableId++);
+            }
+        }
+
+        return id;
+    }
+
+    /// <inheritdoc/>
+    public void OnParseNameIdentifier(string name)
+    {
+        if (!_variableIds.ContainsKey(name))
+        {
+            _variableIds.Add(name, _currentVariableId++);
+        }
     }
 }

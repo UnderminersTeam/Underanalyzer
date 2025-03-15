@@ -406,6 +406,10 @@ internal sealed class BinaryChainNode : IASTNode
             }
         }
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+        bool arrayOwnerChanged = false;
+
         // Otherwise, generate generic binary operations
         for (int i = 1; i < Arguments.Count; i++)
         {
@@ -413,6 +417,9 @@ internal sealed class BinaryChainNode : IASTNode
             BinaryOperation currentOperation = Operations[i - 1];
             Arguments[i].GenerateCode(context);
             CoerceBinaryDataType(context, currentOperation);
+
+            // If array owner ID has changed, keep track of it
+            arrayOwnerChanged |= (context.LastArrayOwnerID != lastArrayOwnerID);
 
             // Determine opcode and data type to push to type stack
             DataType rightType = context.PopDataType();
@@ -463,6 +470,12 @@ internal sealed class BinaryChainNode : IASTNode
                 context.Emit(opcode, rightType, leftType);
             }
         }
+
+        // Reset array owner ID if it changed
+        if (arrayOwnerChanged)
+        {
+            context.LastArrayOwnerID = -1;
+        }
     }
 
     /// <summary>
@@ -474,6 +487,10 @@ internal sealed class BinaryChainNode : IASTNode
         MultiForwardBranchPatch falseShortCircuitPatch = new();
         MultiForwardBranchPatch trueShortCircuitPatch = new();
         MultiForwardBranchPatch noShortCircuitPatch = new();
+
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+        bool arrayOwnerChanged = false;
 
         // Generate short-circuit chain
         for (int i = 1; i < Arguments.Count; i++)
@@ -493,6 +510,15 @@ internal sealed class BinaryChainNode : IASTNode
 
             // Generate current argument
             Arguments[i].GenerateCode(context);
+
+            // If array owner ID has changed, keep track of it
+            arrayOwnerChanged |= (context.LastArrayOwnerID != lastArrayOwnerID);
+        }
+
+        // Reset array owner ID if it changed
+        if (arrayOwnerChanged)
+        {
+            context.LastArrayOwnerID = -1;
         }
 
         // Convert final type in chain to boolean
@@ -573,6 +599,15 @@ internal sealed class BinaryChainNode : IASTNode
                 context.PopDataType();
                 context.PushDataType(DataType.Int32);
                 break;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        foreach (IASTNode argument in Arguments)
+        {
+            yield return argument;
         }
     }
 }

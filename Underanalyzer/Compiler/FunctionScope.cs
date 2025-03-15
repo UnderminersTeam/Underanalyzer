@@ -58,6 +58,11 @@ public sealed class FunctionScope(bool isFunction)
     /// </summary>
     internal List<IASTNode> TryFinallyNodes { get; set; } = [];
 
+    /// <summary>
+    /// Array owner function ID associated with this scope, based on <see cref="BytecodeContext.LastFunctionID"/>.
+    /// </summary>
+    internal long ArrayOwnerID { get; set; } = 1;
+
     // Set of local variables declared for this scope
     private readonly HashSet<string> _declaredLocals = new(8);
 

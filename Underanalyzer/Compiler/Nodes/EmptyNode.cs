@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -57,5 +58,11 @@ internal sealed class EmptyNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

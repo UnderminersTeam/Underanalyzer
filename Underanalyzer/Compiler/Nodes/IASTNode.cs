@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -38,6 +39,12 @@ internal interface IASTNode
     /// Generates bytecode for this node.
     /// </summary>
     public void GenerateCode(BytecodeContext context);
+
+    /// <summary>
+    /// Enumerates all children nodes in the tree.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<IASTNode> EnumerateChildren();
 }
 
 /// <summary>

@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -95,6 +96,19 @@ internal sealed class AssignNode : IASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
+        // Handle array copy-on-write
+        bool canGenerateArrayOwners = context.CanGenerateArrayOwners;
+        if (canGenerateArrayOwners)
+        {
+            if (ArrayOwners.ContainsArrayAccessor(Destination) || ArrayOwners.ContainsNewArrayLiteral(Expression) || 
+                ArrayOwners.IsArraySetFunctionOrContainsSubLiteral(Destination))
+            {
+                context.CanGenerateArrayOwners = false;
+                ArrayOwners.GenerateSetArrayOwner(context, Destination);
+            }
+        }
+
+        // Generate actual assignment
         switch (Kind)
         {
             case AssignKind.Normal:
@@ -150,6 +164,9 @@ internal sealed class AssignNode : IASTNode
                 skipDestinationPopPatch.Patch(context);
                 break;
         }
+
+        // Restore array owner state
+        context.CanGenerateArrayOwners = canGenerateArrayOwners;
     }
 
     /// <summary>
@@ -196,5 +213,12 @@ internal sealed class AssignNode : IASTNode
 
         // Perform the operation
         context.Emit(operationOpcode, operationDataType, DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Destination;
+        yield return Expression;
     }
 }

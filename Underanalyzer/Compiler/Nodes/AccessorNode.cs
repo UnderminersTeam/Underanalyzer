@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -545,6 +546,17 @@ internal sealed class AccessorNode : IAssignableASTNode
         else
         {
             throw new Exception("Invalid expression on accessor");
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
+        yield return AccessorExpression;
+        if (AccessorExpression2 is not null)
+        {
+            yield return AccessorExpression2;
         }
     }
 }

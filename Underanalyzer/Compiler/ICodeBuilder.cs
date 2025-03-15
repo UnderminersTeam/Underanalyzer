@@ -159,4 +159,18 @@ public interface ICodeBuilder
     /// may be returned directly as well, if desired.
     /// </remarks>
     public int GenerateTryVariableID(int internalIndex);
+
+    /// <summary>
+    /// Generates an array owner ID, given a variable name (if available), function index, and whether the variable is a dot variable.
+    /// </summary>
+    /// <param name="variableName">Variable name to be used for generating an array owner ID, or <see langword="null"/> if no name is available.</param>
+    /// <param name="functionIndex">Function ID to be used for generating an array owner ID.</param>
+    /// <param name="isDot">Whether the variable name was used on the right side of a dot.</param>
+    /// <returns>Array owner ID. Note that values outside of unsigned 31-bit integer range will wrap around at runtime.</returns>
+    public long GenerateArrayOwnerID(string? variableName, long functionIndex, bool isDot);
+
+    /// <summary>
+    /// Called whenever the parser encounters a name identifier (i.e., not a keyword, function, constant, or asset).
+    /// </summary>
+    public void OnParseNameIdentifier(string name);
 }

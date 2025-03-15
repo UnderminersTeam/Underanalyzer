@@ -351,4 +351,14 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
     {
         GenerateCode(context, false);
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
+        foreach (IASTNode argument in Arguments)
+        {
+            yield return argument;
+        }
+    }
 }

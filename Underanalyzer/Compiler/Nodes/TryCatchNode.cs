@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -283,6 +284,12 @@ internal sealed class TryCatchNode : IASTNode
         Try.GenerateCode(context);
         context.FunctionCallBeforeExit = previousFunctionCallBeforeExit;
 
+        // Reset array owner ID
+        if (context.CanGenerateArrayOwners)
+        {
+            context.LastArrayOwnerID = -1;
+        }
+
         // Generate catch block
         if (Catch is IASTNode catchBlock)
         {
@@ -315,6 +322,12 @@ internal sealed class TryCatchNode : IASTNode
             context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.TryUnhookFunction), 0);
             context.Emit(Opcode.PopDelete, DataType.Variable);
             skipRegularTryUnhookPatch.Patch(context);
+
+            // Reset array owner ID
+            if (context.CanGenerateArrayOwners)
+            {
+                context.LastArrayOwnerID = -1;
+            }
         }
         else
         {
@@ -339,6 +352,26 @@ internal sealed class TryCatchNode : IASTNode
             // Completely pointless branch here for some reason...
             SingleForwardBranchPatch uselessPatch = new(context.Emit(Opcode.Branch));
             uselessPatch.Patch(context);
+
+            // Reset array owner ID
+            if (context.CanGenerateArrayOwners)
+            {
+                context.LastArrayOwnerID = -1;
+            }
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Try;
+        if (Catch is not null)
+        {
+            yield return Catch;
+        }
+        if (Finally is not null)
+        {
+            yield return Finally;
         }
     }
 }

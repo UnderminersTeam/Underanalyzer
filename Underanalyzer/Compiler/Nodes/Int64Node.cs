@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -59,5 +60,11 @@ internal sealed class Int64Node : IConstantASTNode
     {
         context.Emit(Opcode.Push, Value, DataType.Int64);
         context.PushDataType(DataType.Int64);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

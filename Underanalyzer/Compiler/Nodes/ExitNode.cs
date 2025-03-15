@@ -69,4 +69,10 @@ internal sealed class ExitNode(TokenKeyword token) : IASTNode
         // Emit actual exit
         context.Emit(Opcode.Exit, DataType.Int32);
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
+    }
 }

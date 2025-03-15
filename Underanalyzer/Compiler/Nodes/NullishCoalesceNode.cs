@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -72,5 +73,12 @@ internal sealed class NullishCoalesceNode : IASTNode
         // Branch destination at end, and push variable type
         skipRightSidePatch.Patch(context);
         context.PushDataType(DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Left;
+        yield return Right;
     }
 }

@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -111,5 +112,18 @@ internal sealed class DoUntilLoopNode : IASTNode
 
         // Loop tail
         tailPatch.Patch(context);
+
+        // If array owners are currently being generated, reset last array owner ID when continue/break are used
+        if (context.CanGenerateArrayOwners && (tailPatch.Used || conditionPatch.Used))
+        {
+            context.LastArrayOwnerID = -1;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Body;
+        yield return Condition;
     }
 }

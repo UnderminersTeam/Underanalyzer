@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -53,5 +54,11 @@ internal sealed class StringNode : IConstantASTNode
     {
         context.Emit(Opcode.Push, new StringPatch(Value), DataType.String);
         context.PushDataType(DataType.String);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

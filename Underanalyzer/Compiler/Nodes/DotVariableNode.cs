@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
@@ -272,5 +273,11 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
 
         // Simple variable store, but denote pop order using data types
         context.Emit(Opcode.Pop, varPatch, DataType.Int32, DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return LeftExpression;
     }
 }

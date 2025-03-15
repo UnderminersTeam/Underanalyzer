@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -48,5 +49,14 @@ internal sealed class SwitchCaseNode(IToken? token, IASTNode? expression) : IAST
     public void GenerateCode(BytecodeContext context)
     {
         throw new InvalidOperationException();
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        if (Expression is not null)
+        {
+            yield return Expression;
+        }
     }
 }

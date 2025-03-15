@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -119,11 +120,20 @@ internal sealed class RepeatLoopNode : IASTNode
         // Jump based on loop counter
         tailPatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+
         // Body
         MultiBackwardBranchPatch bodyPatch = new(context);
         context.PushControlFlowContext(new RepeatLoopContext(tailPatch, decrementorPatch));
         Body.GenerateCode(context);
         context.PopControlFlowContext();
+
+        // If array owners are currently being generated, reset last array owner ID when it changes or when continue/break are used
+        if (context.CanGenerateArrayOwners && (lastArrayOwnerID != context.LastArrayOwnerID || tailPatch.NumberUsed > 1 || decrementorPatch.Used))
+        {
+            context.LastArrayOwnerID = -1;
+        }
 
         // Decrement loop counter
         decrementorPatch.Patch(context);
@@ -146,5 +156,12 @@ internal sealed class RepeatLoopNode : IASTNode
         // Tail (clean up loop counter as well)
         tailPatch.Patch(context);
         context.Emit(Opcode.PopDelete, DataType.Int32);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return TimesToRepeat;
+        yield return Body;
     }
 }

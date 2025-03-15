@@ -142,4 +142,16 @@ internal sealed class LocalVarDeclNode : IASTNode
             }
         }
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        for (int i = 0; i < AssignedValues.Count; i++)
+        {
+            if (AssignedValues[i] is IASTNode expression)
+            {
+                yield return expression;
+            }
+        }
+    }
 }

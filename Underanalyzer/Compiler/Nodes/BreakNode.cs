@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -69,5 +70,11 @@ internal sealed class BreakNode(IToken? token) : IASTNode
 
         // Use control flow context's break branch
         context.GetTopControlFlowContext().UseBreak(context, context.Emit(Opcode.Branch));
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

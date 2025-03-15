@@ -217,6 +217,7 @@ internal sealed class LexContext : ISubCompileContext
 
                 // Otherwise, rewrite this identifier as a generic variable (but look up builtin variables as well)
                 IBuiltinVariable? builtinVariable = CompileContext.GameContext.Builtins.LookupBuiltinVariable(text);
+                CompileContext.GameContext.CodeBuilder.OnParseNameIdentifier(text);
                 Tokens[i] = new TokenVariable(identifier.Context, identifier.TextPosition, text, builtinVariable);
                 continue;
             }

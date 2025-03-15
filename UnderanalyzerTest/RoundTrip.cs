@@ -1523,4 +1523,53 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestArrayOwners()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a[0] = 1;
+            a[0] = 1;
+            a.b[0] = 1;
+            a.b[0] = 1;
+            array_set(a(), 0, 1);
+            c = [1];
+            d = array_create(15);
+            e[0]++;
+            e[0]++;
+            e.f[0]++;
+            e.f[0]++;
+            ++e[0];
+            ++e[0];
+            ++e.f[0];
+            ++e.f[0];
+
+            function TestFunc()
+            {
+                a[0] = 1;
+                a[0] = 1;
+                a.b[0] = 1;
+                a.b[0] = 1;
+                array_set(a(), 0, 1);
+                c = [1];
+                d = array_create(15);
+                e[0]++;
+                e[0]++;
+                e.f[0]++;
+                e.f[0]++;
+                ++e[0];
+                ++e[0];
+                ++e.f[0];
+                ++e.f[0];
+            }
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
 }

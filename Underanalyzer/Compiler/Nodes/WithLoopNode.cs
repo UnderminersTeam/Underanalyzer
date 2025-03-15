@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -123,10 +124,19 @@ internal sealed class WithLoopNode : IASTNode
         MultiBackwardBranchPatch pushWithContextPatch = new(context);
         MultiForwardBranchPatch breakPatch = new();
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+
         // Enter loop context, and generate body
         context.PushControlFlowContext(new WithLoopContext(breakPatch, popWithContextPatch));
         Body.GenerateCode(context);
         context.PopControlFlowContext();
+
+        // If array owners are currently being generated, reset last array owner ID when it changes or when continue/break are used
+        if (context.CanGenerateArrayOwners && (lastArrayOwnerID != context.LastArrayOwnerID || breakPatch.Used || popWithContextPatch.NumberUsed > 1))
+        {
+            context.LastArrayOwnerID = -1;
+        }
 
         // Pop with context
         popWithContextPatch.Patch(context);
@@ -145,5 +155,12 @@ internal sealed class WithLoopNode : IASTNode
             // Skip destination
             skipBreakBlockPatch.Patch(context);
         }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
+        yield return Body;
     }
 }

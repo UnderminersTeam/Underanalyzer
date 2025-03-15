@@ -153,6 +153,10 @@ internal sealed class SwitchNode : IASTNode
         Expression.GenerateCode(context);
         DataType expressionType = context.PopDataType();
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+        bool arrayOwnerChanged = false;
+
         // Generate comparison and branch logic for all cases
         MultiForwardBranchPatch tailPatch = new();
         MultiForwardBranchPatch continuePatch = new();
@@ -174,6 +178,9 @@ internal sealed class SwitchNode : IASTNode
                     MultiForwardBranchPatch casePatch = new();
                     casePatch.AddInstruction(context, context.Emit(Opcode.BranchTrue));
                     cases.Add(new SwitchCase(casePatch, i));
+
+                    // If array owner ID has changed, keep track of it
+                    arrayOwnerChanged |= (context.LastArrayOwnerID != lastArrayOwnerID);
                 }
                 else
                 {
@@ -206,6 +213,9 @@ internal sealed class SwitchNode : IASTNode
             {
                 Children[j].GenerateCode(context);
             }
+
+            // If array owner ID has changed, keep track of it
+            arrayOwnerChanged |= (context.LastArrayOwnerID != lastArrayOwnerID);
         }
         context.PopControlFlowContext();
 
@@ -224,5 +234,21 @@ internal sealed class SwitchNode : IASTNode
         // Tail of statement, and clean up expression from stack
         tailPatch.Patch(context);
         context.Emit(Opcode.PopDelete, expressionType);
+
+        // Reset array owner ID if it changed
+        if (arrayOwnerChanged)
+        {
+            context.LastArrayOwnerID = -1;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
+        foreach (IASTNode child in Children)
+        {
+            yield return child;
+        }
     }
 }

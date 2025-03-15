@@ -35,6 +35,10 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingReentrantStatic { get; set; } = true;
     /// <inheritdoc/>
+    public bool UsingArrayCopyOnWrite { get; set; } = false;
+    /// <inheritdoc/>
+    public bool UsingNewArrayOwners { get; set; } = true;
+    /// <inheritdoc/>
     public bool UsingNullishOperator { get; set; } = true;
     /// <inheritdoc/>
     public bool UsingNewFunctionVariables { get; set; } = false;

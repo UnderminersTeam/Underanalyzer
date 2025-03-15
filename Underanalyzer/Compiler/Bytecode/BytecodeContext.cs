@@ -69,6 +69,25 @@ internal sealed class BytecodeContext : ISubCompileContext
     /// </remarks>
     public string? FunctionCallBeforeExit { get; set; } = null;
 
+    /// <summary>
+    /// When <see cref="IGameContext.UsingArrayCopyOnWrite"/> is <see langword="true"/>, this is updated to
+    /// the last function ID generated for a function declaration.
+    /// </summary>
+    public long LastFunctionID { get; set; } = 1;
+
+    /// <summary>
+    /// When <see cref="IGameContext.UsingArrayCopyOnWrite"/> is <see langword="true"/>, this is updated to
+    /// the last array owner ID generated using <see cref="ArrayOwners.GenerateSetArrayOwner(BytecodeContext, IASTNode)"/>,
+    /// or -1 if the last ID was invalidated by control flow.
+    /// </summary>
+    public long LastArrayOwnerID { get; set; } = -1;
+
+    /// <summary>
+    /// When <see cref="IGameContext.UsingArrayCopyOnWrite"/> is <see langword="true"/>, this is updated to
+    /// reflect whether array owner IDs can currently be generated in the tree.
+    /// </summary>
+    public bool CanGenerateArrayOwners { get; set; } = false;
+
     // Stack used for storing data types as on the VM data stack.
     private readonly Stack<DataType> _dataTypeStack = new(16);
 
@@ -97,6 +116,7 @@ internal sealed class BytecodeContext : ISubCompileContext
     public void GenerateCode(int initialPosition)
     {
         Position = initialPosition;
+        CanGenerateArrayOwners = _gameContext.UsingArrayCopyOnWrite;
         RootNode.GenerateCode(this);
 
 #if DEBUG
@@ -678,5 +698,13 @@ internal sealed class BytecodeContext : ISubCompileContext
                 // No foresight; attempt to retrieve function entry
                 return CurrentScope.TryGetDeclaredFunction(name, out _);
         }
+    }
+
+    /// <summary>
+    /// Generates and returns an array owner ID using the code builder associated with this bytecode context.
+    /// </summary>
+    public long GenerateArrayOwnerID(string? variableName, long functionId, bool isDot)
+    {
+        return _codeBuilder.GenerateArrayOwnerID(variableName, functionId, isDot);
     }
 }

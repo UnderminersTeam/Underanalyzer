@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -131,15 +132,25 @@ internal sealed class IfNode : IASTNode
         Condition.GenerateCode(context);
         context.ConvertDataType(DataType.Boolean);
 
+        // Store initial last array owner ID
+        long initialLastArrayOwnerID = context.LastArrayOwnerID;
+
         // Jump based on condition
         SingleForwardBranchPatch conditionBranch = new(context.Emit(Opcode.BranchFalse));
 
         // True statement
         TrueStatement.GenerateCode(context);
 
+        // Store post-true last array owner ID
+        long postTrueLastArrayOwnerID = context.LastArrayOwnerID;
+
         // False statement, if present
         if (FalseStatement is not null)
         {
+            // Restore initial last array owner ID before false statement
+            context.LastArrayOwnerID = initialLastArrayOwnerID;
+
+            // Actual false statement generation
             SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
             conditionBranch.Patch(context);
             FalseStatement.GenerateCode(context);
@@ -148,6 +159,23 @@ internal sealed class IfNode : IASTNode
         else
         {
             conditionBranch.Patch(context);
+        }
+
+        // If the current last array owner ID isn't the same as the post-true one, then reset it
+        if (context.LastArrayOwnerID != postTrueLastArrayOwnerID)
+        {
+            context.LastArrayOwnerID = -1;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Condition;
+        yield return TrueStatement;
+        if (FalseStatement is not null)
+        {
+            yield return FalseStatement;
         }
     }
 }

@@ -32,6 +32,11 @@ internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
     /// </summary>
     public bool Used => _instructions.Count > 0;
 
+    /// <summary>
+    /// Number of instructions that have used this patch.
+    /// </summary>
+    public int NumberUsed => _instructions.Count;
+
     /// <inheritdoc/>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {
@@ -62,6 +67,32 @@ internal readonly struct MultiBackwardBranchPatch(BytecodeContext context) : IMu
     /// <inheritdoc/>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {
+        context.PatchBranch(instruction, _destAddress - instruction.Address);
+    }
+}
+
+/// <summary>
+/// Branch patch for an arbitrary number of backward branches, but also tracked.
+/// </summary>
+internal class MultiBackwardBranchPatchTracked(BytecodeContext context) : IMultiBranchPatch
+{
+    // Address that will be branched to by all patched instructions
+    private readonly int _destAddress = context.Position;
+
+    /// <summary>
+    /// Whether this branch patch has been used by any instructions.
+    /// </summary>
+    public bool Used => NumberUsed > 0;
+
+    /// <summary>
+    /// Number of instructions that have used this patch.
+    /// </summary>
+    public int NumberUsed { get; private set; } = 0;
+
+    /// <inheritdoc/>
+    public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
+    {
+        NumberUsed++;
         context.PatchBranch(instruction, _destAddress - instruction.Address);
     }
 }

@@ -91,4 +91,10 @@ internal sealed class ReturnNode(IToken? token, IASTNode returnValue) : IASTNode
         // Emit actual return
         context.Emit(Opcode.Return, DataType.Variable);
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return ReturnValue;
+    }
 }

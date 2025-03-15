@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -54,5 +55,11 @@ internal sealed class AssetReferenceNode : IConstantASTNode
         // Assume that typed asset references are being used by this point
         context.Emit(ExtendedOpcode.PushReference, AssetId);
         context.PushDataType(DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

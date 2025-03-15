@@ -435,6 +435,12 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         FunctionScope oldScope = context.CurrentScope;
         context.CurrentScope = Scope;
 
+        // Update array owner IDs if necessary
+        if (context.CompileContext.GameContext.UsingArrayCopyOnWrite)
+        {
+            Scope.ArrayOwnerID = ++context.LastFunctionID;
+        }
+
         // Skip past function body
         SingleForwardBranchPatch skipFunctionPatch = new(context.Emit(Opcode.Branch));
 
@@ -587,6 +593,20 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         {
             // This is not a statement, so result from method() is still on the stack
             context.PushDataType(DataType.Variable);
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        if (DefaultValueBlock is not null)
+        {
+            yield return DefaultValueBlock;
+        }
+        yield return Body;
+        if (InheritanceCall is not null)
+        {
+            yield return InheritanceCall;
         }
     }
 }

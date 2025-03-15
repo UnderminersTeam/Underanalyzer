@@ -166,4 +166,13 @@ internal sealed class BlockNode : IASTNode
         }
         context.CurrentScope.GeneratingStaticBlock = false;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        foreach (IASTNode child in Children)
+        {
+            yield return child;
+        }
+    }
 }

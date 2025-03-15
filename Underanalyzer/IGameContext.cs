@@ -113,6 +113,23 @@ public interface IGameContext
     public bool UsingConstructorSetStatic { get; }
 
     /// <summary>
+    /// <see langword="true"/> if this game uses array copy-on-write behavior (only relevant for GMLv2); <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2022.2 (and after 2.3), this is guaranteed to be <see langword="true"/>. Afterwards, it is <see langword="false"/> by default, but can be changed by a game's developer.
+    /// This can be detected by the presence of <see cref="IGMInstruction.ExtendedOpcode.SetArrayOwner"/>.
+    /// </remarks>
+    public bool UsingArrayCopyOnWrite { get; }
+
+    /// <summary>
+    /// <see langword="true"/> if this game uses the newer version of array owners (when <see cref="UsingArrayCopyOnWrite"/> is enabled); <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This should be <see langword="true"/> for GameMaker 2.3.2 and above.
+    /// </remarks>
+    public bool UsingNewArrayOwners { get; }
+
+    /// <summary>
     /// <see langword="true"/> if this game allows static code blocks to recursively re-enter themselves; <see langword="false"/> otherwise.
     /// </summary>
     /// <remarks>

@@ -160,4 +160,14 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
             context.PushDataType(DataType.Variable);
         }
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Expression;
+        foreach (IASTNode argument in Arguments)
+        {
+            yield return argument;
+        }
+    }
 }

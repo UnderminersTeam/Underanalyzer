@@ -422,6 +422,15 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// </summary>
     public void GenerateDirectCode(BytecodeContext context, FunctionScope? overrideCallScope = null)
     {
+        // Handle array copy-on-write
+        if (context.CanGenerateArrayOwners)
+        {
+            if (ArrayOwners.IsArraySetFunctionOrContainsSubLiteral(this))
+            {
+                ArrayOwners.GenerateSetArrayOwner(context, this);
+            }
+        }
+
         // Push arguments to stack
         GenerateArguments(context);
 
@@ -497,6 +506,15 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
                 };
                 funcCall.GenerateCode(context);
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        foreach (IASTNode argument in Arguments)
+        {
+            yield return argument;
         }
     }
 }

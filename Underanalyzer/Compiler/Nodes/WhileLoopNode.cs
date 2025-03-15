@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -102,7 +103,7 @@ internal sealed class WhileLoopNode : IASTNode
     public void GenerateCode(BytecodeContext context)
     {
         // Branch target at the head and tail of the loop
-        MultiBackwardBranchPatch headPatch = new(context);
+        MultiBackwardBranchPatchTracked headPatch = new(context);
         MultiForwardBranchPatch tailPatch = new();
 
         // Loop condition
@@ -112,6 +113,9 @@ internal sealed class WhileLoopNode : IASTNode
         // Jump based on condition
         tailPatch.AddInstruction(context, context.Emit(Opcode.BranchFalse));
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+
         // Enter loop context, and generate body
         context.PushControlFlowContext(new BasicLoopContext(tailPatch, headPatch));
         Body.GenerateCode(context);
@@ -120,5 +124,18 @@ internal sealed class WhileLoopNode : IASTNode
         // Loop tail
         headPatch.AddInstruction(context, context.Emit(Opcode.Branch));
         tailPatch.Patch(context);
+
+        // If array owners are currently being generated, reset last array owner ID when it changes or when continue/break are used
+        if (context.CanGenerateArrayOwners && (lastArrayOwnerID != context.LastArrayOwnerID || tailPatch.NumberUsed > 1 || headPatch.NumberUsed > 1))
+        {
+            context.LastArrayOwnerID = -1;
+        }
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Condition;
+        yield return Body;
     }
 }

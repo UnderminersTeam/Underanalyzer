@@ -289,6 +289,12 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         context.Emit(Opcode.Pop, varPatch, DataType.Variable, DataType.Variable);
     }
 
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        return [];
+    }
+
     /// <summary>
     /// Resolves the final variable type (and scope in general) for a variable, given the current context, 
     /// the variable's name, and builtin variable information.

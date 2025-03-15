@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Compiler.Bytecode;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Parser;
@@ -80,13 +81,30 @@ internal sealed class ConditionalNode : IASTNode
         context.ConvertDataType(DataType.Variable);
         SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
 
+        // Store current last array owner ID
+        long lastArrayOwnerID = context.LastArrayOwnerID;
+
         // False expression (and convert to variable type)
         conditionBranch.Patch(context);
         FalseExpression.GenerateCode(context);
         context.ConvertDataType(DataType.Variable);
 
+        // If last array owner ID changed, reset it
+        if (lastArrayOwnerID != context.LastArrayOwnerID)
+        {
+            context.LastArrayOwnerID = -1;
+        }
+
         // Ending (result is always variable type)
         skipElseBranch.Patch(context);
         context.PushDataType(DataType.Variable);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IASTNode> EnumerateChildren()
+    {
+        yield return Condition;
+        yield return TrueExpression;
+        yield return FalseExpression;
     }
 }
