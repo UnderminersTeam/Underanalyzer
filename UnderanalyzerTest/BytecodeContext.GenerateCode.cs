@@ -3955,6 +3955,53 @@ public class BytecodeContext_GenerateCode
     }
 
     [Fact]
+    public void TestArrayOwnersDots()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a[0] = 1;
+            b[0].a = 1;
+            global.a[0] = 1;
+            global.b[0].a = 1;
+            """,
+            """
+            push.i 165536
+            setowner.e
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            push.i 231072
+            setowner.e
+            pushi.e 1
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            pop.v.i [stacktop]self.a
+            pushi.e 1
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            pushi.e -5
+            pushi.e 0
+            push.v [array]self.b
+            pushi.e -9
+            pop.v.i [stacktop]self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
+
+    [Fact]
     public void TestGlobalAssignIncrement()
     {
         TestUtil.AssertBytecode(

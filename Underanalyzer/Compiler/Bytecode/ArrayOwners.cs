@@ -123,7 +123,8 @@ internal static class ArrayOwners
         if (FindArrayVariable(expression) is IVariableASTNode { VariableName: string variableName } variableNode)
         {
             // Use variable information
-            id = context.GenerateArrayOwnerID(variableName, context.CurrentScope.ArrayOwnerID, variableNode is DotVariableNode);
+            bool isDot = variableNode is DotVariableNode || (variableNode is SimpleVariableNode { CollapsedFromDot: true });
+            id = context.GenerateArrayOwnerID(variableName, context.CurrentScope.ArrayOwnerID, isDot);
         }
         else
         {
