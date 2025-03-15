@@ -169,6 +169,9 @@ internal sealed class SwitchNode : IASTNode
             {
                 if (caseNode.Expression is IASTNode caseExpression)
                 {
+                    // Set array owner to initial one
+                    context.LastArrayOwnerID = lastArrayOwnerID;
+
                     // Normal case. Duplicate original expression, and compare to this expression
                     context.Emit(Opcode.Duplicate, expressionType);
                     caseExpression.GenerateCode(context);
@@ -206,6 +209,9 @@ internal sealed class SwitchNode : IASTNode
             SwitchCase currentCase = cases[i];
             int startIndex = currentCase.ChildIndex + 1;
             int endIndexExclusive = (i + 1 < cases.Count) ? cases[i + 1].ChildIndex : Children.Count;
+
+            // Set array owner to initial one
+            context.LastArrayOwnerID = lastArrayOwnerID;
 
             // Generate code for case
             currentCase.Branch.Patch(context);

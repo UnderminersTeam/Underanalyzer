@@ -3805,6 +3805,92 @@ public class BytecodeContext_GenerateCode
     }
 
     [Fact]
+    public void TestSwitchArrayOwners()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a[0] = 0;
+            switch (b)
+            {
+                case 1:
+                    a[0] = 1;      
+                    break;
+                case 2:
+            		b[0] = 2;
+                    break;
+                case 3:
+            		a[0] = 3; 
+                    break;
+            }
+            """,
+            """
+            push.i 165536
+            setowner.e
+            pushi.e 0
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            push.v self.b
+            dup.v 0
+            pushi.e 1
+            cmp.i.v EQ
+            bt [4]
+
+            :[1]
+            dup.v 0
+            pushi.e 2
+            cmp.i.v EQ
+            bt [5]
+
+            :[2]
+            dup.v 0
+            pushi.e 3
+            cmp.i.v EQ
+            bt [6]
+
+            :[3]
+            b [7]
+
+            :[4]
+            pushi.e 1
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            b [7]
+
+            :[5]
+            push.i 165537
+            setowner.e
+            pushi.e 2
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.b
+            b [7]
+
+            :[6]
+            pushi.e 3
+            conv.i.v
+            pushi.e -1
+            pushi.e 0
+            pop.v.v [array]self.a
+            b [7]
+
+            :[7]
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
+
+    [Fact]
     public void TestGlobalAssignIncrement()
     {
         TestUtil.AssertBytecode(
