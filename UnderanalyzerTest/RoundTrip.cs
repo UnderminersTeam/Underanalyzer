@@ -1572,4 +1572,15 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestDivideQuirk()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a /= 2;
+            a = a / 2;
+            """
+        );
+    }
 }

@@ -422,16 +422,16 @@ internal sealed class BlockSimulator
                 }
             }
 
-            // Check for compound assignment
-            if (variable.Left.Duplicated && binary is { Left: VariableNode })
+            // Check for compound assignment (also check for quirk with division converting to double when NOT a compound assignment)
+            if (variable.Left.Duplicated && binary is { Left: VariableNode } && 
+                (binary.Instruction.Kind != Opcode.Divide || binary.Right.StackType != DataType.Double))
             {
                 // Compound detected
-                // TODO: do we need to verify "binary.Left" is the same as "variable"?
 
+                // Check for a special instruction pattern that suggests this is a postfix statement
                 if (binary.Instruction.Kind is Opcode.Add or Opcode.Subtract &&
                     binary.Right is Int16Node compoundI16 && compoundI16.Value == 1 && compoundI16.RegularPush)
                 {
-                    // Special instruction pattern suggests that this is a postfix statement
                     output.Add(new AssignNode(variable, AssignNode.AssignType.Postfix, binary.Instruction));
                     return;
                 }
