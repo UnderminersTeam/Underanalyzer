@@ -146,7 +146,7 @@ internal sealed class WithLoopNode : IASTNode
         if (breakPatch.Used)
         {
             // If code path doesn't take the break path, skip past the upcoming block
-            SingleForwardBranchPatch skipBreakBlockPatch = new(context.Emit(Opcode.Branch));
+            SingleForwardBranchPatch skipBreakBlockPatch = new(context, context.Emit(Opcode.Branch));
 
             // Generate break block - simply pop with context
             breakPatch.Patch(context);

@@ -136,7 +136,7 @@ internal sealed class IfNode : IASTNode
         long initialLastArrayOwnerID = context.LastArrayOwnerID;
 
         // Jump based on condition
-        SingleForwardBranchPatch conditionBranch = new(context.Emit(Opcode.BranchFalse));
+        SingleForwardBranchPatch conditionBranch = new(context, context.Emit(Opcode.BranchFalse));
 
         // True statement
         TrueStatement.GenerateCode(context);
@@ -151,7 +151,7 @@ internal sealed class IfNode : IASTNode
             context.LastArrayOwnerID = initialLastArrayOwnerID;
 
             // Actual false statement generation
-            SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
+            SingleForwardBranchPatch skipElseBranch = new(context, context.Emit(Opcode.Branch));
             conditionBranch.Patch(context);
             FalseStatement.GenerateCode(context);
             skipElseBranch.Patch(context);

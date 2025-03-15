@@ -74,12 +74,12 @@ internal sealed class ConditionalNode : IASTNode
         context.ConvertDataType(DataType.Boolean);
 
         // Jump based on condition
-        SingleForwardBranchPatch conditionBranch = new(context.Emit(Opcode.BranchFalse));
+        SingleForwardBranchPatch conditionBranch = new(context, context.Emit(Opcode.BranchFalse));
 
         // True expression (and convert to variable type)
         TrueExpression.GenerateCode(context);
         context.ConvertDataType(DataType.Variable);
-        SingleForwardBranchPatch skipElseBranch = new(context.Emit(Opcode.Branch));
+        SingleForwardBranchPatch skipElseBranch = new(context, context.Emit(Opcode.Branch));
 
         // Store current last array owner ID
         long lastArrayOwnerID = context.LastArrayOwnerID;

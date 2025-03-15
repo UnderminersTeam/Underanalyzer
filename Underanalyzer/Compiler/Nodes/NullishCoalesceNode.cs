@@ -63,7 +63,7 @@ internal sealed class NullishCoalesceNode : IASTNode
 
         // Check if nullish; branch around right side if not
         context.Emit(ExtendedOpcode.IsNullishValue);
-        SingleForwardBranchPatch skipRightSidePatch = new(context.Emit(Opcode.BranchFalse));
+        SingleForwardBranchPatch skipRightSidePatch = new(context, context.Emit(Opcode.BranchFalse));
 
         // Right side (but remove nullish result from left side first)
         context.Emit(Opcode.PopDelete, DataType.Variable);

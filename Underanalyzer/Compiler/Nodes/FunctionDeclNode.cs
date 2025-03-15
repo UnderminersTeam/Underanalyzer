@@ -442,7 +442,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         }
 
         // Skip past function body
-        SingleForwardBranchPatch skipFunctionPatch = new(context.Emit(Opcode.Branch));
+        SingleForwardBranchPatch skipFunctionPatch = new(context, context.Emit(Opcode.Branch));
 
         // Register FunctionEntry instance
         FunctionEntry? parentEntry = context.CurrentFunctionEntry;
@@ -505,7 +505,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         {
             // If static has already initialized, branch past this block
             context.Emit(ExtendedOpcode.HasStaticInitialized);
-            SingleForwardBranchPatch skipStaticPatch = new(context.Emit(Opcode.BranchTrue));
+            SingleForwardBranchPatch skipStaticPatch = new(context, context.Emit(Opcode.BranchTrue));
 
             // If not allowing re-entrant static, set the static flag here
             bool allowReentrantStatic = context.CompileContext.GameContext.UsingReentrantStatic;

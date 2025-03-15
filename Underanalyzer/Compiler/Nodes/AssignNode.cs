@@ -146,7 +146,7 @@ internal sealed class AssignNode : IASTNode
 
                 // Check if nullish; branch around right side (and assignment) if not
                 context.Emit(ExtendedOpcode.IsNullishValue);
-                SingleForwardBranchPatch skipRightSidePatch = new(context.Emit(Opcode.BranchFalse));
+                SingleForwardBranchPatch skipRightSidePatch = new(context, context.Emit(Opcode.BranchFalse));
 
                 // Right side (but remove nullish result from left side first)
                 context.Emit(Opcode.PopDelete, DataType.Variable);
@@ -156,7 +156,7 @@ internal sealed class AssignNode : IASTNode
                 // Assign right side, then branch around removal of non-nullish destination value
                 context.PushDataType(DataType.Variable);
                 Destination.GenerateAssignCode(context);
-                SingleForwardBranchPatch skipDestinationPopPatch = new(context.Emit(Opcode.Branch));
+                SingleForwardBranchPatch skipDestinationPopPatch = new(context, context.Emit(Opcode.Branch));
 
                 // Remove non-nullish destination value from stack
                 skipRightSidePatch.Patch(context);

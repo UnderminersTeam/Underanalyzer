@@ -606,11 +606,6 @@ public interface IGMInstruction
     }
 
     /// <summary>
-    /// The address of this instruction, in bytes, from the start of the containing code entry. 
-    /// </summary>
-    public int Address { get; }
-
-    /// <summary>
     /// The opcode of this instruction. Generally indicates what operation the instruction will perform.
     /// </summary>
     public Opcode Kind { get; }

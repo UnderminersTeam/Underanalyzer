@@ -294,7 +294,7 @@ internal sealed class TryCatchNode : IASTNode
         if (Catch is IASTNode catchBlock)
         {
             // Skip catch block if entering from end of main try block
-            SingleForwardBranchPatch skipCatchPatch = new(context.Emit(Opcode.Branch));
+            SingleForwardBranchPatch skipCatchPatch = new(context, context.Emit(Opcode.Branch));
 
             // Mark the catch block destination
             context.PatchPush(catchInstr, context.Position);
@@ -312,7 +312,7 @@ internal sealed class TryCatchNode : IASTNode
             // Finish catch and skip try unhooking (so it's not done a second time)
             context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.FinishCatchFunction), 0);
             context.Emit(Opcode.PopDelete, DataType.Variable);
-            SingleForwardBranchPatch skipRegularTryUnhookPatch = new(context.Emit(Opcode.Branch));
+            SingleForwardBranchPatch skipRegularTryUnhookPatch = new(context, context.Emit(Opcode.Branch));
 
             // Mark "finally section" of the try statement
             context.PatchPush(finallyInstr, context.Position);
@@ -350,7 +350,7 @@ internal sealed class TryCatchNode : IASTNode
             context.Emit(Opcode.PopDelete, DataType.Variable);
 
             // Completely pointless branch here for some reason...
-            SingleForwardBranchPatch uselessPatch = new(context.Emit(Opcode.Branch));
+            SingleForwardBranchPatch uselessPatch = new(context, context.Emit(Opcode.Branch));
             uselessPatch.Patch(context);
 
             // Reset array owner ID

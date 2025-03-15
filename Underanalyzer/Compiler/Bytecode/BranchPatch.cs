@@ -14,7 +14,7 @@ namespace Underanalyzer.Compiler.Bytecode;
 internal interface IMultiBranchPatch
 {
     /// <summary>
-    /// Adds an instruction to be patched.
+    /// Adds an instruction to be patched, <b>relative to the current bytecode position minus the size of the instruction</b>.
     /// </summary>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction);
 }
@@ -25,7 +25,7 @@ internal interface IMultiBranchPatch
 internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
 {
     // Address that will be branched to by all patched instructions
-    private readonly List<IGMInstruction> _instructions = new(4);
+    private readonly List<(IGMInstruction Instruction, int Address)> _instructions = new(4);
 
     /// <summary>
     /// Whether this branch patch has been used by any instructions.
@@ -40,7 +40,7 @@ internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
     /// <inheritdoc/>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {
-        _instructions.Add(instruction);
+        _instructions.Add((instruction, context.Position - IGMInstruction.GetSize(instruction)));
     }
 
     /// <summary>
@@ -49,9 +49,9 @@ internal readonly struct MultiForwardBranchPatch() : IMultiBranchPatch
     public void Patch(BytecodeContext context)
     {
         int destAddress = context.Position;
-        foreach (IGMInstruction instruction in _instructions)
+        foreach ((IGMInstruction instruction, int address) in _instructions)
         {
-            context.PatchBranch(instruction, destAddress - instruction.Address);
+            context.PatchBranch(instruction, destAddress - address);
         }
     }
 }
@@ -67,7 +67,7 @@ internal readonly struct MultiBackwardBranchPatch(BytecodeContext context) : IMu
     /// <inheritdoc/>
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {
-        context.PatchBranch(instruction, _destAddress - instruction.Address);
+        context.PatchBranch(instruction, _destAddress - (context.Position - IGMInstruction.GetSize(instruction)));
     }
 }
 
@@ -93,20 +93,23 @@ internal class MultiBackwardBranchPatchTracked(BytecodeContext context) : IMulti
     public void AddInstruction(BytecodeContext context, IGMInstruction instruction)
     {
         NumberUsed++;
-        context.PatchBranch(instruction, _destAddress - instruction.Address);
+        context.PatchBranch(instruction, _destAddress - (context.Position - IGMInstruction.GetSize(instruction)));
     }
 }
 
 /// <summary>
-/// Helper struct to make a single forward branch.
+/// Helper struct to make a single forward branch, <b>relative to the current bytecode position minus the size of the instruction</b>.
 /// </summary>
-internal readonly ref struct SingleForwardBranchPatch(IGMInstruction instruction)
+internal readonly ref struct SingleForwardBranchPatch(BytecodeContext context, IGMInstruction instruction)
 {
+    // Address that is being branched from
+    private readonly int _startAddress = context.Position - IGMInstruction.GetSize(instruction);
+
     /// <summary>
     /// Patches the single instruction, based on the current bytecode position.
     /// </summary>
     public void Patch(BytecodeContext context)
     {
-        context.PatchBranch(instruction, context.Position - instruction.Address);
+        context.PatchBranch(instruction, context.Position - _startAddress);
     }
 }
