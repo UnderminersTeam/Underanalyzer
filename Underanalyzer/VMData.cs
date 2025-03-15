@@ -671,11 +671,6 @@ public interface IGMInstruction
     public long ValueLong { get; }
 
     /// <summary>
-    /// Represents a boolean value for instructions that use it.
-    /// </summary>
-    public bool ValueBool { get; }
-
-    /// <summary>
     /// Represents a string value for instructions that push strings.
     /// </summary>
     public IGMString? ValueString { get; }
