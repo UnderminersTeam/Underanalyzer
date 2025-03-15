@@ -156,7 +156,7 @@ public class AssignNode : IStatementNode, IExpressionNode, IBlockCleanupNode
                 // Ensure we actually are a compound operation (Push vs. specialized Push instruction, as well as
                 // quirk with division converting to double when NOT a compound assignment)
                 if ((cleaner.Context.OlderThanBytecode15 || binVariable.RegularPush || binVariable.Variable.InstanceType == InstanceType.Self) &&
-                    (binary.Instruction.Kind != Opcode.Divide || binary.Right.StackType != DataType.Double))
+                    (binary.Instruction.Kind != Opcode.Divide || binary.Right is DoubleNode || binary.Right.StackType != DataType.Double))
                 {
                     AssignKind = AssignType.Compound;
                     BinaryInstruction = binary.Instruction;

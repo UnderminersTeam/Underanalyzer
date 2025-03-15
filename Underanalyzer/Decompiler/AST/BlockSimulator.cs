@@ -424,7 +424,7 @@ internal sealed class BlockSimulator
 
             // Check for compound assignment (also check for quirk with division converting to double when NOT a compound assignment)
             if (variable.Left.Duplicated && binary is { Left: VariableNode } && 
-                (binary.Instruction.Kind != Opcode.Divide || binary.Right.StackType != DataType.Double))
+                (binary.Instruction.Kind != Opcode.Divide || binary.Right is DoubleNode || binary.Right.StackType != DataType.Double))
             {
                 // Compound detected
 

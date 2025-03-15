@@ -1580,6 +1580,9 @@ public class RoundTrip
             """
             a /= 2;
             a = a / 2;
+            b /= 1.5;
+            c.d /= 1.5;
+            c.d = c.d / 1.5;
             """
         );
     }
