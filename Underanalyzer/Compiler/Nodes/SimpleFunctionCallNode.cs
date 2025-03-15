@@ -425,7 +425,7 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
         // Handle array copy-on-write
         if (context.CanGenerateArrayOwners)
         {
-            if (ArrayOwners.IsArraySetFunctionOrContainsSubLiteral(this))
+            if (ArrayOwners.IsArraySetFunction(this))
             {
                 ArrayOwners.GenerateSetArrayOwner(context, this);
             }

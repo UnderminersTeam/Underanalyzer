@@ -32,6 +32,7 @@ public class BuiltinsMock : IBuiltins
     /// </summary>
     public Dictionary<string, BuiltinFunctionMock> BuiltinFunctions = new()
     {
+        { "test_builtin_function", new("test_builtin_function", 0, int.MaxValue) },
         { "string", new("string", 1, 1) },
         { "real", new("real", 1, 1) },
         { "ord", new("ord", 1, 1) },

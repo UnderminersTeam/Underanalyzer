@@ -3891,6 +3891,70 @@ public class BytecodeContext_GenerateCode
     }
 
     [Fact]
+    public void TestArrayOwnersNewArrayInCall()
+    {
+        TestUtil.AssertBytecode(
+            """
+            test_builtin_function([1, 2, 3], 4);
+            """,
+            """
+            pushi.e 4
+            conv.i.v
+            push.i 65536
+            setowner.e
+            pushi.e 3
+            conv.i.v
+            pushi.e 2
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@NewGMLArray@@ 3
+            call.i test_builtin_function 2
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestArrayOwnersNewArrayInVarCall()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a([1, 2, 3], 4);
+            """,
+            """
+            pushi.e 4
+            conv.i.v
+            push.i 65536
+            setowner.e
+            pushi.e 3
+            conv.i.v
+            pushi.e 2
+            conv.i.v
+            pushi.e 1
+            conv.i.v
+            call.i @@NewGMLArray@@ 3
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 2
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingArrayCopyOnWrite = true,
+                UsingNewArrayOwners = true
+            }
+        );
+    }
+
+    [Fact]
     public void TestGlobalAssignIncrement()
     {
         TestUtil.AssertBytecode(

@@ -59,10 +59,10 @@ internal static class ArrayOwners
     }
 
     /// <summary>
-    /// Returns whether the given node is an array setter function, or has a new array literal inside of it (as 
-    /// long as it doesn't cross function barriers), mimicking official compiler behavior.
+    /// Returns whether the given node is an array setter function (as long as it doesn't cross function barriers), 
+    /// mimicking official compiler behavior.
     /// </summary>
-    public static bool IsArraySetFunctionOrContainsSubLiteral(IASTNode node)
+    public static bool IsArraySetFunction(IASTNode node)
     {
         if (node is SimpleFunctionCallNode
             {
@@ -70,6 +70,19 @@ internal static class ArrayOwners
                               "array_set_2D" or "array_set_2D_pre" or "array_set_2D_post" or
                               "array_create" or VMConstants.NewArrayFunction
             })
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns whether the given node is an array setter function, or has a new array literal inside of it (as 
+    /// long as it doesn't cross function barriers), mimicking official compiler behavior.
+    /// </summary>
+    public static bool IsArraySetFunctionOrContainsSubLiteral(IASTNode node)
+    {
+        if (IsArraySetFunction(node))
         {
             return true;
         }
