@@ -136,9 +136,24 @@ internal sealed class LocalVarDeclNode : IASTNode
         {
             if (AssignedValues[i] is IASTNode expression)
             {
+                // Handle array copy-on-write
+                bool canGenerateArrayOwners = context.CanGenerateArrayOwners;
+                if (canGenerateArrayOwners)
+                {
+                    if (ArrayOwners.ContainsNewArrayLiteral(expression))
+                    {
+                        context.CanGenerateArrayOwners = false;
+                        ArrayOwners.GenerateSetArrayOwner(context, new SimpleVariableNode(DeclaredLocals[i], null));
+                    }
+                }
+
+                // Generate actual assign
                 expression.GenerateCode(context);
                 VariablePatch varPatch = new(DeclaredLocals[i], InstanceType.Local);
                 context.Emit(Opcode.Pop, varPatch, DataType.Variable, context.PopDataType());
+
+                // Restore array owner state
+                context.CanGenerateArrayOwners = canGenerateArrayOwners;
             }
         }
     }
