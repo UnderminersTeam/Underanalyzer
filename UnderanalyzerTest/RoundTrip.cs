@@ -1586,4 +1586,21 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestKeywordLogicOperators()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = b and c and d;
+            e = f or g or h;
+            i = j xor k xor l;
+            """,
+            """
+            a = b && c && d;
+            e = f || g || h;
+            i = j ^^ k ^^ l;
+            """
+        );
+    }
 }

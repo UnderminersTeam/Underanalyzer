@@ -96,6 +96,9 @@ internal sealed class BinaryChainNode : IASTNode
             {
                 KeywordKind.Div => BinaryOperation.GMLDivRemainder,
                 KeywordKind.Mod => BinaryOperation.GMLModulo,
+                KeywordKind.And => BinaryOperation.LogicalAnd,
+                KeywordKind.Or => BinaryOperation.LogicalOr,
+                KeywordKind.Xor => BinaryOperation.LogicalXor,
                 _ => throw new Exception("Unknown operator")
             };
         }

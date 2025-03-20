@@ -107,8 +107,10 @@ internal static class Expressions
 
         // Check for "||"
         if (!context.EndOfCode &&
-            context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalOr } tokenOperator)
+            (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalOr } ||
+             context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.Or }))
         {
+            IToken token = context.Tokens[context.Position];
             context.Position++;
 
             // Parse right side of binary operation
@@ -116,19 +118,21 @@ internal static class Expressions
             {
                 // Start accumulating additional arguments in binary operation chain
                 List<IASTNode> arguments = new(4) { lhs, rightExpr };
-                List<BinaryOperation> operations = new(4) { OperationKindFromToken(tokenOperator) };
+                List<BinaryOperation> operations = new(4) { OperationKindFromToken(token) };
 
                 // Check for "||" to continue finding arguments
                 while (!context.EndOfCode &&
-                       context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalOr } tokenNextOperator)
+                       (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalOr } ||
+                        context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.Or }))
                 {
+                    IToken tokenNext = context.Tokens[context.Position];
                     context.Position++;
 
                     // Parse right side of current binary operation
                     if (ParseAndExpression(context) is IASTNode nextRightExpr)
                     {
                         arguments.Add(nextRightExpr);
-                        operations.Add(OperationKindFromToken(tokenNextOperator));
+                        operations.Add(OperationKindFromToken(tokenNext));
                     }
                     else
                     {
@@ -137,7 +141,7 @@ internal static class Expressions
                 }
 
                 // Replace left side with this new binary chain
-                lhs = new BinaryChainNode(tokenOperator, arguments, operations);
+                lhs = new BinaryChainNode(token, arguments, operations);
             }
         }
 
@@ -157,8 +161,10 @@ internal static class Expressions
 
         // Check for "&&"
         if (!context.EndOfCode &&
-            context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalAnd } tokenOperator)
+            (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalAnd } ||
+             context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.And }))
         {
+            IToken token = context.Tokens[context.Position];
             context.Position++;
 
             // Parse right side of binary operation
@@ -166,19 +172,21 @@ internal static class Expressions
             {
                 // Start accumulating additional arguments in binary operation chain
                 List<IASTNode> arguments = new(4) { lhs, rightExpr };
-                List<BinaryOperation> operations = new(4) { OperationKindFromToken(tokenOperator) };
+                List<BinaryOperation> operations = new(4) { OperationKindFromToken(token) };
 
                 // Check for "&&" to continue finding arguments
                 while (!context.EndOfCode &&
-                       context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalAnd } tokenNextOperator)
+                       (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalAnd } ||
+                        context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.And }))
                 {
+                    IToken tokenNext = context.Tokens[context.Position];
                     context.Position++;
 
                     // Parse right side of current binary operation
                     if (ParseXorExpression(context) is IASTNode nextRightExpr)
                     {
                         arguments.Add(nextRightExpr);
-                        operations.Add(OperationKindFromToken(tokenNextOperator));
+                        operations.Add(OperationKindFromToken(tokenNext));
                     }
                     else
                     {
@@ -187,7 +195,7 @@ internal static class Expressions
                 }
 
                 // Replace left side with this new binary chain
-                lhs = new BinaryChainNode(tokenOperator, arguments, operations);
+                lhs = new BinaryChainNode(token, arguments, operations);
             }
         }
 
@@ -207,8 +215,10 @@ internal static class Expressions
 
         // Check for "^^"
         if (!context.EndOfCode &&
-            context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalXor } tokenOperator)
+            (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalXor } ||
+             context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.Xor }))
         {
+            IToken token = context.Tokens[context.Position];
             context.Position++;
 
             // Parse right side of binary operation
@@ -216,19 +226,21 @@ internal static class Expressions
             {
                 // Start accumulating additional arguments in binary operation chain
                 List<IASTNode> arguments = new(4) { lhs, rightExpr };
-                List<BinaryOperation> operations = new(4) { OperationKindFromToken(tokenOperator) };
+                List<BinaryOperation> operations = new(4) { OperationKindFromToken(token) };
 
                 // Check for "&&" to continue finding arguments
                 while (!context.EndOfCode &&
-                       context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalXor } tokenNextOperator)
+                       (context.Tokens[context.Position] is TokenOperator { Kind: OperatorKind.LogicalXor } ||
+                        context.Tokens[context.Position] is TokenKeyword { Kind: KeywordKind.Xor }))
                 {
+                    IToken tokenNext = context.Tokens[context.Position];
                     context.Position++;
 
                     // Parse right side of current binary operation
                     if (ParseCompareExpression(context) is IASTNode nextRightExpr)
                     {
                         arguments.Add(nextRightExpr);
-                        operations.Add(OperationKindFromToken(tokenNextOperator));
+                        operations.Add(OperationKindFromToken(tokenNext));
                     }
                     else
                     {
@@ -237,7 +249,7 @@ internal static class Expressions
                 }
 
                 // Replace left side with this new binary chain
-                lhs = new BinaryChainNode(tokenOperator, arguments, operations);
+                lhs = new BinaryChainNode(token, arguments, operations);
             }
         }
 

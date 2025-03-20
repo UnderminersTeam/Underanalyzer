@@ -219,6 +219,10 @@ internal enum KeywordKind
     Div,        // div
     Mod,        // mod
 
+    And,        // and
+    Or,         // or
+    Xor,        // xor
+
     Enum,       // enum
 
     Try,        // try
