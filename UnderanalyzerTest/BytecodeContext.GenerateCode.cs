@@ -4033,4 +4033,64 @@ public class BytecodeContext_GenerateCode
             """
         );
     }
+
+    [Fact]
+    public void TestRoomInstanceIdsOld()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = inst_id_101234;
+            """,
+            """
+            push.i 101234
+            pop.v.i self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingAssetReferences = false,
+                UsingRoomInstanceReferences = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestRoomInstanceIdsMid()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = inst_id_101234;
+            """,
+            """
+            push.i 101234
+            pop.v.i self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestRoomInstanceIdsModern()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = inst_id_101234;
+            """,
+            """
+            pushref.i 101234 RoomInstance
+            pop.v.v self.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = true
+            }
+        );
+    }
 }

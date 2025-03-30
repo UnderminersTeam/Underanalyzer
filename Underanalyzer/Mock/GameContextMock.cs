@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Compiler;
 using Underanalyzer.Decompiler;
@@ -149,6 +150,25 @@ public class GameContextMock : IGameContext
     public bool GetAssetId(string assetName, out int assetId)
     {
         return _mockAssetsByName.TryGetValue(assetName, out assetId);
+    }
+
+    /// <inheritdoc/>
+    public bool GetRoomInstanceId(string assetName, out int assetId)
+    {
+        const string instIdPrefix = "inst_id_";
+        if (assetName.StartsWith(instIdPrefix, StringComparison.Ordinal) &&
+            int.TryParse(assetName.AsSpan()[instIdPrefix.Length..], out int instanceId) &&
+            instanceId >= 100000)
+        {
+            assetId = instanceId;
+            if (UsingRoomInstanceReferences)
+            {
+                assetId |= ((int)AssetType.RoomInstance << 24);
+            }
+            return true;
+        }
+        assetId = 0;
+        return false;
     }
 
     /// <inheritdoc/>

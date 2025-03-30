@@ -430,7 +430,7 @@ internal sealed record TokenVariable : IToken
 /// Token representing an asset name reference in code.
 /// </summary>
 /// <param name="Text">Verbatim text used for the asset reference identifier.</param>
-internal sealed record TokenAssetReference(LexContext Context, int TextPosition, string Text, int AssetId) : IToken
+internal sealed record TokenAssetReference(LexContext Context, int TextPosition, string Text, int AssetId, bool IsRoomInstanceAsset) : IToken
 {
     public override string ToString()
     {

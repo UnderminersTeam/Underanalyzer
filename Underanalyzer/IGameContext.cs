@@ -208,10 +208,22 @@ public interface IGameContext
     /// Returns the ID of an asset, if one exists. If <see cref="UsingAssetReferences"/> is <see langword="true"/>, 
     /// this ID encodes the correct asset type as well.
     /// </summary>
+    /// <remarks>
+    /// This excludes room instance assets, specifically. Those are instead found using <see cref="GetRoomInstanceId(string, out int)"/>.
+    /// </remarks>
     /// <param name="assetName">Asset name to look up</param>
     /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
     /// <returns><see langword="true"/> if an asset ID was found; <see langword="false"/> otherwise.</returns>
     public bool GetAssetId(string assetName, out int assetId);
+
+    /// <summary>
+    /// Returns the ID of a room instance asset, if one exists. If <see cref="UsingRoomInstanceReferences"/> is <see langword="true"/>, 
+    /// this ID encodes the correct asset type as well.
+    /// </summary>
+    /// <param name="roomInstanceName">Room instance name to look up</param>
+    /// <param name="assetId">Outputs the asset ID, or is undefined if this method returns <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if an asset ID was found; <see langword="false"/> otherwise.</returns>
+    public bool GetRoomInstanceId(string roomInstanceName, out int assetId);
 
     /// <summary>
     /// Returns the asset ID of a script, if one exists. If <see cref="UsingAssetReferences"/> is <see langword="true"/>, 
