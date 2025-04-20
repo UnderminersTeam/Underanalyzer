@@ -497,7 +497,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         // If this is a constructor, generate set static function call for certain GameMaker versions
         if (IsConstructor && context.CompileContext.GameContext.UsingConstructorSetStatic)
         {
-            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SetStaticFunction), 1);
+            context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SetStaticFunction), 0);
         }
 
         // Static block, before main body
