@@ -52,6 +52,8 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingBetterTryBreakContinue { get; set; } = false;
     /// <inheritdoc/>
+    public bool UsingBuiltinDefaultArguments { get; set; } = false;
+    /// <inheritdoc/>
     public bool UsingExtraRepeatInstruction { get; set; } = false;
     /// <inheritdoc/>
     public bool UsingTypedBooleans { get; set; } = true;

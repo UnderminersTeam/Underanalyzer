@@ -61,6 +61,7 @@ public class BuiltinsMock : IBuiltins
     /// </summary>
     public Dictionary<string, BuiltinVariableMock> BuiltinVariables = new()
     {
+        { "undefined", new("undefined", false, true) },
         { "sprite_index", new("sprite_index") },
         { "id", new("id", false) },
         { "view_xview", new("view_xview", true, true, true) },

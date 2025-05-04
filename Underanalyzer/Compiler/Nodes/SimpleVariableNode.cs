@@ -296,6 +296,31 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
     }
 
     /// <summary>
+    /// Creates an argument variable for the given argument index.
+    /// </summary>
+    public static IAssignableASTNode CreateArgumentVariable(ISubCompileContext context, IToken? nearbyToken, int argumentIndex, bool useBuiltinInstanceType = false)
+    {
+        if (argumentIndex < 16)
+        {
+            // Arguments 0 through 15 have unique variable names
+            string argName = $"argument{argumentIndex}";
+            SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
+            argVar.SetExplicitInstanceType(useBuiltinInstanceType ? InstanceType.Builtin : InstanceType.Argument);
+            return argVar;
+        }
+        else
+        {
+            // Arguments 16 and above use array accessors
+            const string argName = "argument";
+            SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
+            argVar.SetExplicitInstanceType(InstanceType.Argument /* Note: always use Argument here, apparently... */);
+            NumberNode argNumberNode = new(argumentIndex, nearbyToken);
+            AccessorNode accessorArgVar = new(nearbyToken, argVar, AccessorNode.AccessorKind.Array, argNumberNode);
+            return accessorArgVar;
+        }
+    }
+
+    /// <summary>
     /// Resolves the final variable type (and scope in general) for a variable, given the current context, 
     /// the variable's name, and builtin variable information.
     /// </summary>
@@ -328,24 +353,7 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
             if (context.CurrentScope.TryGetArgumentIndex(VariableName, out int argumentIndex))
             {
                 // Create new variable node altogether in this case
-                if (argumentIndex < 16)
-                {
-                    // Arguments 0 through 15 have unique variable names
-                    string argName = $"argument{argumentIndex}";
-                    SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
-                    argVar.SetExplicitInstanceType(InstanceType.Argument);
-                    return argVar;
-                }
-                else
-                {
-                    // Arguments 16 and above use array accessors
-                    const string argName = "argument";
-                    SimpleVariableNode argVar = new(argName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(argName));
-                    argVar.SetExplicitInstanceType(InstanceType.Argument);
-                    NumberNode argNumberNode = new(argumentIndex, NearbyToken);
-                    AccessorNode accessorArgVar = new(NearbyToken, argVar, AccessorNode.AccessorKind.Array, argNumberNode);
-                    return accessorArgVar;
-                }
+                return CreateArgumentVariable(context, NearbyToken, argumentIndex);
             }
 
             // Resolve old builtin argument variables

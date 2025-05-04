@@ -751,11 +751,11 @@ public class ParseContext_Parse
                 BlockNode defaultBlock = decl.DefaultValueBlock!;
                 IfNode ifCheck = (IfNode)defaultBlock.Children[0];
                 BinaryChainNode binaryCheck = (BinaryChainNode)ifCheck.Condition;
-                Assert.Equal("arg2", ((SimpleVariableNode)binaryCheck.Arguments[0]).VariableName);
+                Assert.Equal("argument1", ((SimpleVariableNode)binaryCheck.Arguments[0]).VariableName);
                 Assert.Equal("undefined", ((SimpleVariableNode)binaryCheck.Arguments[1]).VariableName);
                 Assert.Equal([BinaryChainNode.BinaryOperation.CompareEqual], binaryCheck.Operations);
                 AssignNode assign = (AssignNode)ifCheck.TrueStatement;
-                Assert.Equal("arg2", ((SimpleVariableNode)assign.Destination).VariableName);
+                Assert.Equal("argument1", ((SimpleVariableNode)assign.Destination).VariableName);
                 Assert.Equal("default value", ((StringNode)assign.Expression).Value);
                 Assert.Equal(AssignNode.AssignKind.Normal, assign.Kind);
                 Assert.Null(ifCheck.FalseStatement);

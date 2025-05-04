@@ -4293,4 +4293,135 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestNonBuiltinDefaultArguments()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function test_func(arg0 = 123, arg1 = 456, arg2)
+            {
+            }
+            """,
+            """
+            b [6]
+
+            > global_func_test_func (locals=0, args=3)
+            :[1]
+            push.v arg.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i arg.argument0
+
+            :[3]
+            push.v arg.argument1
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [5]
+
+            :[4]
+            pushi.e 456
+            pop.v.i arg.argument1
+
+            :[5]
+            exit.i
+
+            :[6]
+            push.i [function]global_func_test_func
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.test_func
+            popz.v
+            """,
+            true,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingConstructorSetStatic = false,
+                UsingBuiltinDefaultArguments = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestBuiltinDefaultArguments()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function test_func(arg0 = 123, arg1 = 456, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16 = 789)
+            {
+            }
+            """,
+            """
+            b [8]
+
+            > global_func_test_func (locals=0, args=17)
+            :[1]
+            pushbltn.v builtin.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [3]
+
+            :[2]
+            pushi.e 123
+            pop.v.i builtin.argument0
+
+            :[3]
+            pushbltn.v builtin.argument1
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [5]
+
+            :[4]
+            pushi.e 456
+            pop.v.i builtin.argument1
+
+            :[5]
+            pushi.e -15
+            pushi.e 16
+            push.v [array]self.argument
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [7]
+
+            :[6]
+            pushi.e 789
+            conv.i.v
+            pushi.e -15
+            pushi.e 16
+            pop.v.v [array]self.argument
+
+            :[7]
+            exit.i
+
+            :[8]
+            push.i [function]global_func_test_func
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.test_func
+            popz.v
+            """,
+            true,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingConstructorSetStatic = true,
+                UsingBuiltinDefaultArguments = true
+            }
+        );
+    }
 }

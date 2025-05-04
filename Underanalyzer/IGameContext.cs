@@ -176,6 +176,14 @@ public interface IGameContext
     public bool UsingBetterTryBreakContinue { get; }
 
     /// <summary>
+    /// <see langword="true"/> if the compiler generates default argument assignments using "builtin" rather than "argument"; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
+    /// </remarks>
+    public bool UsingBuiltinDefaultArguments { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

@@ -85,14 +85,17 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// <summary>
     /// Generates a default argument value check and assignment.
     /// </summary>
-    private static IfNode GenerateDefaultCheckAndAssign(ParseContext context, string argumentName, IASTNode value)
+    private static IfNode GenerateDefaultCheckAndAssign(ParseContext context, int argumentIndex, IASTNode value)
     {
         // Create condition
         SimpleVariableNode undefined = SimpleVariableNode.CreateUndefined(context);
-        BinaryChainNode condition = new(value.NearbyToken, [new SimpleVariableNode(argumentName, null), undefined], [BinaryChainNode.BinaryOperation.CompareEqual]);
+        bool useBuiltinInstanceType = context.CompileContext.GameContext.UsingBuiltinDefaultArguments;
+        IAssignableASTNode argumentVar = SimpleVariableNode.CreateArgumentVariable(context, value.NearbyToken, argumentIndex, useBuiltinInstanceType);
+        BinaryChainNode condition = new(value.NearbyToken, [argumentVar, undefined], [BinaryChainNode.BinaryOperation.CompareEqual]);
 
         // Create assignment statement
-        AssignNode assign = new(AssignNode.AssignKind.Normal, new SimpleVariableNode(argumentName, null), value);
+        argumentVar = SimpleVariableNode.CreateArgumentVariable(context, value.NearbyToken, argumentIndex, useBuiltinInstanceType);
+        AssignNode assign = new(AssignNode.AssignKind.Normal, argumentVar, value);
 
         // Return final if statement check
         return new IfNode(value.NearbyToken, condition, assign, null);
@@ -136,7 +139,6 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             argumentNames.Add(argumentName);
             context.Position++;
 
-
             // Check for default value
             if (context.IsCurrentToken(OperatorKind.Assign) || context.IsCurrentToken(OperatorKind.Assign2))
             {
@@ -147,7 +149,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
                 {
                     // Generate code for checking/assigning default value for this argument
                     defaultValueBlock ??= BlockNode.CreateEmpty(tokenKeyword, 16);
-                    defaultValueBlock.Children.Add(GenerateDefaultCheckAndAssign(context, tokenVariable.Text, defaultValueExpr));
+                    defaultValueBlock.Children.Add(GenerateDefaultCheckAndAssign(context, argumentNames.Count - 1, defaultValueExpr));
                 }
                 else
                 {

@@ -1654,4 +1654,44 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestNonBuiltinDefaultArguments()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function test_func(arg0 = 123, arg1 = 456, arg2)
+            {
+            }
+            """,
+            true,
+            new GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingConstructorSetStatic = false,
+                UsingBuiltinDefaultArguments = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestBuiltinDefaultArguments()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function test_func(arg0 = 123, arg1 = 456, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16 = 789)
+            {
+            }
+            """,
+            true,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingConstructorSetStatic = true,
+                UsingBuiltinDefaultArguments = true
+            }
+        );
+    }
 }
