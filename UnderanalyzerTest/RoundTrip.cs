@@ -1636,4 +1636,22 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestKeywordStructNames()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 
+            {
+                case: 1,
+                default: 2,
+                throw: 3,
+                function: 4,
+                regular_variable: 5,
+                begin: 6
+            };
+            """
+        );
+    }
 }

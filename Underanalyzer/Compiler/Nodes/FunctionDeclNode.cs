@@ -279,7 +279,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         {
             if (context.Tokens[context.Position] is not TokenVariable variable)
             {
-                // Failed to find a variable here... check if a constant/asset reference or string
+                // Failed to find a variable here... check if a constant/asset reference, string, or keyword
                 if (context.Tokens[context.Position] is TokenAssetReference assetReference)
                 {
                     variable = new TokenVariable(assetReference);
@@ -291,6 +291,10 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
                 else if (context.Tokens[context.Position] is TokenString str)
                 {
                     variable = new TokenVariable(str);
+                }
+                else if (context.Tokens[context.Position] is TokenKeyword keyword)
+                {
+                    variable = new TokenVariable(keyword);
                 }
                 else
                 {
