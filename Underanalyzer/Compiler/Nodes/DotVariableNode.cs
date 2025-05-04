@@ -120,10 +120,14 @@ internal sealed class DotVariableNode : IAssignableASTNode, IVariableASTNode
             }
         }
 
-        // Mark simple variables on the leftmost side as such
+        // Mark simple variables and array accessors on the leftmost side as such
         if (LeftExpression is SimpleVariableNode simpleVariable)
         {
             simpleVariable.LeftmostSideOfDot = true;
+        }
+        else if (LeftExpression is AccessorNode accessorNode)
+        {
+            accessorNode.LeftmostSideOfDot = true;
         }
 
         return this;

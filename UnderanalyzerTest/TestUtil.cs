@@ -257,9 +257,12 @@ internal static class TestUtil
         GMCode comparison = GetCode(assembly, gameContext);
 
         // Compare the instructions
-        Assert.Equal(comparison.InstructionCount, generated.Instructions.Count);
         for (int i = 0; i < comparison.InstructionCount; i++)
         {
+            if (i >= generated.InstructionCount)
+            {
+                Assert.Equal(comparison.InstructionCount, generated.Instructions.Count);
+            }
             GMInstruction comparisonInstr = (GMInstruction)comparison.GetInstruction(i);
             GMInstruction actualInstr = generated.Instructions[i];
             Assert.Equal(comparisonInstr.Address, actualInstr.Address);
@@ -315,6 +318,7 @@ internal static class TestUtil
                 Assert.Null(actualInstr.Function);
             }
         }
+        Assert.Equal(comparison.InstructionCount, generated.Instructions.Count);
     }
 
     /// <summary>

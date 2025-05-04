@@ -940,6 +940,17 @@ public class RoundTrip
             a = a.b[0];
             global.a = 0;
             global.a[0] = 0;
+            self.a.b = 1;
+            a.b = 1;
+            a = 1;
+            other.a[0] = 1;
+            global.a[0] = 1;
+            a[0].b = 1;
+            a = a[0].b;
+            a = a[0];
+            a[0].b[0]("a");
+            a[0].b.c("a");
+            a[0].b("a");
             """,
             """
             a = 0;
@@ -952,16 +963,27 @@ public class RoundTrip
             a++;
             a.b = 0;
             a[0] = 1;
-            self.a[0] = 1;
+            a[0] = 1;
             a.b[0] = 1;
             a[0] += 1;
-            self.a[0] += 1;
+            a[0] += 1;
             a.b[0] += 1;
             a = a[0];
-            a = self.a[0];
+            a = a[0];
             a = a.b[0];
             global.a = 0;
             global.a[0] = 0;
+            a.b = 1;
+            a.b = 1;
+            a = 1;
+            other.a[0] = 1;
+            global.a[0] = 1;
+            a[0].b = 1;
+            a = a[0].b;
+            a = a[0];
+            a[0].b[0]("a");
+            a[0].b.c("a");
+            a[0].b("a");
             """
         );
     }
@@ -996,6 +1018,17 @@ public class RoundTrip
             a = a.b[0];
             global.a = 0;
             global.a[0] = 0;
+            self.a.b = 1;
+            a.b = 1;
+            a = 1;
+            other.a[0] = 1;
+            global.a[0] = 1;
+            a[0].b = 1;
+            a = a[0].b;
+            a = a[0];
+            a[0].b[0]("a");
+            a[0].b.c("a");
+            a[0].b("a");
             """,
             false,
             gameContext

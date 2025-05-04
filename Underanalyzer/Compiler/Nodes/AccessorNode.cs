@@ -43,6 +43,11 @@ internal sealed class AccessorNode : IAssignableASTNode
     public IToken? NearbyToken { get; }
 
     /// <summary>
+    /// Whether this is an accessor node currently on the leftmost side of a <see cref="DotVariableNode"/>.
+    /// </summary>
+    public bool LeftmostSideOfDot { get; set; } = false;
+
+    /// <summary>
     /// Kinds of accessors.
     /// </summary>
     public enum AccessorKind
@@ -127,7 +132,8 @@ internal sealed class AccessorNode : IAssignableASTNode
     public IASTNode PostProcess(ParseContext context)
     {
         // Compiler quirk with rewriting constants in dot nodes earlier in some cases
-        if (Expression is DotVariableNode { LeftExpression: NumberNode numberNode } dotVariableNode)
+        if (Expression is DotVariableNode { LeftExpression: NumberNode numberNode } dotVariableNode &&
+            (context.CompileContext.GameContext.UsingSelfToBuiltin || numberNode.ConstantName == "global"))
         {
             dotVariableNode.LeftExpression = numberNode.PostProcess(context);
         }
@@ -182,7 +188,7 @@ internal sealed class AccessorNode : IAssignableASTNode
             {
                 // Change instance type to builtin (weird compiler quirk), when either a function call,
                 // or in newer GML versions when not on the RHS of a dot variable.
-                if (simpleVariable.IsFunctionCall || (!simpleVariable.CollapsedFromDot && context.CompileContext.GameContext.UsingSelfToBuiltin))
+                if (simpleVariable.IsFunctionCall || (!LeftmostSideOfDot && !simpleVariable.CollapsedFromDot && context.CompileContext.GameContext.UsingSelfToBuiltin))
                 {
                     stackInstanceType = InstanceType.Builtin;
                 }

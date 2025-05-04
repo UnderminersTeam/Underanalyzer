@@ -1108,6 +1108,17 @@ public class BytecodeContext_GenerateCode
             a = a.b[0];
             global.a = 0;
             global.a[0] = 0;
+            self.a.b = 1;
+            a.b = 1;
+            a = 1;
+            other.a[0] = 1;
+            global.a[0] = 1;
+            a[0].b = 1;
+            a = a[0].b;
+            a = a[0];
+            a[0].b[0]("a");
+            a[0].b.c("a");
+            a[0].b("a");
             """,
             """
             pushi.e 0
@@ -1145,8 +1156,7 @@ public class BytecodeContext_GenerateCode
             pop.v.v [array]self.a
             pushi.e 1
             conv.i.v
-            call.i @@This@@ 0
-            pushi.e -9
+            pushi.e -1
             pushi.e 0
             pop.v.v [array]self.a
             pushi.e 1
@@ -1162,10 +1172,9 @@ public class BytecodeContext_GenerateCode
             pushi.e 1
             add.i.v
             pop.i.v [array]self.a
-            call.i @@This@@ 0
-            pushi.e -9
+            pushi.e -1
             pushi.e 0
-            dup.i 5
+            dup.i 1
             push.v [array]self.a
             pushi.e 1
             add.i.v
@@ -1182,8 +1191,7 @@ public class BytecodeContext_GenerateCode
             pushi.e 0
             push.v [array]self.a
             pop.v.v self.a
-            call.i @@This@@ 0
-            pushi.e -9
+            pushi.e -1
             pushi.e 0
             push.v [array]self.a
             pop.v.v self.a
@@ -1199,6 +1207,75 @@ public class BytecodeContext_GenerateCode
             pushi.e -5
             pushi.e 0
             pop.v.v [array]self.a
+            pushi.e 1
+            push.v self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            push.v self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            pop.v.i self.a
+            pushi.e 1
+            conv.i.v
+            pushi.e -2
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            pushi.e -5
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            pop.v.v self.a
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v self.a
+            push.s "a"
+            conv.s.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.c
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
             """
         );
     }
@@ -1233,6 +1310,17 @@ public class BytecodeContext_GenerateCode
             a = a.b[0];
             global.a = 0;
             global.a[0] = 0;
+            self.a.b = 1;
+            a.b = 1;
+            a = 1;
+            other.a[0] = 1;
+            global.a[0] = 1;
+            a[0].b = 1;
+            a = a[0].b;
+            a = a[0];
+            a[0].b[0]("a");
+            a[0].b.c("a");
+            a[0].b("a");
             """,
             """
             pushi.e 0
@@ -1325,6 +1413,77 @@ public class BytecodeContext_GenerateCode
             pushi.e -9
             pushi.e 0
             pop.v.v [array]self.a
+            pushi.e 1
+            push.v self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            push.v builtin.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e 1
+            pop.v.i builtin.a
+            pushi.e 1
+            conv.i.v
+            call.i @@Other@@ 0
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            conv.i.v
+            call.i @@Global@@ 0
+            pushi.e -9
+            pushi.e 0
+            pop.v.v [array]self.a
+            pushi.e 1
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pop.v.i [stacktop]self.b
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            pop.v.v builtin.a
+            pushi.e -6
+            pushi.e 0
+            push.v [array]self.a
+            pop.v.v builtin.a
+            push.s "a"
+            conv.s.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            pushi.e 0
+            push.v [array]self.b
+            dup.v 0
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            pushi.e -9
+            push.v [stacktop]self.b
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.c
+            callv.v 1
+            popz.v
+            pushi.e -1
+            pushi.e 0
+            push.v [array]self.a
+            push.s "a"
+            conv.s.v
+            dup.v 1 1
+            dup.v 0
+            push.v stacktop.b
+            callv.v 1
+            popz.v
             """,
             false,
             gameContext
