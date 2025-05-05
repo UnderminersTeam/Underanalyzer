@@ -449,22 +449,51 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// <inheritdoc/>
     public void GenerateCode(BytecodeContext context)
     {
-        if (context.IsFunctionDeclaredInCurrentScope(FunctionName) || context.IsGlobalFunctionName(FunctionName))
+        IGameContext gameContext = context.CompileContext.GameContext;
+        bool isGlobalFunction =
+            context.IsGlobalFunctionName(FunctionName) ||
+            (context.CompileContext.ScriptKind == CompileScriptKind.GlobalScript && context.RootScope.IsFunctionDeclaredImmediately(FunctionName));
+        if (isGlobalFunction || context.IsFunctionDeclaredInCurrentScope(FunctionName))
         {
             // Function is in scope to be called directly, so do that
-            GenerateDirectCode(context);
+            if (gameContext.UsingNewFunctionResolution && !isGlobalFunction && !context.CurrentScope.IsFunctionDeclaredImmediately(FunctionName))
+            {
+                // Because we can't have nice things, this is actually an indirect direct call.
+                // First, push arguments to the stack.
+                GenerateArguments(context);
+
+                // Use current self instance
+                context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.SelfFunction), 0);
+
+                // Push reference to function
+                context.Emit(ExtendedOpcode.PushReference, new LocalFunctionPatch(null, context.CurrentScope, FunctionName));
+
+                // Emit actual call
+                context.EmitCallVariable(Arguments.Count);
+                context.PushDataType(DataType.Variable);
+
+                // If this node is a statement, remove result from stack
+                if (IsStatement)
+                {
+                    context.Emit(Opcode.PopDelete, context.PopDataType());
+                }
+            }
+            else
+            {
+                // Regular direct call
+                GenerateDirectCode(context);
+            }
         }
         else
         {
             // Not a global function name - ensure it's at least GMLv2
-            if (!context.CompileContext.GameContext.UsingGMLv2)
+            if (!gameContext.UsingGMLv2)
             {
                 context.CompileContext.PushError($"Failed to find function \"{FunctionName}\"", NearbyToken);
             }
 
             // This is a single variable function call - convert to a variable
-            SimpleVariableNode varNode =
-                new(FunctionName, context.CompileContext.GameContext.Builtins.LookupBuiltinVariable(FunctionName));
+            SimpleVariableNode varNode = new(FunctionName, gameContext.Builtins.LookupBuiltinVariable(FunctionName));
             IAssignableASTNode assignable = varNode.ResolveStandaloneType(context);
 
             // If still actually a simple variable node, compile it here, otherwise defer to general function call

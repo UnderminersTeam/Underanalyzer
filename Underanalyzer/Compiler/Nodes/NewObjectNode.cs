@@ -121,11 +121,29 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
         if (Expression is SimpleVariableNode simpleVariable)
         {
             string functionName = simpleVariable.VariableName;
-            if (context.IsFunctionDeclaredInCurrentScope(functionName) || context.IsGlobalFunctionName(functionName))
+            bool isGlobalFunction = 
+                context.IsGlobalFunctionName(functionName) || 
+                (context.CompileContext.ScriptKind == CompileScriptKind.GlobalScript && context.RootScope.IsFunctionDeclaredImmediately(functionName));
+            if (isGlobalFunction || context.IsFunctionDeclaredInCurrentScope(functionName))
             {
                 // We can statically resolve the function at compile time, so do that
-                context.EmitPushFunction(new FunctionPatch(context.CurrentScope, functionName));
-                context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+                IGameContext gameContext = context.CompileContext.GameContext;
+                if (gameContext.UsingFunctionScriptReferences && !context.CurrentScope.GeneratingDotVariableCall &&
+                    (
+                        (gameContext.GetScriptId(functionName, out int _) && !gameContext.GetScriptIdByFunctionName(functionName, out int _)) ||
+                        (gameContext.UsingNewFunctionResolution && !isGlobalFunction && !context.CurrentScope.IsFunctionDeclaredImmediately(functionName))
+                    ))
+                {
+                    // If calling a script that doesn't actually have its own function, push a reference to
+                    // the script directly (in versions where it does that, at least).
+                    context.Emit(ExtendedOpcode.PushReference, new FunctionPatch(context.CurrentScope, functionName));
+                }
+                else
+                {
+                    // Use regular function push
+                    context.EmitPushFunction(new FunctionPatch(context.CurrentScope, functionName));
+                    context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
+                }
             }
             else
             {

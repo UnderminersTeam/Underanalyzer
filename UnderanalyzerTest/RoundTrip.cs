@@ -1685,12 +1685,66 @@ public class RoundTrip
             }
             """,
             true,
-            new Underanalyzer.Mock.GameContextMock()
+            new GameContextMock()
             {
                 UsingSelfToBuiltin = true,
                 UsingNewFunctionVariables = true,
                 UsingConstructorSetStatic = true,
                 UsingBuiltinDefaultArguments = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestOldFunctionResolution()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function event_function()
+            {
+            }
+
+            function other_event_function()
+            {
+                event_function();
+            }
+
+            event_function();
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingFunctionScriptReferences = true,
+                UsingNewFunctionResolution = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestNewFunctionResolution()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            function event_function()
+            {
+            }
+
+            function other_event_function()
+            {
+                event_function();
+            }
+
+            event_function();
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewFunctionVariables = true,
+                UsingFunctionScriptReferences = true,
+                UsingNewFunctionResolution = true
             }
         );
     }

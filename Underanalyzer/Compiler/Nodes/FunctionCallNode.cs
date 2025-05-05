@@ -163,7 +163,10 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 inChain = true;
 
                 // Push arguments to stack
+                bool prevGeneratingDotVariableCall = context.CurrentScope.GeneratingDotVariableCall;
+                context.CurrentScope.GeneratingDotVariableCall = true;
                 GenerateArguments(context);
+                context.CurrentScope.GeneratingDotVariableCall = prevGeneratingDotVariableCall;
 
                 // Push left expression
                 if (dotVar.LeftExpression is FunctionCallNode funcCall)
@@ -319,7 +322,17 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
         if (!inChain)
         {
             // Push arguments to stack
-            GenerateArguments(context);
+            if (Expression is DotVariableNode)
+            {
+                bool prevGeneratingDotVariableCall = context.CurrentScope.GeneratingDotVariableCall;
+                context.CurrentScope.GeneratingDotVariableCall = true;
+                GenerateArguments(context);
+                context.CurrentScope.GeneratingDotVariableCall = prevGeneratingDotVariableCall;
+            }
+            else
+            {
+                GenerateArguments(context);
+            }
 
             // Swap instance and arguments around on stack, and duplicate instance
             context.EmitDupSwap(DataType.Variable, (byte)Arguments.Count, 1);

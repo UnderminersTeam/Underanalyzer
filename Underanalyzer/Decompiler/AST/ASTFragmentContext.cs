@@ -35,6 +35,11 @@ public sealed class ASTFragmentContext
     public string? FunctionName { get; internal set; } = null;
 
     /// <summary>
+    /// Parent fragment of this fragment, if not the root.
+    /// </summary>
+    internal ASTFragmentContext? Parent { get; }
+
+    /// <summary>
     /// Children of this fragment, e.g. sub-functions.
     /// </summary>
     internal List<ASTFragmentContext> Children { get; } = [];
@@ -116,8 +121,9 @@ public sealed class ASTFragmentContext
     /// </summary>
     private Dictionary<int, string> NamedArgumentByIndex { get; set; } = [];
 
-    internal ASTFragmentContext(Fragment fragment)
+    internal ASTFragmentContext(ASTFragmentContext? parent, Fragment fragment)
     {
+        Parent = parent;
         Fragment = fragment;
 
         // Update max referenced argument, if we have an argument count greater than 0

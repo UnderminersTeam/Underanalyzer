@@ -62,6 +62,10 @@ public class GameContextMock : IGameContext
     /// <inheritdoc/>
     public bool UsingRoomInstanceReferences { get; set; } = true;
     /// <inheritdoc/>
+    public bool UsingFunctionScriptReferences { get; set; } = false;
+    /// <inheritdoc/>
+    public bool UsingNewFunctionResolution { get; set; } = false;
+    /// <inheritdoc/>
     public IGlobalFunctions GlobalFunctions { get; } = new GlobalFunctions();
     /// <inheritdoc/>
     public GameSpecificRegistry GameSpecificRegistry { get; set; } = new();

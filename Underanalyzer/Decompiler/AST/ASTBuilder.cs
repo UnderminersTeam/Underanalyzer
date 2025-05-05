@@ -231,7 +231,7 @@ public sealed class ASTBuilder(DecompileContext context)
     /// </summary>
     internal void PushFragmentContext(Fragment fragment)
     {
-        ASTFragmentContext context = new(fragment);
+        ASTFragmentContext context = new(TopFragmentContext, fragment);
         TopFragmentContext?.Children.Add(context);
         FragmentContextStack.Push(context);
         TopFragmentContext = context;

@@ -98,7 +98,7 @@ internal sealed class ParseContext : ISubCompileContext
         CompileContext = context;
         Tokens = tokens;
 
-        RootScope = new(false);
+        RootScope = new(null, false);
         CurrentScope = RootScope;
 
         if (context.ScriptKind == CompileScriptKind.GlobalScript)

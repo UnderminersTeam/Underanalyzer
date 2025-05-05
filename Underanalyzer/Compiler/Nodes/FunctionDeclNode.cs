@@ -122,7 +122,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
 
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
-        FunctionScope newScope = new(true);
+        FunctionScope newScope = new(oldScope, true);
         context.CurrentScope = newScope;
 
         // Parse arguments and default values
@@ -268,7 +268,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     {
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
-        FunctionScope newScope = new(true);
+        FunctionScope newScope = new(oldScope, true);
         context.CurrentScope = newScope;
 
         // Create new function declaration node
@@ -482,7 +482,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         if (InheritanceCall is SimpleFunctionCallNode inheritCall)
         {
             // Generate actual call
-            if (oldScope.IsFunctionDeclared(inheritCall.FunctionName))
+            if (oldScope.IsFunctionDeclared(context.CompileContext.GameContext, inheritCall.FunctionName))
             {
                 // Override scope to be the outer scope for this call (but NOT its arguments), and generate a direct call
                 inheritCall.GenerateDirectCode(context, oldScope);

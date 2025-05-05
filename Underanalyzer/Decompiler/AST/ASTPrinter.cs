@@ -262,10 +262,25 @@ public sealed class ASTPrinter(DecompileContext context)
         }
 
         string funcName = function.Name.Content;
-        if ((overrideContext ?? TopFragmentContext!).SubFunctionNames.TryGetValue(funcName, out string? realName))
+        ASTFragmentContext fragmentContext = overrideContext ?? TopFragmentContext!;
+        if (fragmentContext.SubFunctionNames.TryGetValue(funcName, out string? realName))
         {
             // We found a sub-function name within this fragment!
             return realName;
+        }
+
+        // If new function resolution is used, check parent fragment contexts for any sub-function names
+        if (Context.GameContext.UsingNewFunctionResolution)
+        {
+            while (fragmentContext.Parent is not null)
+            {
+                fragmentContext = fragmentContext.Parent;
+                if (fragmentContext.SubFunctionNames.TryGetValue(funcName, out realName))
+                {
+                    // We found a sub-function name in a parent fragment!
+                    return realName;
+                }
+            }
         }
 
         // Just a normal function name, otherwise

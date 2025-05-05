@@ -31,11 +31,6 @@ internal sealed class BytecodeContext : ISubCompileContext
     public IASTNode RootNode { get; }
 
     /// <summary>
-    /// Set of global functions defined locally in the code entry being compiled.
-    /// </summary>
-    public HashSet<string>? LocalGlobalFunctions { get; }
-
-    /// <summary>
     /// Current list of written instructions, in order by address.
     /// </summary>
     public List<IGMInstruction> Instructions { get; } = new(64);
@@ -103,7 +98,6 @@ internal sealed class BytecodeContext : ISubCompileContext
         RootNode = rootNode;
         CurrentScope = rootScope;
         RootScope = rootScope;
-        LocalGlobalFunctions = localGlobalFunctions;
 
         rootScope.ControlFlowContexts = new(8);
         _gameContext = context.GameContext;
@@ -155,7 +149,7 @@ internal sealed class BytecodeContext : ISubCompileContext
             {
                 entry = functionPatch.FunctionEntry;
             }
-            else if (functionPatch.FunctionScope!.TryGetDeclaredFunction(functionPatch.FunctionName!, out FunctionEntry? found))
+            else if (functionPatch.FunctionScope!.TryGetDeclaredFunction(context.GameContext, functionPatch.FunctionName!, out FunctionEntry? found))
             {
                 entry = found;
             }
@@ -280,7 +274,7 @@ internal sealed class BytecodeContext : ISubCompileContext
     }
 
     /// <summary>
-    /// Emits an instruction with the given extended opcode, at the current position.
+    /// Emits an instruction with the given extended opcode and local function, at the current position.
     /// </summary>
     public IGMInstruction Emit(ExtendedOpcode extendedOpcode, LocalFunctionPatch function)
     {
@@ -290,6 +284,21 @@ internal sealed class BytecodeContext : ISubCompileContext
 
         function.Instruction = instr;
         Patches.LocalFunctionPatches!.Add(function);
+
+        return instr;
+    }
+
+    /// <summary>
+    /// Emits an instruction with the given extended opcode and function, at the current position.
+    /// </summary>
+    public IGMInstruction Emit(ExtendedOpcode extendedOpcode, FunctionPatch function)
+    {
+        IGMInstruction instr = _codeBuilder.CreateInstruction(Position, extendedOpcode, 0);
+        Instructions.Add(instr);
+        Position += 8;
+
+        function.Instruction = instr;
+        Patches.FunctionPatches!.Add(function);
 
         return instr;
     }
@@ -604,12 +613,6 @@ internal sealed class BytecodeContext : ISubCompileContext
     /// </summary>
     public bool IsGlobalFunctionName(string name)
     {
-        // Check if it's a locally-declared global function
-        if (LocalGlobalFunctions?.Contains(name) ?? false)
-        {
-            return true;
-        }
-
         // Check builtin functions
         if (_gameContext.Builtins.LookupBuiltinFunction(name) is not null)
         {
@@ -683,21 +686,21 @@ internal sealed class BytecodeContext : ISubCompileContext
             case CompileScriptKind.GlobalScript:
             case CompileScriptKind.RoomCreationCode:
                 // Global scripts and room creation code have foresight of future function declarations in the script
-                return CurrentScope.IsFunctionDeclared(name);
+                return CurrentScope.IsFunctionDeclared(CompileContext.GameContext, name);
 
             case CompileScriptKind.ObjectEvent:
                 // Object events only have foresight of future functions in certain versions
                 if (CompileContext.GameContext.UsingObjectFunctionForesight)
                 {
-                    return CurrentScope.IsFunctionDeclared(name);
+                    return CurrentScope.IsFunctionDeclared(CompileContext.GameContext, name);
                 }
 
                 // No foresight; attempt to retrieve function entry
-                return CurrentScope.TryGetDeclaredFunction(name, out _);
+                return CurrentScope.TryGetDeclaredFunction(CompileContext.GameContext, name, out _);
 
             default:
                 // No foresight; attempt to retrieve function entry
-                return CurrentScope.TryGetDeclaredFunction(name, out _);
+                return CurrentScope.TryGetDeclaredFunction(CompileContext.GameContext, name, out _);
         }
     }
 

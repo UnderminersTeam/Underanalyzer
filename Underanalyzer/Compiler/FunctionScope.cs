@@ -14,8 +14,13 @@ namespace Underanalyzer.Compiler;
 /// <summary>
 /// Structure used to track data at the level of a specific function/event/script scope.
 /// </summary>
-public sealed class FunctionScope(bool isFunction)
+public sealed class FunctionScope(FunctionScope? parent, bool isFunction)
 {
+    /// <summary>
+    /// Parent scope of this function scope, or <see langword="null"/> if none.
+    /// </summary>
+    public FunctionScope? Parent { get; } = parent;
+
     /// <summary>
     /// Whether this scope is for specifically a function, and not a script or event.
     /// </summary>
@@ -40,6 +45,11 @@ public sealed class FunctionScope(bool isFunction)
     /// Whether bytecode is currently being generated for a static block.
     /// </summary>
     internal bool GeneratingStaticBlock { get; set; } = false;
+
+    /// <summary>
+    /// Whether bytecode is currently being generated for a function call, where the function being called ends in a dot variable access.
+    /// </summary>
+    internal bool GeneratingDotVariableCall { get; set; } = false;
 
     /// <summary>
     /// Whether currently post-processing a statement that requires extra logic for break/continue during code rewriting.
@@ -169,10 +179,13 @@ public sealed class FunctionScope(bool isFunction)
     /// <summary>
     /// Attempts to look up a function entry with the given name in this function scope.
     /// </summary>
+    /// <remarks>
+    /// If <see cref="IGameContext.UsingNewFunctionResolution"/> is <see langword="true"/>, this will check parent scopes as well.
+    /// </remarks>
     /// <param name="name">Name of the function to look up.</param>
     /// <param name="entry">Output function entry, if the lookup is successful.</param>
     /// <returns><see langword="true"/> if a function entry was found; <see langword="false"/> otherwise.</returns>
-    public bool TryGetDeclaredFunction(string name, [NotNullWhen(true)] out FunctionEntry? entry)
+    public bool TryGetDeclaredFunction(IGameContext context, string name, [NotNullWhen(true)] out FunctionEntry? entry)
     {
         if (_declaredFunctions.TryGetValue(name, out entry))
         {
@@ -182,13 +195,45 @@ public sealed class FunctionScope(bool isFunction)
             }
             return true;
         }
+        if (context.UsingNewFunctionResolution)
+        {
+            if (Parent is not null)
+            {
+                return Parent.TryGetDeclaredFunction(context, name, out entry);
+            }
+        }
         return false;
     }
 
     /// <summary>
     /// Returns whether or not a function with the given name is declared in this function scope.
     /// </summary>
-    public bool IsFunctionDeclared(string name)
+    /// <remarks>
+    /// If <see cref="IGameContext.UsingNewFunctionResolution"/> is <see langword="true"/>, this will check parent scopes as well.
+    /// </remarks>
+    public bool IsFunctionDeclared(IGameContext context, string name)
+    {
+        if (_declaredFunctions.ContainsKey(name))
+        {
+            return true;
+        }
+        if (context.UsingNewFunctionResolution)
+        {
+            if (Parent is not null && Parent.IsFunctionDeclared(context, name))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns whether or not a function with the given name is declared within this immediate function scope.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="IsFunctionDeclared(IGameContext, string)"/>, this will never check parent scopes.
+    /// </remarks>
+    public bool IsFunctionDeclaredImmediately(string name)
     {
         return _declaredFunctions.ContainsKey(name);
     }
