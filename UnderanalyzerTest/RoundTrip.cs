@@ -1748,4 +1748,68 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestTryWithFinally()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 1;
+            try
+            {
+                with (b)
+                {
+                    c = 3;
+                }
+            }
+            finally
+            {
+                d = 4;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryWhileFinally()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 1;
+            try
+            {
+                while (b)
+                {
+                    c = 3;
+                }
+            }
+            finally
+            {
+                d = 4;
+            }
+            """
+        );
+    }
+
+    [Fact]
+    public void TestTryDoUntilFinally()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 1;
+            try
+            {
+                do
+                {
+                    c = 3;
+                }
+                until (b);
+            }
+            finally
+            {
+                d = 4;
+            }
+            """
+        );
+    }
 }

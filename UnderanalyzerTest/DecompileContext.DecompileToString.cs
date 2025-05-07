@@ -2876,4 +2876,61 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestTryWithFinally()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            pushi.e 1
+            pop.v.i builtin.a
+
+            :[1]
+            push.i 80
+            conv.i.v
+            push.i -1
+            conv.i.v
+            call.i @@try_hook@@ 2
+            popz.v
+            
+            :[2]
+            push.v builtin.b
+            pushi.e -9
+            pushenv [4]
+
+            :[3]
+            pushi.e 3
+            pop.v.i builtin.c
+
+            :[4]
+            popenv [3]
+            
+            :[5]
+            call.i @@try_unhook@@ 0
+            popz.v
+            pushi.e 4
+            pop.v.i builtin.d
+            call.i @@finish_finally@@ 0
+            popz.v
+            b [6]
+
+            :[6]
+            """,
+            """
+            a = 1;
+            try
+            {
+                with (b)
+                {
+                    c = 3;
+                }
+            }
+            finally
+            {
+                d = 4;
+            }
+            """
+        );
+    }
 }

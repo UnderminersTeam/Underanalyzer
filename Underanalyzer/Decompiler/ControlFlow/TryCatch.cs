@@ -119,8 +119,10 @@ internal sealed class TryCatch : IControlFlowNode
                         endBlock.Predecessors.Add(catchEndBlock);
                     }
 
-                    // Disconnect start node from end node
-                    IControlFlowNode.DisconnectPredecessor(endBlock, 0);
+                    // Disconnect start node from end node.
+                    // Try to search for the start node as a predecessor (as a safe fix for with loops inside of a try statement)
+                    int startNodePredecessorIndex = endBlock.Predecessors.IndexOf(block);
+                    IControlFlowNode.DisconnectPredecessor(endBlock, startNodePredecessorIndex >= 0 ? startNodePredecessorIndex : 0);
 
                     // Add new empty node to act as a meet point for both try and catch blocks
                     EmptyNode empty = new(endBlock.StartAddress);
