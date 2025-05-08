@@ -304,9 +304,7 @@ internal sealed class BlockSimulator
     /// </summary>
     private static void SimulatePopVariable(ASTBuilder builder, List<IStatementNode> output, IGMInstruction instr)
     {
-        IGMVariable? gmVariable = instr.TryFindVariable(builder.Context.GameContext);
-
-        if (gmVariable is null)
+        if (instr.Type1 == DataType.Int16)
         {
             // "Pop Swap" instruction variant - just moves stuff around on the stack
             IExpressionNode e1 = builder.ExpressionStack.Pop();
@@ -335,6 +333,7 @@ internal sealed class BlockSimulator
         IExpressionNode? valueToAssign = null;
 
         // If this is a local variable, add it to the fragment context
+        IGMVariable gmVariable = instr.TryFindVariable(builder.Context.GameContext) ?? throw new DecompilerException("Missing variable on instruction");
         if (gmVariable.InstanceType == InstanceType.Local)
         {
             string localName = gmVariable.Name.Content;
