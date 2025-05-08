@@ -71,7 +71,7 @@ internal sealed class TryCatch : IControlFlowNode
             {
                 IGMInstruction call = block.Instructions[^2];
                 if (call.Kind == IGMInstruction.Opcode.Call &&
-                    call.Function?.Name?.Content == VMConstants.TryHookFunction)
+                    call.TryFindFunction(ctx.GameContext)?.Name?.Content == VMConstants.TryHookFunction)
                 {
                     // Get components of our try..catch statement
                     IControlFlowNode tryNode = block.Successors[0];
@@ -137,7 +137,7 @@ internal sealed class TryCatch : IControlFlowNode
                     // Remove try unhook instructions from end node
                     if (endBlock.Instructions.Count == 0 ||
                         endBlock.Instructions[0].Kind != IGMInstruction.Opcode.Call ||
-                        endBlock.Instructions[0].Function?.Name?.Content != VMConstants.TryUnhookFunction)
+                        endBlock.Instructions[0].TryFindFunction(ctx.GameContext)?.Name?.Content != VMConstants.TryUnhookFunction)
                     {
                         throw new DecompilerException("Expected try unhook in end node");
                     }
@@ -166,7 +166,7 @@ internal sealed class TryCatch : IControlFlowNode
             {
                 IGMInstruction call = block.Instructions[^3];
                 if (call.Kind == IGMInstruction.Opcode.Call &&
-                    call.Function?.Name?.Content == VMConstants.FinishFinallyFunction)
+                    call.TryFindFunction(ctx.GameContext)?.Name?.Content == VMConstants.FinishFinallyFunction)
                 {
                     // Remove redundant branch instruction for later operation.
                     // We leave final blocks for post-processing on the syntax tree due to complexity.
@@ -231,7 +231,8 @@ internal sealed class TryCatch : IControlFlowNode
         {
             // Get variable from start of catch's initial block
             Block catchInstrBlock = builder.Context.BlocksByAddress![Catch.StartAddress];
-            if (catchInstrBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.Pop, Variable: IGMVariable variable }, ..])
+            if (catchInstrBlock.Instructions is not [{ Kind: IGMInstruction.Opcode.Pop} popInstr, ..] ||
+                popInstr.TryFindVariable(builder.Context.GameContext) is not IGMVariable { Name.Content: string variableName } variable)
             {
                 throw new DecompilerException("Expected first instruction of catch block to store to variable");
             }
@@ -239,7 +240,7 @@ internal sealed class TryCatch : IControlFlowNode
             catchInstrBlock.Instructions.RemoveAt(0);
 
             // Register this as a local variable, but not to local variable declaration list
-            builder.LocalVariableNames.Add(variable.Name.Content);
+            builder.LocalVariableNames.Add(variableName);
 
             // Build actual catch body - also follow any parents, as needed
             IControlFlowNode catchNode = Catch;

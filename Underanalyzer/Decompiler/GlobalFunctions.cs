@@ -206,7 +206,7 @@ public class GlobalFunctions : IGlobalFunctions
         }
 
         // Get function reference for fragment
-        if (block.Instructions[0] is not { Kind: Opcode.Push, Type1: DataType.Int32, Function: IGMFunction function } || function is null)
+        if (block.Instructions[0] is not { Kind: Opcode.Push, Type1: DataType.Int32, ResolvedFunction: IGMFunction function } || function is null)
         {
             return false;
         }
@@ -228,7 +228,7 @@ public class GlobalFunctions : IGlobalFunctions
                             _, _,
                         { ValueShort: -1 or -16 },
                         { Kind: Opcode.Convert, Type1: DataType.Int32, Type2: DataType.Variable },
-                        { Kind: Opcode.Call, Function.Name.Content: VMConstants.MethodFunction },
+                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
                             ..
                         ])
                     {
@@ -242,7 +242,7 @@ public class GlobalFunctions : IGlobalFunctions
                             _, _, _, _, _,
                         { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
                         { Kind: Opcode.PushImmediate },
-                        { Kind: Opcode.Pop, Variable.Name.Content: string funcName },
+                        { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
                             ..
                         ])
                     {
@@ -258,8 +258,8 @@ public class GlobalFunctions : IGlobalFunctions
                     if (block.Instructions is not
                         [
                             _, _,
-                        { Kind: Opcode.Call, Function.Name.Content: VMConstants.NullObjectFunction },
-                        { Kind: Opcode.Call, Function.Name.Content: VMConstants.MethodFunction },
+                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.NullObjectFunction },
+                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
                             ..
                         ])
                     {
@@ -273,7 +273,7 @@ public class GlobalFunctions : IGlobalFunctions
                             _, _, _, _,
                         { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
                         { Kind: Opcode.PushImmediate, ValueShort: short pushVal },
-                        { Kind: Opcode.Pop, Variable.Name.Content: string funcName },
+                        { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
                             ..
                         ])
                     {

@@ -35,7 +35,7 @@ internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGM
     /// <summary>
     /// Calculates addresses of basic VM blocks; located at instructions that are jumped to.
     /// </summary>
-    private static HashSet<int> FindBlockAddresses(IGMCode code)
+    private static HashSet<int> FindBlockAddresses(IGameContext? gameContext, IGMCode code)
     {
         HashSet<int> addresses = [0, code.Length];
 
@@ -68,7 +68,7 @@ internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGM
                     break;
                 case IGMInstruction.Opcode.Call:
                     // Handle try hook addresses
-                    if (i >= 4 && instr.Function?.Name?.Content == VMConstants.TryHookFunction)
+                    if (i >= 4 && instr.TryFindFunction(gameContext)?.Name?.Content == VMConstants.TryHookFunction)
                     {
                         // If too close to end, bail
                         if (i >= code.InstructionCount - 1)
@@ -117,7 +117,7 @@ internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGM
     /// </summary>
     public static List<Block> FindBlocks(DecompileContext ctx)
     {
-        List<Block> blocks = FindBlocks(ctx.Code, out Dictionary<int, Block> blocksByAddress);
+        List<Block> blocks = FindBlocks(ctx.Code, out Dictionary<int, Block> blocksByAddress, ctx.GameContext);
         ctx.Blocks = blocks;
         ctx.BlocksByAddress = blocksByAddress;
         return blocks;
@@ -127,9 +127,9 @@ internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGM
     /// <summary>
     /// Finds all blocks from a given code entry, generating a basic control flow graph.
     /// </summary>
-    public static List<Block> FindBlocks(IGMCode code, out Dictionary<int, Block> blocksByAddress)
+    public static List<Block> FindBlocks(IGMCode code, out Dictionary<int, Block> blocksByAddress, IGameContext? gameContext = null)
     {
-        HashSet<int> addresses = FindBlockAddresses(code);
+        HashSet<int> addresses = FindBlockAddresses(gameContext, code);
 
         blocksByAddress = [];
         List<Block> blocks = [];
@@ -238,7 +238,7 @@ internal sealed class Block(int startAddr, int endAddr, int blockIndex, List<IGM
                         {
                             IGMInstruction callInstr = b.Instructions[^2];
                             if (callInstr.Kind == IGMInstruction.Opcode.Call &&
-                                callInstr.Function?.Name?.Content == VMConstants.TryHookFunction)
+                                callInstr.TryFindFunction(gameContext)?.Name?.Content == VMConstants.TryHookFunction)
                             {
                                 // We've found a try hook - connect to targets
                                 int finallyAddr = b.Instructions[^6].ValueInt;

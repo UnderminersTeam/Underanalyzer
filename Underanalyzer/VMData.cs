@@ -636,14 +636,16 @@ public interface IGMInstruction
     public InstanceType InstType { get; }
 
     /// <summary>
-    /// For instructions that reference a variable, represents the variable being referenced.
+    /// For instructions that reference a variable, represents the variable being referenced,
+    /// if it has been resolved as part of a reference chain directly.
     /// </summary>
-    public IGMVariable? Variable { get; }
+    public IGMVariable? ResolvedVariable { get; }
 
     /// <summary>
-    /// For instructions that reference a function, represents the function being referenced.
+    /// For instructions that reference a function, represents the function being referenced,
+    /// if it has been resolved as part of a reference chain directly.
     /// </summary>
-    public IGMFunction? Function { get; }
+    public IGMFunction? ResolvedFunction { get; }
 
     /// <summary>
     /// For instructions that reference a variable or function, this represents the variable type.
@@ -709,13 +711,13 @@ public interface IGMInstruction
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this is the ID of the asset supplied with the instruction, if <see cref="Function"/> is <see langword="null"/>.
+    /// this is the ID of the asset supplied with the instruction, if <see cref="TryFindFunction(IGameContext?)"/> returns <see langword="null"/>.
     /// </summary>
     public int AssetReferenceId { get; }
 
     /// <summary>
     /// For <see cref="Opcode.Extended"/> instructions with <see cref="ExtendedOpcode.PushReference"/> opcode,
-    /// this returns the type of the asset supplied with the instruction, if <see cref="Function"/> is <see langword="null"/>.
+    /// this returns the type of the asset supplied with the instruction, if <see cref="TryFindFunction(IGameContext?)"/> returns <see langword="null"/>.
     /// </summary>
     public AssetType GetAssetReferenceType(IGameContext context);
 
@@ -724,35 +726,42 @@ public interface IGMInstruction
     /// </summary>
     internal static int GetSize(IGMInstruction instr)
     {
-        // If the instruction has a variable or function, it takes 4 extra bytes for the reference
-        if (instr.Variable is not null || instr.Function is not null)
+        return instr switch
         {
-            return 8;
-        }
+            // Opcodes with functions/variables take an extra 4 bytes for the reference
+            { Kind: Opcode.Pop, Type1: not DataType.Int16 } => 8,
+            { Kind: Opcode.Call } => 8,
 
-        // Push instructions take extra space to store data (aside from 16-bit integers)
-        if (instr.Kind is Opcode.Push or Opcode.PushLocal or Opcode.PushGlobal or 
-                          Opcode.PushBuiltin or Opcode.PushImmediate)
-        {
-            if (instr.Type1 is DataType.Double or DataType.Int64)
-            {
-                return 12;
-            }
-            if (instr.Type1 != DataType.Int16)
-            {
-                return 8;
-            }
-        }
+            // Push instructions take extra space to store data (aside from 16-bit integers)
+            { Kind: Opcode.Push or Opcode.PushLocal or Opcode.PushGlobal or Opcode.PushBuiltin or Opcode.PushImmediate } => 
+                instr.Type1 switch
+                {
+                    DataType.Double or DataType.Int64 => 12,
+                    not DataType.Int16 => 8,
+                    _ => 4
+                },
 
-        // Extended opcodes with an integer argument take an extra 4 bytes
-        if (instr is { Kind: Opcode.Extended, Type1: DataType.Int32 })
-        {
-            return 8;
-        }
+            // Extended opcodes with an integer argument take an extra 4 bytes
+            { Kind: Opcode.Extended, Type1: DataType.Int32 } => 8,
 
-        // All other instructions are just 4 bytes
-        return 4;
+            // All other instructions are just 4 bytes
+            _ => 4
+        };
     }
+
+    /// <summary>
+    /// For instructions that reference a variable, this is used to attempt retrieve the variable,
+    /// even if the variable has not been resolved as part of a reference chain.
+    /// (Generally, if the variable is not resolved, this means using the raw reference value as a string ID.)
+    /// </summary>
+    public IGMVariable? TryFindVariable(IGameContext? context);
+
+    /// <summary>
+    /// For instructions that reference a function, this is used to attempt retrieve the function,
+    /// even if the function has not been resolved as part of a reference chain.
+    /// (Generally, if the function is not resolved, this means using the raw reference value as a string ID.)
+    /// </summary>
+    public IGMFunction? TryFindFunction(IGameContext? context);
 }
 
 /// <summary>
