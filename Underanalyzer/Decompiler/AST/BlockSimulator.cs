@@ -212,12 +212,12 @@ internal sealed class BlockSimulator
         switch (instr.Type1)
         {
             case DataType.Int32:
-                if (instr.TryFindFunction(builder.Context.GameContext) is IGMFunction function)
+                if (instr.ResolvedFunction is IGMFunction function)
                 {
                     // Function references in GMLv2 are pushed this way in certain versions
                     builder.ExpressionStack.Push(new FunctionReferenceNode(function));
                 }
-                else if (instr.TryFindVariable(builder.Context.GameContext) is IGMVariable variable)
+                else if (instr.ResolvedVariable is IGMVariable variable)
                 {
                     // Variable hashes in recent version of GMLv2 are pushed this way
                     builder.ExpressionStack.Push(new VariableHashNode(variable));
