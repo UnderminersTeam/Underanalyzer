@@ -82,6 +82,14 @@ public sealed class CompileContext(string code, CompileScriptKind scriptKind, st
     public FunctionScope? OutputRootScope { get; private set; } = null;
 
     /// <summary>
+    /// Collection of global function names, only available between parsing and code generation.
+    /// </summary>
+    /// <remarks>
+    /// To retrieve global function names after code generation, use <see cref="OutputFunctionEntries"/> instead.
+    /// </remarks>
+    public IReadOnlyCollection<string>? OutputGlobalFunctionNames => _parseGlobalFunctions;
+
+    /// <summary>
     /// List of sub-function entries, set after produced by code generation.
     /// </summary>
     public IReadOnlyList<FunctionEntry>? OutputFunctionEntries { get; private set; } = null;
