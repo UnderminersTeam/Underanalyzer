@@ -188,7 +188,7 @@ public class DecompileSettings : IDecompileSettings
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
     public string UnknownArgumentNamePattern { get; set; } = "arg{0}";
-    public bool AllowLeftoverDataOnStack { get; set; } = false;
+    public bool AllowLeftoverDataOnStack { get; set; } = true;
 
     // Some basic data populated from code seen in the wild
     // TODO: populate this with more values by default?
