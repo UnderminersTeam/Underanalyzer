@@ -184,6 +184,19 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         {
             return conditional.Resolve(cleaner, this);
         }
+
+        if (Function is VariableNode { Variable.Name.Content: string functionName })
+        {
+            if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, functionName) is IMacroTypeFunctionArgs argsMacroType)
+            {
+                if (argsMacroType.Resolve(cleaner, this) is IFunctionCallNode resolved)
+                {
+                    // We found a match!
+                    return resolved;
+                }
+            }
+        }
+
         return null;
     }
 }
