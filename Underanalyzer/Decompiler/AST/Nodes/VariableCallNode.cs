@@ -67,7 +67,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
 
-        return this;
+        return CleanupMacroTypes(cleaner);
     }
 
     /// <inheritdoc/>
@@ -80,7 +80,7 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
 
-        return this;
+        return CleanupMacroTypes(cleaner);
     }
 
     /// <inheritdoc/>
@@ -184,7 +184,14 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         {
             return conditional.Resolve(cleaner, this);
         }
+        return null;
+    }
 
+    /// <summary>
+    /// During cleanup, determines/resolves macro types for this node if possible.
+    /// </summary>
+    public IFunctionCallNode CleanupMacroTypes(ASTCleaner cleaner)
+    {
         if (Function is VariableNode { Variable.Name.Content: string functionName })
         {
             if (cleaner.GlobalMacroResolver.ResolveFunctionArgumentTypes(cleaner, functionName) is IMacroTypeFunctionArgs argsMacroType)
@@ -196,7 +203,6 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
                 }
             }
         }
-
-        return null;
+        return this;
     }
 }
