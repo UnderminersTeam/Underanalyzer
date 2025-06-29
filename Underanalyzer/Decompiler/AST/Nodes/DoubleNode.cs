@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Underanalyzer.Decompiler.GameSpecific;
 
@@ -147,5 +148,11 @@ public class DoubleNode(double value) : IConstantNode<double>, IConditionalValue
             return conditional.Resolve(cleaner, this);
         }
         return null;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        return [];
     }
 }

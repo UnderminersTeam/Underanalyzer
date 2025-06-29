@@ -563,4 +563,17 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
     {
         return Left is InstanceTypeNode && ArrayIndices is null;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Left;
+        if (ArrayIndices is not null)
+        {
+            foreach (IExpressionNode node in ArrayIndices)
+            {
+                yield return node;
+            }
+        }
+    }
 }

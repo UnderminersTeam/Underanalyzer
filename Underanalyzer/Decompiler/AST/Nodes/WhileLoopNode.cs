@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
@@ -151,5 +153,12 @@ public class WhileLoopNode(IExpressionNode condition, BlockNode body, bool mustB
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return true;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Condition;
+        yield return Body;
     }
 }

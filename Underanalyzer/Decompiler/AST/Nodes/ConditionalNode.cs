@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -129,5 +130,13 @@ public class ConditionalNode(IExpressionNode condition, IExpressionNode trueExpr
         }
 
         return didAnything ? this : null;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Condition;
+        yield return True;
+        yield return False;
     }
 }

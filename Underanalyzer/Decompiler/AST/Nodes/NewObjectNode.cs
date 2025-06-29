@@ -170,4 +170,14 @@ public class NewObjectNode(IExpressionNode function, List<IExpressionNode> argum
         }
         return null;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Function;
+        foreach (IExpressionNode arg in Arguments)
+        {
+            yield return arg;
+        }
+    }
 }

@@ -58,4 +58,10 @@ public class LocalVarDeclNode : IStatementNode
     {
         return false;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        return [];
+    }
 }

@@ -311,4 +311,14 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
         }
         return null;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        foreach (IExpressionNode expr in ArgumentDefaultValues.Values)
+        {
+            yield return expr;
+        }
+        yield return Body;
+    }
 }

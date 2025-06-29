@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
@@ -79,5 +81,15 @@ public class SwitchCaseNode(IExpressionNode? expression) : IStatementNode, IBloc
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return Expression?.RequiresMultipleLines(printer) ?? false;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        if (Expression is not null)
+        {
+            yield return Expression;
+        }
+        yield break;
     }
 }

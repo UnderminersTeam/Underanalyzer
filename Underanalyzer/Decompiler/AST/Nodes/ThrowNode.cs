@@ -4,6 +4,8 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
+
 namespace Underanalyzer.Decompiler.AST;
 
 /// <summary>
@@ -101,5 +103,11 @@ public class ThrowNode(IExpressionNode value) : IExpressionNode, IStatementNode,
     public bool RequiresMultipleLines(ASTPrinter printer)
     {
         return Value.RequiresMultipleLines(printer);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Value;
     }
 }

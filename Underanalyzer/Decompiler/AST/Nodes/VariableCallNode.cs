@@ -205,4 +205,18 @@ public class VariableCallNode(IExpressionNode function, IExpressionNode? instanc
         }
         return this;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        if (Instance is not null)
+        {
+            yield return Instance;
+        }
+        yield return Function;
+        foreach (IExpressionNode node in Arguments)
+        {
+            yield return node;
+        }
+    }
 }

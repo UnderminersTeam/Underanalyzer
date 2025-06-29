@@ -236,4 +236,10 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
 
         return null;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        return Arguments;
+    }
 }

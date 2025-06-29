@@ -479,4 +479,10 @@ public class BlockNode(ASTFragmentContext fragmentContext) : IFragmentNode, IBlo
             EmptyLineAfter = context.Settings.EmptyLineAfterBlockLocals
         });
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        return Children;
+    }
 }

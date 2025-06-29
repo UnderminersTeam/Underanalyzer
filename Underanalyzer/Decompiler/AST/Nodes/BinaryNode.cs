@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System.Collections.Generic;
 using Underanalyzer.Decompiler.GameSpecific;
 using static Underanalyzer.IGMInstruction;
 
@@ -188,5 +189,12 @@ public class BinaryNode : IMultiExpressionNode, IMacroResolvableNode, ICondition
         }
 
         return didAnything ? this : null;
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<IBaseASTNode> EnumerateChildren()
+    {
+        yield return Left;
+        yield return Right;
     }
 }
