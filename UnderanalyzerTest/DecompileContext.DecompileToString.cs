@@ -2933,4 +2933,122 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestLocalFuncReferencesInDeclHeader()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > regular_func_testFunc (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_testFunc
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.testFunc
+            popz.v
+            b [6]
+
+            > regular_func_anotherTestFunc (locals=0, args=1)
+            :[3]
+            pushbltn.v builtin.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [5]
+
+            :[4]
+            push.i [function]regular_func_testFunc
+            pop.v.i builtin.argument0
+
+            :[5]
+            push.v builtin.testFunc
+            pop.v.v builtin.a
+            exit.i
+
+            :[6]
+            push.i [function]regular_func_anotherTestFunc
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.anotherTestFunc
+            popz.v
+            b [8]
+
+            > regular_func_constructorTestFunc (locals=0, args=1)
+            :[7]
+            call.i @@SetStatic@@ 0
+            exit.i
+
+            :[8]
+            push.i [function]regular_func_constructorTestFunc
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.constructorTestFunc
+            popz.v
+            b [10]
+
+            > regular_func_subConstructorTestFunc (locals=0, args=0)
+            :[9]
+            push.i [function]regular_func_testFunc
+            conv.i.v
+            call.i regular_func_constructorTestFunc 1
+            push.i [function]regular_func_constructorTestFunc
+            conv.i.v
+            call.i @@CopyStatic@@ 1
+            call.i @@SetStatic@@ 0
+            exit.i
+
+            :[10]
+            push.i [function]regular_func_subConstructorTestFunc
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.subConstructorTestFunc
+            popz.v
+            push.i [function]regular_func_testFunc
+            pop.v.i builtin.a
+            """,
+            """
+            function testFunc()
+            {
+            }
+
+            function anotherTestFunc(arg0 = testFunc)
+            {
+                a = testFunc;
+            }
+
+            function constructorTestFunc(arg0) constructor
+            {
+            }
+
+            function subConstructorTestFunc() : constructorTestFunc(testFunc) constructor
+            {
+            }
+
+            a = testFunc;
+            """,
+            new GameContextMock()
+            {
+                UsingBuiltinDefaultArguments = true
+            }
+        );
+    }
 }

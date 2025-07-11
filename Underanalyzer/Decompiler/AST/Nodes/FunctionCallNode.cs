@@ -165,12 +165,10 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
-    /// <summary>
-    /// Same as <see cref="Print(ASTPrinter)"/>, but with an overridable fragment context for function name lookup.
-    /// </summary>
-    public void Print(ASTPrinter printer, ASTFragmentContext? overrideFunctionLookupContext = null)
+    /// <inheritdoc/>
+    public void Print(ASTPrinter printer)
     {
-        printer.Write(printer.LookupFunction(Function, overrideFunctionLookupContext));
+        printer.Write(printer.LookupFunction(Function));
         printer.Write('(');
         for (int i = 0; i < Arguments.Count; i++)
         {
@@ -181,12 +179,6 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
             }
         }
         printer.Write(')');
-    }
-
-    /// <inheritdoc/>
-    public void Print(ASTPrinter printer)
-    {
-        Print(printer, null);
     }
 
     /// <inheritdoc/>

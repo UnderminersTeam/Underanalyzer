@@ -52,6 +52,11 @@ public sealed class FunctionScope(FunctionScope? parent, bool isFunction)
     internal bool GeneratingDotVariableCall { get; set; } = false;
 
     /// <summary>
+    /// Whether bytecode is currently being generated for a function declaration header (arguments, inheritance calls).
+    /// </summary>
+    internal bool GeneratingFunctionDeclHeader { get; set; } = false;
+
+    /// <summary>
     /// Whether currently post-processing a statement that requires extra logic for break/continue during code rewriting.
     /// </summary>
     internal bool ProcessingBreakContinueContext { get; set; } = false;

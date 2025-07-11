@@ -47,11 +47,6 @@ public sealed class ASTBuilder(DecompileContext context)
     internal List<string> LocalVariableNamesList { get => TopFragmentContext!.LocalVariableNamesList; }
 
     /// <summary>
-    /// The stack used to manage fragment contexts.
-    /// </summary>
-    private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();
-
-    /// <summary>
     /// The current/top fragment context.
     /// </summary>
     internal ASTFragmentContext? TopFragmentContext { get; private set; }
@@ -233,7 +228,6 @@ public sealed class ASTBuilder(DecompileContext context)
     {
         ASTFragmentContext context = new(TopFragmentContext, fragment);
         TopFragmentContext?.Children.Add(context);
-        FragmentContextStack.Push(context);
         TopFragmentContext = context;
     }
 
@@ -242,7 +236,7 @@ public sealed class ASTBuilder(DecompileContext context)
     /// </summary>
     internal void PopFragmentContext()
     {
-        ASTFragmentContext context = FragmentContextStack.Pop();
+        ASTFragmentContext context = TopFragmentContext!;
         if (context.ExpressionStack.Count > 0)
         {
             if (Context.Settings.AllowLeftoverDataOnStack)
@@ -267,13 +261,6 @@ public sealed class ASTBuilder(DecompileContext context)
         }
 
         // Update new top
-        if (FragmentContextStack.Count > 0)
-        {
-            TopFragmentContext = FragmentContextStack.Peek();
-        }
-        else
-        {
-            TopFragmentContext = null;
-        }
+        TopFragmentContext = context.Parent;
     }
 }

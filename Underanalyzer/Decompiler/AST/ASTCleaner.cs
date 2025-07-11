@@ -30,11 +30,6 @@ public sealed class ASTCleaner(DecompileContext context)
     internal HashSet<string> LocalVariableNames { get => TopFragmentContext!.LocalVariableNames; }
 
     /// <summary>
-    /// The stack used to manage fragment contexts.
-    /// </summary>
-    private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();
-
-    /// <summary>
     /// The current/top fragment context.
     /// </summary>
     internal ASTFragmentContext? TopFragmentContext { get; private set; }
@@ -71,7 +66,6 @@ public sealed class ASTCleaner(DecompileContext context)
     /// </summary>
     internal void PushFragmentContext(ASTFragmentContext context)
     {
-        FragmentContextStack.Push(context);
         TopFragmentContext = context;
     }
 
@@ -80,15 +74,8 @@ public sealed class ASTCleaner(DecompileContext context)
     /// </summary>
     internal ASTFragmentContext PopFragmentContext()
     {
-        ASTFragmentContext popped = FragmentContextStack.Pop();
-        if (FragmentContextStack.Count > 0)
-        {
-            TopFragmentContext = FragmentContextStack.Peek();
-        }
-        else
-        {
-            TopFragmentContext = null;
-        }
+        ASTFragmentContext popped = TopFragmentContext!;
+        TopFragmentContext = popped.Parent;
         return popped;
     }
 

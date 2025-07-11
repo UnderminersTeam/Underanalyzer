@@ -250,17 +250,19 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
             printer.Write('(');
         }
 
-        for (int i = 0; i <= Body.FragmentContext.MaxReferencedArgument; i++)
+        ASTFragmentContext bodyFragmentContext = Body.FragmentContext;
+        printer.PushFragmentContext(bodyFragmentContext);
+        bodyFragmentContext.InFunctionDeclHeader = true;
+
+        for (int i = 0; i <= bodyFragmentContext.MaxReferencedArgument; i++)
         {
-            printer.Write(Body.FragmentContext.GetNamedArgumentName(printer.Context, i));
+            printer.Write(bodyFragmentContext.GetNamedArgumentName(printer.Context, i));
             if (ArgumentDefaultValues.TryGetValue(i, out IExpressionNode? defaultValue))
             {
                 printer.Write(" = ");
-                printer.PushFragmentContext(Body.FragmentContext);
                 defaultValue.Print(printer);
-                printer.PopFragmentContext();
             }
-            if (i != Body.FragmentContext.MaxReferencedArgument)
+            if (i != bodyFragmentContext.MaxReferencedArgument)
             {
                 printer.Write(", ");
             }
@@ -268,21 +270,14 @@ public class FunctionDeclNode(string? name, bool isConstructor, BlockNode body, 
 
         printer.Write(')');
 
-        if (Body.FragmentContext.BaseParentCall is not null)
+        if (bodyFragmentContext.BaseParentCall is not null)
         {
             printer.Write(" : ");
-            ASTFragmentContext outerFragmentContext = printer.TopFragmentContext!;
-            printer.PushFragmentContext(Body.FragmentContext);
-            if (Body.FragmentContext.BaseParentCall is FunctionCallNode functionCall)
-            {
-                functionCall.Print(printer, outerFragmentContext);
-            }
-            else
-            {
-                Body.FragmentContext.BaseParentCall.Print(printer);
-            }
-            printer.PopFragmentContext();
+            bodyFragmentContext.BaseParentCall.Print(printer);
         }
+
+        bodyFragmentContext.InFunctionDeclHeader = false;
+        printer.PopFragmentContext();
 
         if (IsConstructor)
         {

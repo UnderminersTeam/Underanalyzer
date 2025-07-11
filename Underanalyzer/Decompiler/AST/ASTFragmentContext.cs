@@ -50,9 +50,14 @@ public sealed class ASTFragmentContext
     internal Stack<IExpressionNode> ExpressionStack { get; } = new();
 
     /// <summary>
-    /// If true, the current AST is within a static variable initialization block (when printing).
+    /// If true, the currently-printing node is within a static variable initialization block.
     /// </summary>
     internal bool InStaticInitialization { get; set; } = false;
+
+    /// <summary>
+    /// If true, the currently-printing node is within a function declaration header (arguments and inheritance calls).
+    /// </summary>
+    internal bool InFunctionDeclHeader { get; set; } = false;
 
     /// <summary>
     /// If not null, represents the list of arguments getting passed into this fragment (which is a struct).

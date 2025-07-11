@@ -163,6 +163,11 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
         bool isLocalGlobalFunction = context.CompileContext.ScriptKind == CompileScriptKind.GlobalScript && context.RootScope.IsFunctionDeclaredImmediately(VariableName);
         if (ExplicitInstanceType == InstanceType.Self && !CollapsedFromDot && (isGlobalFunction || isLocalGlobalFunction || context.IsFunctionDeclaredInCurrentScope(VariableName)))
         {
+            // If currently generating a function declaration header (arguments, inheritance calls),
+            // use the outer scope for function resolution. Otherwise, use current scope.
+            FunctionScope resolveScope = context.CurrentScope.GeneratingFunctionDeclHeader ? context.CurrentScope.Parent! : context.CurrentScope;
+
+            // Push actual function reference
             if (!LeftmostSideOfDot && gameContext.UsingFunctionScriptReferences)
             {
                 if (isLocalGlobalFunction)
@@ -179,17 +184,17 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
                         context.PushDataType(DataType.Int32);
                     }
                 }
-                else if (gameContext.UsingNewFunctionResolution && context.CurrentScope.IsFunctionDeclared(gameContext, VariableName))
+                else if (gameContext.UsingNewFunctionResolution && resolveScope.IsFunctionDeclared(gameContext, VariableName))
                 {
                     // With new function resolution, push references to local functions, even for non-global scope
                     if (!context.CurrentScope.GeneratingDotVariableCall)
                     {
-                        context.Emit(ExtendedOpcode.PushReference, new LocalFunctionPatch(null, context.CurrentScope, VariableName));
+                        context.Emit(ExtendedOpcode.PushReference, new LocalFunctionPatch(null, resolveScope, VariableName));
                         context.PushDataType(DataType.Variable);
                     }
                     else
                     {
-                        context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName, null));
+                        context.EmitPushFunction(new FunctionPatch(resolveScope, VariableName, null));
                         context.PushDataType(DataType.Int32);
                     }
                 }
@@ -198,12 +203,12 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
                     // Push reference for all global functions defined in global scripts
                     if (!context.CurrentScope.GeneratingDotVariableCall || gameContext.UsingNewFunctionResolution)
                     {
-                        context.Emit(ExtendedOpcode.PushReference, new FunctionPatch(context.CurrentScope, VariableName));
+                        context.Emit(ExtendedOpcode.PushReference, new FunctionPatch(resolveScope, VariableName));
                         context.PushDataType(DataType.Variable);
                     }
                     else
                     {
-                        context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName, null));
+                        context.EmitPushFunction(new FunctionPatch(resolveScope, VariableName, null));
                         context.PushDataType(DataType.Int32);
                     }
                 }
@@ -211,14 +216,14 @@ internal sealed class SimpleVariableNode : IAssignableASTNode, IVariableASTNode
                 {
                     // Push a regular function reference, for local functions (prior to new function resolution),
                     // as well as any other global functions, like builtin functions and extension functions.
-                    context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName, gameContext.Builtins.LookupBuiltinFunction(VariableName)));
+                    context.EmitPushFunction(new FunctionPatch(resolveScope, VariableName, gameContext.Builtins.LookupBuiltinFunction(VariableName)));
                     context.PushDataType(DataType.Int32);
                 }
             }
             else if (gameContext.UsingGMLv2)
             {
                 // Push function reference
-                context.EmitPushFunction(new FunctionPatch(context.CurrentScope, VariableName, gameContext.Builtins.LookupBuiltinFunction(VariableName)));
+                context.EmitPushFunction(new FunctionPatch(resolveScope, VariableName, gameContext.Builtins.LookupBuiltinFunction(VariableName)));
                 context.PushDataType(DataType.Int32);
             }
             else

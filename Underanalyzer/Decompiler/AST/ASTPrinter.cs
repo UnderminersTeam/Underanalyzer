@@ -37,11 +37,6 @@ public sealed class ASTPrinter(DecompileContext context)
     internal HashSet<string> LocalVariableNames { get => TopFragmentContext!.LocalVariableNames; }
 
     /// <summary>
-    /// The stack used to manage fragment contexts.
-    /// </summary>
-    private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();
-
-    /// <summary>
     /// The current/top fragment context.
     /// </summary>
     internal ASTFragmentContext? TopFragmentContext { get; private set; }
@@ -73,7 +68,6 @@ public sealed class ASTPrinter(DecompileContext context)
     /// </summary>
     internal void PushFragmentContext(ASTFragmentContext context)
     {
-        FragmentContextStack.Push(context);
         TopFragmentContext = context;
     }
 
@@ -82,15 +76,7 @@ public sealed class ASTPrinter(DecompileContext context)
     /// </summary>
     internal void PopFragmentContext()
     {
-        FragmentContextStack.Pop();
-        if (FragmentContextStack.Count > 0)
-        {
-            TopFragmentContext = FragmentContextStack.Peek();
-        }
-        else
-        {
-            TopFragmentContext = null;
-        }
+        TopFragmentContext = TopFragmentContext!.Parent;
     }
 
     /// <summary>
@@ -253,7 +239,7 @@ public sealed class ASTPrinter(DecompileContext context)
     /// <summary>
     /// Looks up a function name, given a function reference.
     /// </summary>
-    public string LookupFunction(IGMFunction function, ASTFragmentContext? overrideContext = null)
+    public string LookupFunction(IGMFunction function)
     {
         if (Context.GameContext.GlobalFunctions.TryGetFunctionName(function, out string? name))
         {
@@ -262,7 +248,12 @@ public sealed class ASTPrinter(DecompileContext context)
         }
 
         string funcName = function.Name.Content;
-        ASTFragmentContext fragmentContext = overrideContext ?? TopFragmentContext!;
+        ASTFragmentContext fragmentContext = TopFragmentContext!;
+        if (fragmentContext.InFunctionDeclHeader)
+        {
+            // If within a function declaration header (arguments, inheritance call), use parent fragment
+            fragmentContext = fragmentContext.Parent!;
+        }
         if (fragmentContext.SubFunctionNames.TryGetValue(funcName, out string? realName))
         {
             // We found a sub-function name within this fragment!

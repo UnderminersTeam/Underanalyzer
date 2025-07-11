@@ -475,6 +475,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         // Create control flow context stack for the scope
         Scope.ControlFlowContexts = new(8);
 
+        // Mark scope as generating a function declaration header
+        Scope.GeneratingFunctionDeclHeader = true;
+
         // Generate default argument assignments, before main body
         DefaultValueBlock?.GenerateCode(context);
 
@@ -482,16 +485,7 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         if (InheritanceCall is SimpleFunctionCallNode inheritCall)
         {
             // Generate actual call
-            if (oldScope.IsFunctionDeclared(context.CompileContext.GameContext, inheritCall.FunctionName))
-            {
-                // Override scope to be the outer scope for this call (but NOT its arguments), and generate a direct call
-                inheritCall.GenerateDirectCode(context, oldScope);
-            }
-            else
-            {
-                // General case
-                inheritCall.GenerateCode(context);
-            }
+            inheritCall.GenerateCode(context);
             context.PopDataType();
 
             // Copy static variables from parent function (must be statically accessible from this scope)
@@ -499,6 +493,9 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
             context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
             context.EmitCall(FunctionPatch.FromBuiltin(context, VMConstants.CopyStaticFunction), 1);
         }
+
+        // Mark scope as no longer generating a function declaration header
+        Scope.GeneratingFunctionDeclHeader = false;
 
         // If this is a constructor, generate set static function call for certain GameMaker versions
         if (IsConstructor && context.CompileContext.GameContext.UsingConstructorSetStatic)

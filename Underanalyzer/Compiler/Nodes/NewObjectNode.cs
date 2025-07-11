@@ -120,6 +120,10 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
         // Push function reference
         if (Expression is SimpleVariableNode simpleVariable)
         {
+            // If currently generating a function declaration header (arguments, inheritance calls),
+            // use the outer scope for function resolution. Otherwise, use current scope.
+            FunctionScope resolveScope = context.CurrentScope.GeneratingFunctionDeclHeader ? context.CurrentScope.Parent! : context.CurrentScope;
+
             string functionName = simpleVariable.VariableName;
             bool isGlobalFunction = 
                 context.IsGlobalFunctionName(functionName) || 
@@ -131,17 +135,17 @@ internal sealed class NewObjectNode : IMaybeStatementASTNode
                 if (gameContext.UsingFunctionScriptReferences && !context.CurrentScope.GeneratingDotVariableCall &&
                     (
                         (gameContext.GetScriptId(functionName, out int _) && !gameContext.GetScriptIdByFunctionName(functionName, out int _)) ||
-                        (gameContext.UsingNewFunctionResolution && !isGlobalFunction && !context.CurrentScope.IsFunctionDeclaredImmediately(functionName))
+                        (gameContext.UsingNewFunctionResolution && !isGlobalFunction && !resolveScope.IsFunctionDeclaredImmediately(functionName))
                     ))
                 {
                     // If calling a script that doesn't actually have its own function, push a reference to
                     // the script directly (in versions where it does that, at least).
-                    context.Emit(ExtendedOpcode.PushReference, new FunctionPatch(context.CurrentScope, functionName));
+                    context.Emit(ExtendedOpcode.PushReference, new FunctionPatch(resolveScope, functionName));
                 }
                 else
                 {
                     // Use regular function push
-                    context.EmitPushFunction(new FunctionPatch(context.CurrentScope, functionName));
+                    context.EmitPushFunction(new FunctionPatch(resolveScope, functionName));
                     context.Emit(Opcode.Convert, DataType.Int32, DataType.Variable);
                 }
             }

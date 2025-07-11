@@ -6340,4 +6340,88 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestLocalFuncReferencesInDeclHeader()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function testFunc(arg0) constructor
+            {
+            }
+
+            function subTestFunc(arg0 = testFunc) : testFunc(testFunc) constructor
+            {
+            	a = testFunc;
+            }
+
+            a = testFunc;
+            """,
+            """
+            :[0]
+            b [2]
+
+            > regular_func_testFunc (locals=0, args=1)
+            :[1]
+            call.i @@SetStatic@@ 0
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_testFunc
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.testFunc
+            popz.v
+            b [6]
+
+            > regular_func_subTestFunc (locals=0, args=1)
+            :[3]
+            pushbltn.v builtin.argument0
+            pushbltn.v builtin.undefined
+            cmp.v.v EQ
+            bf [5]
+
+            :[4]
+            push.i [function]regular_func_testFunc
+            pop.v.i builtin.argument0
+
+            :[5]
+            push.i [function]regular_func_testFunc
+            conv.i.v
+            call.i regular_func_testFunc 1
+            push.i [function]regular_func_testFunc
+            conv.i.v
+            call.i @@CopyStatic@@ 1
+            call.i @@SetStatic@@ 0
+            push.v builtin.testFunc
+            pop.v.v builtin.a
+            exit.i
+
+            :[6]
+            push.i [function]regular_func_subTestFunc
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -1
+            pop.v.v [stacktop]self.subTestFunc
+            popz.v
+            push.i [function]regular_func_testFunc
+            pop.v.i builtin.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingBuiltinDefaultArguments = true,
+                UsingNewFunctionVariables = true,
+                UsingFunctionScriptReferences = true,
+                UsingNewFunctionResolution = false,
+                UsingConstructorSetStatic = true
+            }
+        );
+    }
 }
