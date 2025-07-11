@@ -37,6 +37,14 @@ public sealed class ASTPrinter(DecompileContext context)
     internal HashSet<string> LocalVariableNames { get => TopFragmentContext!.LocalVariableNames; }
 
     /// <summary>
+    /// Stack used to manage fragment contexts.
+    /// </summary>
+    /// <remarks>
+    /// This is required because sometimes a fragment context's parent is not nested correctly, i.e. an anonymous function within a struct.
+    /// </remarks>
+    private Stack<ASTFragmentContext> FragmentContextStack { get; } = new();
+
+    /// <summary>
     /// The current/top fragment context.
     /// </summary>
     internal ASTFragmentContext? TopFragmentContext { get; private set; }
@@ -68,6 +76,7 @@ public sealed class ASTPrinter(DecompileContext context)
     /// </summary>
     internal void PushFragmentContext(ASTFragmentContext context)
     {
+        FragmentContextStack.Push(context);
         TopFragmentContext = context;
     }
 
@@ -76,7 +85,15 @@ public sealed class ASTPrinter(DecompileContext context)
     /// </summary>
     internal void PopFragmentContext()
     {
-        TopFragmentContext = TopFragmentContext!.Parent;
+        FragmentContextStack.Pop();
+        if (FragmentContextStack.Count > 0)
+        {
+            TopFragmentContext = FragmentContextStack.Peek();
+        }
+        else
+        {
+            TopFragmentContext = null;
+        }
     }
 
     /// <summary>

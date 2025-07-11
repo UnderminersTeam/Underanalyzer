@@ -1812,4 +1812,19 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestAnonymousCallWithinStruct()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = 
+            {
+                b: (function()
+                {
+                })()
+            };
+            """
+        );
+    }
 }
