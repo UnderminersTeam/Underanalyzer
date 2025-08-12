@@ -3060,7 +3060,7 @@ public class DecompileContext_DecompileToString
             push.i 100123
             conv.i.v
             call.i @@GetInstance@@ 1
-            dup.v 0 8
+            dup.v 0 1
             dup.v 0
             push.v stacktop.test
             callv.v 0
@@ -3068,7 +3068,44 @@ public class DecompileContext_DecompileToString
             """,
             """
             inst_id_100123.test();
+            """,
+            new GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestGetInstanceRoomIdRef()
+    {
+        TestUtil.VerifyDecompileResult(
             """
+            pushref.i 100123 RoomInstance
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            push.i 100123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            """,
+            """
+            inst_id_100123.test();
+            (100123).test();
+            """,
+            new GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = true
+            }
         );
     }
 }

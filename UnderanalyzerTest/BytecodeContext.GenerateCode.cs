@@ -6424,4 +6424,72 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestRoomInstanceIdCall()
+    {
+        TestUtil.AssertBytecode(
+            """
+            (100123).test();
+            inst_id_100123.test();
+            """,
+            """
+            push.i 100123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            push.i 100123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestRoomInstanceIdCallRef()
+    {
+        TestUtil.AssertBytecode(
+            """
+            (100123).test();
+            inst_id_100123.test();
+            """,
+            """
+            push.i 100123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            pushref.i 100123 RoomInstance
+            dup.v 0 1
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = true
+            }
+        );
+    }
 }

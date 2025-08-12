@@ -77,7 +77,12 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
                 }
                 if (Arguments[0] is Int32Node int32)
                 {
-                    Arguments[0] = new AssetReferenceNode(int32.Value, AssetType.RoomInstance);
+                    // If not using room instance references, transform into one for cleanliness.
+                    // If room instance references *are* being used, this would instead already be an AssetReferenceNode.
+                    if (!cleaner.Context.GameContext.UsingRoomInstanceReferences)
+                    {
+                        Arguments[0] = new AssetReferenceNode(int32.Value, AssetType.RoomInstance);
+                    }
                 }
                 Arguments[0].Duplicated = true;
                 Arguments[0].StackType = StackType;

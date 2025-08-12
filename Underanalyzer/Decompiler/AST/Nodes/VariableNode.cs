@@ -396,8 +396,19 @@ public class VariableNode(IGMVariable variable, VariableType referenceType, IExp
         else
         {
             // Some expression on the left
-            Left.Print(printer);
-            printer.Write('.');
+            if (Left is Int32Node int32)
+            {
+                // Room instance IDs, in certain cases on some versions
+                printer.Write('(');
+                int32.Print(printer);
+                printer.Write(").");
+            }
+            else
+            {
+                // General expression
+                Left.Print(printer);
+                printer.Write('.');
+            }
         }
 
         int argIndex = GetArgumentIndex(printer.TopFragmentContext!.MaxReferencedArgument);

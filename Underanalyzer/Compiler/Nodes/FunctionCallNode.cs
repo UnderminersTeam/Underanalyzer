@@ -124,7 +124,13 @@ internal sealed class FunctionCallNode : IMaybeStatementASTNode
                 argsToUse = 1;
 
                 // Generate object ID as number
-                NumberNode.GenerateCode(context, (int)simpleVar.ExplicitInstanceType);
+                int value = (int)simpleVar.ExplicitInstanceType;
+                if (simpleVar.RoomInstanceVariable)
+                {
+                    // Add back 100000 for room instance IDs
+                    value += 100000;
+                }
+                NumberNode.GenerateCode(context, value);
                 context.ConvertDataType(DataType.Variable);
             }
             else

@@ -1827,4 +1827,42 @@ public class RoundTrip
             """
         );
     }
+
+    [Fact]
+    public void TestRoomInstanceIdCall()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            (100123).test();
+            inst_id_100123.test();
+            """,
+            """
+            inst_id_100123.test();
+            inst_id_100123.test();
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestRoomInstanceIdCallRef()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            (100123).test();
+            inst_id_100123.test();
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingAssetReferences = true,
+                UsingRoomInstanceReferences = true
+            }
+        );
+    }
 }
