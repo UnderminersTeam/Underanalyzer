@@ -71,9 +71,13 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
             case VMConstants.GlobalFunction:
                 return new InstanceTypeNode(IGMInstruction.InstanceType.Global, true) { Duplicated = Duplicated, StackType = StackType };
             case VMConstants.GetInstanceFunction:
-                if (Arguments.Count == 0 || Arguments[0] is not Int16Node)
+                if (Arguments.Count == 0 || Arguments[0] is not (Int16Node or Int32Node))
                 {
-                    throw new DecompilerException($"Expected 16-bit integer parameter to {VMConstants.GetInstanceFunction}");
+                    throw new DecompilerException($"Expected 16-bit or 32-bit integer parameter to {VMConstants.GetInstanceFunction}");
+                }
+                if (Arguments[0] is Int32Node int32)
+                {
+                    Arguments[0] = new AssetReferenceNode(int32.Value, AssetType.RoomInstance);
                 }
                 Arguments[0].Duplicated = true;
                 Arguments[0].StackType = StackType;

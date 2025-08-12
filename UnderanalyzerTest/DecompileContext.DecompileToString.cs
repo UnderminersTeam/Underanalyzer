@@ -3051,4 +3051,24 @@ public class DecompileContext_DecompileToString
             }
         );
     }
+
+    [Fact]
+    public void TestGetInstanceRoomId()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            push.i 100123
+            conv.i.v
+            call.i @@GetInstance@@ 1
+            dup.v 0 8
+            dup.v 0
+            push.v stacktop.test
+            callv.v 0
+            popz.v
+            """,
+            """
+            inst_id_100123.test();
+            """
+        );
+    }
 }
