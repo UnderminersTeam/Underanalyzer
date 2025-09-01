@@ -82,9 +82,10 @@ public interface IFragmentNode : IStatementNode
 
                     // Check if we have a name
                     string? funcName = null;
+                    bool usingOptimizedDeclaration = false;
                     if (followingBlock.Instructions is
                         [
-                            _, _, _, _, _, 
+                            _, _, _, _, _,
                             { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
                             { Kind: Opcode.PushImmediate },
                             { Kind: Opcode.Pop } popInstr,
@@ -93,6 +94,18 @@ public interface IFragmentNode : IStatementNode
                         popInstr.TryFindVariable(builder.Context.GameContext) is IGMVariable { Name.Content: string varName })
                     {
                         funcName = varName;
+                    }
+                    else if (followingBlock.Instructions is
+                        [
+                            _, _, _, _, _,
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.Pop } popInstrOptimized,
+                            ..
+                        ] &&
+                        popInstrOptimized.TryFindVariable(builder.Context.GameContext) is IGMVariable { Name.Content: string varNameOptimized })
+                    {
+                        funcName = varNameOptimized;
+                        usingOptimizedDeclaration = true;
                     }
 
                     // Build body of the function
@@ -106,7 +119,7 @@ public interface IFragmentNode : IStatementNode
                     if (funcName is not null)
                     {
                         // We have a name! Build and return result
-                        builder.StartBlockInstructionIndex = 8;
+                        builder.StartBlockInstructionIndex = usingOptimizedDeclaration ? 7 : 8;
                         return new FunctionDeclNode(funcName, false, block, builder.TopFragmentContext);
                     }
 
@@ -146,9 +159,9 @@ public interface IFragmentNode : IStatementNode
                         {
                             // We're a struct
                             if (followingBlock.Instructions.Count < 8 ||
-                                followingBlock.Instructions[7] is not 
-                                { 
-                                    Kind: Opcode.Call, 
+                                followingBlock.Instructions[7] is not
+                                {
+                                    Kind: Opcode.Call,
                                     ArgumentCount: int argumentCount
                                 } newObjectCallInstr ||
                                 newObjectCallInstr.TryFindFunction(builder.Context.GameContext)?.Name?.Content is not VMConstants.NewObjectFunction)
@@ -185,6 +198,56 @@ public interface IFragmentNode : IStatementNode
 
                             builder.StartBlockInstructionIndex = 7;
                             return new FunctionDeclNode(funcName, true, block, builder.TopFragmentContext);
+                        }
+                    }
+                    else if (followingBlock.Instructions is
+                        [
+                            _, _, _, _,
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.Pop } popInstrOptimized,
+                            ..
+                        ] &&
+                        popInstrOptimized.TryFindVariable(builder.Context.GameContext) is IGMVariable { Name.Content: string funcNameOptimized })
+                    {
+                        // Check if struct or constructor, using optimized code generation
+                        if (followingBlock.Instructions is
+                            [
+                                _, _, _, _, _, _,
+                                { Kind: Opcode.Call, ArgumentCount: int argumentCount } callInstrOptimized,
+                                ..
+                            ] &&
+                            argumentCount >= 1 &&
+                            callInstrOptimized.TryFindFunction(builder.Context.GameContext) is IGMFunction { Name.Content: VMConstants.NewObjectFunction })
+                        {
+                            // Load struct arguments from stack (in reverse)
+                            List<IExpressionNode> structArguments = new(argumentCount - 1);
+                            for (int i = 0; i < argumentCount - 1; i++)
+                            {
+                                structArguments.Add(builder.ExpressionStack.Pop());
+                            }
+
+                            // Build body
+                            builder.PushFragmentContext(fragment);
+                            builder.StructArguments = structArguments;
+                            BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                            builder.PopFragmentContext();
+
+                            builder.StartBlockInstructionIndex = 7;
+                            return new StructNode(block, builder.TopFragmentContext!);
+                        }
+                        else
+                        {
+                            // We're a constructor
+
+                            // Build body
+                            builder.PushFragmentContext(fragment);
+                            builder.TopFragmentContext!.FunctionName = funcNameOptimized;
+                            BlockNode block = builder.BuildBlock(fragment.Children[0]);
+                            block.AddBlockLocalVarDecl(builder.Context);
+                            builder.PopFragmentContext();
+
+                            builder.StartBlockInstructionIndex = 6;
+                            return new FunctionDeclNode(funcNameOptimized, true, block, builder.TopFragmentContext);
                         }
                     }
                     else

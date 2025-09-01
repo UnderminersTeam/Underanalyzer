@@ -226,9 +226,9 @@ public class GlobalFunctions : IGlobalFunctions
                     if (block.Instructions is not
                         [
                             _, _,
-                        { ValueShort: -1 or -16 },
-                        { Kind: Opcode.Convert, Type1: DataType.Int32, Type2: DataType.Variable },
-                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
+                            { ValueShort: -1 or -16 },
+                            { Kind: Opcode.Convert, Type1: DataType.Int32, Type2: DataType.Variable },
+                            { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
                             ..
                         ])
                     {
@@ -237,17 +237,29 @@ public class GlobalFunctions : IGlobalFunctions
                     }
 
                     // Check if we have a name
-                    if (block   .Instructions is
+                    if (block.Instructions is
                         [
                             _, _, _, _, _,
-                        { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
-                        { Kind: Opcode.PushImmediate },
-                        { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.PushImmediate },
+                            { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
                             ..
                         ])
                     {
                         // We have a name!
                         name = funcName;
+                        return true;
+                    }
+                    if (block.Instructions is
+                        [
+                            _, _, _, _, _,
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcNameOptimized },
+                            ..
+                        ])
+                    {
+                        // We have a name, using optimized code generation.
+                        name = funcNameOptimized;
                         return true;
                     }
                     break;
@@ -258,8 +270,8 @@ public class GlobalFunctions : IGlobalFunctions
                     if (block.Instructions is not
                         [
                             _, _,
-                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.NullObjectFunction },
-                        { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
+                            { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.NullObjectFunction },
+                            { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.MethodFunction },
                             ..
                         ])
                     {
@@ -271,9 +283,9 @@ public class GlobalFunctions : IGlobalFunctions
                     if (block.Instructions is
                         [
                             _, _, _, _,
-                        { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
-                        { Kind: Opcode.PushImmediate, ValueShort: short pushVal },
-                        { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.PushImmediate, ValueShort: short pushVal },
+                            { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcName },
                             ..
                         ])
                     {
@@ -282,6 +294,27 @@ public class GlobalFunctions : IGlobalFunctions
                         {
                             // We're a constructor!
                             name = funcName;
+                            return true;
+                        }
+                    }
+                    if (block.Instructions is
+                        [
+                            _, _, _, _,
+                            { Kind: Opcode.Duplicate, DuplicationSize2: 0 },
+                            { Kind: Opcode.Pop, ResolvedVariable.Name.Content: string funcNameOptimized },
+                            ..
+                        ])
+                    {
+                        // Check if struct or constructor, when using optimized code generation
+                        if (block.Instructions is not
+                            [
+                                _, _, _, _, _, _,
+                                { Kind: Opcode.Call, ResolvedFunction.Name.Content: VMConstants.NewObjectFunction, ArgumentCount: >= 1 },
+                                ..
+                            ])
+                        {
+                            // We're a constructor!
+                            name = funcNameOptimized;
                             return true;
                         }
                     }

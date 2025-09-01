@@ -540,6 +540,13 @@ internal sealed class BlockSimulator
     /// </summary>
     private static void SimulateNew(ASTBuilder builder, IGMInstruction instr)
     {
+        // If there are no arguments present, this is initializing an empty struct (special case)
+        if (instr.ArgumentCount == 0)
+        {
+            builder.ExpressionStack.Push(new EmptyStructNode());
+            return;
+        }
+
         // Load function from first parameter
         IExpressionNode function = builder.ExpressionStack.Pop();
 

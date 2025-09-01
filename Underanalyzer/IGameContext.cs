@@ -85,7 +85,7 @@ public interface IGameContext
     public bool UsingFunctionScriptReferences { get; }
 
     /// <summary>
-    /// <see langword="true"/> if the game uses the new method of function resolution introduced in GammeMaker 2024.13; <see langword="false"/> otherwise.
+    /// <see langword="true"/> if the game uses the new method of function resolution introduced in GameMaker 2024.13; <see langword="false"/> otherwise.
     /// </summary>
     public bool UsingNewFunctionResolution { get; }
 
@@ -193,6 +193,11 @@ public interface IGameContext
     /// Before GameMaker 2024.11, this is observed to be <see langword="false"/>. Afterwards, it is <see langword="true"/>.
     /// </remarks>
     public bool UsingBuiltinDefaultArguments { get; }
+
+    /// <summary>
+    /// <see langword="true"/> if the game uses the optimized method of function declarations introduced in GameMaker 2024.14; <see langword="false"/> otherwise.
+    /// </summary>
+    public bool UsingOptimizedFunctionDeclarations { get; }
 
     /// <summary>
     /// Interface for getting global functions.

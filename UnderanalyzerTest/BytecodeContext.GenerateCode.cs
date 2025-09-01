@@ -6492,4 +6492,175 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestNewEmptyStructs()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a = {};
+            """,
+            """
+            call.i @@NewGMLObject@@ 0
+            pop.v.v builtin.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingOptimizedFunctionDeclarations = true,
+                UsingSelfToBuiltin = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestOptimizedFunctionDecls()
+    {
+        TestUtil.AssertBytecode(
+            """
+            function A()
+            {
+            }
+            
+            B = function()
+            {
+            };
+            
+            C = function D()
+            {
+            };
+            
+            function E() constructor
+            {
+            }
+            
+            F = function() constructor
+            {
+            };
+            
+            G = function H() constructor
+            {
+            };
+            
+            a = 
+            {
+                b: 123
+            };
+            """,
+            """
+            :[0]
+            b [2]
+            
+            > regular_func_A (locals=0, args=0)
+            :[1]
+            exit.i
+            
+            :[2]
+            push.i [function]regular_func_A
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pop.v.v self.A
+            popz.v
+            b [4]
+            
+            > anon_func_1 (locals=0, args=0)
+            :[3]
+            exit.i
+            
+            :[4]
+            push.i [function]anon_func_1
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            pop.v.v builtin.B
+            b [6]
+            
+            > regular_func_D (locals=0, args=0)
+            :[5]
+            exit.i
+            
+            :[6]
+            push.i [function]regular_func_D
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pop.v.v self.D
+            pop.v.v builtin.C
+            b [8]
+            
+            > regular_func_E (locals=0, args=0)
+            :[7]
+            call.i @@SetStatic@@ 0
+            exit.i
+            
+            :[8]
+            push.i [function]regular_func_E
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pop.v.v self.E
+            popz.v
+            b [10]
+            
+            > anon_func_2 (locals=0, args=0)
+            :[9]
+            call.i @@SetStatic@@ 0
+            exit.i
+            
+            :[10]
+            push.i [function]anon_func_2
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            pop.v.v builtin.F
+            b [12]
+            
+            > regular_func_H (locals=0, args=0)
+            :[11]
+            call.i @@SetStatic@@ 0
+            exit.i
+            
+            :[12]
+            push.i [function]regular_func_H
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pop.v.v self.H
+            pop.v.v builtin.G
+            b [14]
+            
+            > struct_func___struct__1 (locals=0, args=0)
+            :[13]
+            call.i @@SetStatic@@ 0
+            pushi.e 123
+            pop.v.i self.b
+            exit.i
+            
+            :[14]
+            push.i [function]struct_func___struct__1
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pop.v.v global.__struct__1
+            call.i @@NewGMLObject@@ 1
+            pop.v.v builtin.a
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingConstructorSetStatic = true,
+                UsingOptimizedFunctionDeclarations = true
+            }
+        );
+    }
 }

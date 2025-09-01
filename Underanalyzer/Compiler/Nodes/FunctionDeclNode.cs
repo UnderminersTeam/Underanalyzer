@@ -266,6 +266,14 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
     /// </summary>
     public static SimpleFunctionCallNode ParseStruct(ParseContext context, IToken tokenOpen)
     {
+        // If using optimized function declarations, check for an empty struct, specifically
+        if (context.CompileContext.GameContext.UsingOptimizedFunctionDeclarations &&
+            !context.EndOfCode && context.IsCurrentToken(SeparatorKind.BlockClose, KeywordKind.End))
+        {
+            context.Position++;
+            return new SimpleFunctionCallNode(VMConstants.NewObjectFunction, null, []);
+        }
+
         // Enter a new function scope
         FunctionScope oldScope = context.CurrentScope;
         FunctionScope newScope = new(oldScope, true);
@@ -562,28 +570,42 @@ internal sealed class FunctionDeclNode : IMaybeStatementASTNode
         if (FunctionName is not null)
         {
             context.EmitDuplicate(DataType.Variable, 0);
-            if (context.CompileContext.GameContext.UsingNewFunctionVariables || FunctionName == context.CompileContext.GlobalScriptName)
+            if (context.CompileContext.GameContext.UsingOptimizedFunctionDeclarations)
             {
-                context.Emit(Opcode.PushImmediate, (short)InstanceType.Self, DataType.Int16);
+                context.Emit(Opcode.Pop, new VariablePatch(FunctionName, InstanceType.Self, VariableType.Normal), DataType.Variable, DataType.Variable);
             }
             else
             {
-                context.Emit(Opcode.PushImmediate, (short)InstanceType.Builtin, DataType.Int16);
+                if (context.CompileContext.GameContext.UsingNewFunctionVariables || FunctionName == context.CompileContext.GlobalScriptName)
+                {
+                    context.Emit(Opcode.PushImmediate, (short)InstanceType.Self, DataType.Int16);
+                }
+                else
+                {
+                    context.Emit(Opcode.PushImmediate, (short)InstanceType.Builtin, DataType.Int16);
+                }
+                context.Emit(Opcode.Pop, new VariablePatch(FunctionName, InstanceType.Self, VariableType.StackTop), DataType.Variable, DataType.Variable);
             }
-            context.Emit(Opcode.Pop, new VariablePatch(FunctionName, InstanceType.Self, VariableType.StackTop), DataType.Variable, DataType.Variable);
         }
         else if (IsStruct)
         {
             context.EmitDuplicate(DataType.Variable, 0);
-            if (context.CompileContext.GameContext.UsingNewFunctionVariables)
+            if (context.CompileContext.GameContext.UsingOptimizedFunctionDeclarations)
             {
-                context.Emit(Opcode.PushImmediate, (short)InstanceType.Global, DataType.Int16);
-                context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Global, VariableType.StackTop), DataType.Variable, DataType.Variable);
+                context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Global, VariableType.Normal), DataType.Variable, DataType.Variable);
             }
             else
             {
-                context.Emit(Opcode.PushImmediate, (short)InstanceType.Static, DataType.Int16);
-                context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Static, VariableType.StackTop), DataType.Variable, DataType.Variable);
+                if (context.CompileContext.GameContext.UsingNewFunctionVariables)
+                {
+                    context.Emit(Opcode.PushImmediate, (short)InstanceType.Global, DataType.Int16);
+                    context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Global, VariableType.StackTop), DataType.Variable, DataType.Variable);
+                }
+                else
+                {
+                    context.Emit(Opcode.PushImmediate, (short)InstanceType.Static, DataType.Int16);
+                    context.Emit(Opcode.Pop, new StructVariablePatch(entry, InstanceType.Static, VariableType.StackTop), DataType.Variable, DataType.Variable);
+                }
             }
         }
 
