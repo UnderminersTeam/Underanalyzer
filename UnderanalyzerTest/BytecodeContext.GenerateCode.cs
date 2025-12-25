@@ -6663,4 +6663,23 @@ public class BytecodeContext_GenerateCode
             }
         );
     }
+
+    [Fact]
+    public void TestInternalFunction()
+    {
+        Underanalyzer.Mock.GameContextMock context = new();
+        ((Underanalyzer.Mock.BuiltinsMock)context.Builtins)
+            .BuiltinFunctions["@@internal_function_test@@"] = new("@@internal_function_test@@", 0, 0);
+        TestUtil.AssertBytecode(
+            """
+            @@internal_function_test@@();
+            """,
+            """
+            call.i @@internal_function_test@@ 0
+            popz.v
+            """,
+            false,
+            context
+        );
+    }
 }

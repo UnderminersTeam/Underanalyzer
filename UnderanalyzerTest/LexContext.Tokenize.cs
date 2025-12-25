@@ -545,4 +545,33 @@ public class LexContext_Tokenize
         Assert.True(mock.GetAssetId("spr_test", out int assetId));
         Assert.Equal(assetId, ((TokenAssetReference)context.Tokens[2]).AssetId);
     }
+
+    [Fact]
+    public void TestInvalidInternalIdentifier()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            @
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
+    public void TestInternalIdentifier()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            @@test@@
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+        TestUtil.AssertTokens([
+            ("@@test@@", typeof(TokenVariable)),
+        ], context.Tokens);
+    }
 }

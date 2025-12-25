@@ -124,6 +124,10 @@ internal sealed class LexContext : ISubCompileContext
             {
                 pos = Strings.ParseVerbatim(this, pos, '\'');
             }
+            else if (currChar == '@')
+            {
+                pos = Identifiers.ParseInternal(this, pos);
+            }
             else
             {
                 pos = Symbols.Parse(this, pos, currChar, nextChar, out bool success);

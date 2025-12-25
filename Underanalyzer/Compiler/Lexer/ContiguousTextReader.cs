@@ -87,6 +87,40 @@ internal static class ContiguousTextReader
     }
 
     /// <summary>
+    /// Reads internal identifier text until reaching its end, outputting a string containing the text, and returning its end position.
+    /// </summary>
+    /// <remarks>
+    /// An "internal" identifier is one starting with '@' and containing at least one character that is not '@'.
+    /// </remarks>
+    public static int ReadWhileInternalIdentifier(ReadOnlySpan<char> text, int startPosition, out ReadOnlySpan<char> output, out bool anyNormalChars)
+    {
+        // Read until no longer internal identifier characters
+        anyNormalChars = false;
+        int pos = startPosition;
+        while (pos < text.Length)
+        {
+            char c = text[pos];
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '@')
+            {
+                pos++;
+                if (c != '@')
+                {
+                    // Mark that we found a "normal" identifier character
+                    anyNormalChars = true;
+                }
+            }
+            else
+            {
+                // No longer internal identifier characters, so stop
+                break;
+            }
+        }
+
+        output = text[startPosition..pos];
+        return pos;
+    }
+
+    /// <summary>
     /// Reads number (decimal) text until reaching its end, outputting a string containing the text, and returning its end position.
     /// </summary>
     public static int ReadWhileNumber(ReadOnlySpan<char> text, int startPosition, out ReadOnlySpan<char> output)
