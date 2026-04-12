@@ -16,7 +16,7 @@ namespace Underanalyzer.Decompiler.AST;
 /// </summary>
 internal sealed class BlockSimulator
 {
-    private static readonly Dictionary<DataType, int> DataTypeToSize = [];
+    private static readonly int[] DataTypeToSize = new int[16];
 
     /// <summary>
     /// Initializes precomputed data for VM simulation.
@@ -30,7 +30,7 @@ internal sealed class BlockSimulator
             var field = typeDataType.GetField(Enum.GetName(typeDataType, dataType) ?? throw new NullReferenceException()) 
                                                                                    ?? throw new NullReferenceException();
             var info = field.GetCustomAttribute<DataTypeInfo>() ?? throw new NullReferenceException();
-            DataTypeToSize[dataType] = info.Size;
+            DataTypeToSize[(int)dataType] = info.Size;
         }
     }
 
@@ -105,7 +105,7 @@ internal sealed class BlockSimulator
     private static void SimulateDuplicate(ASTBuilder builder, IGMInstruction instr)
     {
         DataType dupType = instr.Type1;
-        int dupTypeSize = DataTypeToSize[dupType];
+        int dupTypeSize = DataTypeToSize[(int)dupType];
         int dupSize = instr.DuplicationSize;
         int dupSwapSize = instr.DuplicationSize2;
 
@@ -117,6 +117,12 @@ internal sealed class BlockSimulator
                 // Exit early; basically a no-op instruction
                 return;
             }
+            if (dupType == DataType.Int16)
+            {
+                // This is actually a dup.v with reversed instruction encoding (to support larger bottom data sizes)
+                dupTypeSize = DataTypeToSize[(int)DataType.Variable];
+                (dupSize, dupSwapSize) = (dupSwapSize, dupSize);
+            }
 
             // Load top data from stack
             int topSize = dupSize * dupTypeSize;
@@ -125,7 +131,7 @@ internal sealed class BlockSimulator
             {
                 IExpressionNode curr = builder.ExpressionStack.Pop();
                 topStack.Push(curr);
-                topSize -= DataTypeToSize[curr.StackType];
+                topSize -= DataTypeToSize[(int)curr.StackType];
             }
 
             // Load bottom data from stack
@@ -135,7 +141,7 @@ internal sealed class BlockSimulator
             {
                 IExpressionNode curr = builder.ExpressionStack.Pop();
                 bottomStack.Push(curr);
-                bottomSize -= DataTypeToSize[curr.StackType];
+                bottomSize -= DataTypeToSize[(int)curr.StackType];
             }
 
             // Ensure we didn't read too much data accidentally
@@ -168,7 +174,7 @@ internal sealed class BlockSimulator
                 IExpressionNode curr = builder.ExpressionStack.Pop();
                 toDuplicate.Add(curr);
                 curr.Duplicated = true;
-                size -= DataTypeToSize[curr.StackType];
+                size -= DataTypeToSize[(int)curr.StackType];
             }
 
             // Ensure we didn't read too much data accidentally

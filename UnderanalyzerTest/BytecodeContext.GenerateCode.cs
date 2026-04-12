@@ -6682,4 +6682,153 @@ public class BytecodeContext_GenerateCode
             context
         );
     }
+
+    [Fact]
+    public void TestOldChainedFunctionArgumentOrder()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a(b(c).d(e, f, g));
+            """,
+            """
+            push.v builtin.g
+            push.v builtin.f
+            push.v builtin.e
+            push.v builtin.c
+            call.i @@This@@ 0
+            push.v builtin.b
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.d
+            callv.v 3
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewChainedFunctionArgumentOrder = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestOldChainedFunctionArgumentOrder2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a(b(c).d(e, f, g).h(i, j, k));
+            """,
+            """
+            push.v builtin.k
+            push.v builtin.j
+            push.v builtin.i
+            push.v builtin.g
+            push.v builtin.f
+            push.v builtin.e
+            push.v builtin.c
+            call.i @@This@@ 0
+            push.v builtin.b
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.d
+            callv.v 3
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.h
+            callv.v 3
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewChainedFunctionArgumentOrder = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestNewChainedFunctionArgumentOrder()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a(b(c).d(e, f, g));
+            """,
+            """
+            push.v builtin.c
+            call.i @@This@@ 0
+            push.v builtin.b
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.d
+            push.v builtin.g
+            push.v builtin.f
+            push.v builtin.e
+            dup.e 2 3
+            callv.v 3
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewChainedFunctionArgumentOrder = true
+            }
+        );
+    }
+
+    [Fact]
+    public void TestNewChainedFunctionArgumentOrder2()
+    {
+        TestUtil.AssertBytecode(
+            """
+            a(b(c).d(e, f, g).h(i, j, k));
+            """,
+            """
+            push.v builtin.c
+            call.i @@This@@ 0
+            push.v builtin.b
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.d
+            push.v builtin.g
+            push.v builtin.f
+            push.v builtin.e
+            dup.e 2 3
+            callv.v 3
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.h
+            push.v builtin.k
+            push.v builtin.j
+            push.v builtin.i
+            dup.e 2 3
+            callv.v 3
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            popz.v
+            """,
+            false,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingSelfToBuiltin = true,
+                UsingNewChainedFunctionArgumentOrder = true
+            }
+        );
+    }
 }

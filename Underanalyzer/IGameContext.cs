@@ -200,6 +200,11 @@ public interface IGameContext
     public bool UsingOptimizedFunctionDeclarations { get; }
 
     /// <summary>
+    /// <see langword="true"/> if the game uses the new chained function argument evaluation order introduced in GameMaker 2024.14.4; <see langword="false"/> otherwise.
+    /// </summary>
+    public bool UsingNewChainedFunctionArgumentOrder { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.
