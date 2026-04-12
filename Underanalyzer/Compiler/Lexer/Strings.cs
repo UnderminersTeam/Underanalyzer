@@ -66,7 +66,7 @@ internal static class Strings
                 if (!newlineErroredAlready)
                 {
                     newlineErroredAlready = true;
-                    context.CompileContext.PushError("Direct newline found in string (should use \"\n\" instead, or a raw string literal)", context, startPosition);
+                    context.CompileContext.PushError("Direct newline found in string (should use \"\\n\" instead, or a raw string literal)", context, startPosition);
                 }
                 pos++;
                 continue;
