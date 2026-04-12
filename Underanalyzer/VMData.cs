@@ -544,7 +544,7 @@ public interface IGMInstruction
         Global = -5,
 
         /// <summary>
-        /// Used for GML built-in variables.
+        /// Used for GML built-in variables, as well as <c>self</c> variables in certain cases.
         /// </summary>
         Builtin = -6,
 
