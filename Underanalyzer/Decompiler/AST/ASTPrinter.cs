@@ -277,7 +277,18 @@ public sealed class ASTPrinter(DecompileContext context)
             return realName;
         }
 
-        // If new function resolution is used, check parent fragment contexts for any sub-function names
+        // If this is a call within a struct, look one level higher for sub-function names
+        if (fragmentContext.StructArguments is not null && fragmentContext.Parent is not null)
+        {
+            fragmentContext = fragmentContext.Parent;
+            if (fragmentContext.SubFunctionNames.TryGetValue(funcName, out realName))
+            {
+                // We found a sub-function name in the immediate parent's fragment!
+                return realName;
+            }
+        }
+
+        // If new function resolution is used, check *all* parent fragment contexts for any sub-function names
         if (Context.GameContext.UsingNewFunctionResolution)
         {
             while (fragmentContext.Parent is not null)

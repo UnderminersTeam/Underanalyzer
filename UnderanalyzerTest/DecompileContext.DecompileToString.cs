@@ -3266,4 +3266,127 @@ public class DecompileContext_DecompileToString
             """
         );
     }
+
+    [Fact]
+    public void TestOptimizedLocalFunctionScopes()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > regular_func_A (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_A
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pushi.e -6
+            pop.v.v [stacktop]self.test
+            popz.v
+            call.i regular_func_A 0
+            pop.v.v self.a
+            call.i regular_func_A 0
+            b [4]
+
+            > struct_func___struct__1 (locals=0, args=0)
+            :[3]
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v self.c
+            exit.i
+
+            :[4]
+            push.i [function]struct_func___struct__1
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pushi.e -16
+            pop.v.v [stacktop]static.___struct___1
+            call.i @@NewGMLObject@@ 2
+            pop.v.v self.b
+            """,
+            """
+            function test()
+            {
+            }
+
+            a = test();
+            b = 
+            {
+                c: test()
+            };
+            """
+        );
+    }
+
+    [Fact]
+    public void TestOptimizedLocalFunctionScopes2()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            :[0]
+            b [2]
+
+            > regular_func_A (locals=0, args=0)
+            :[1]
+            exit.i
+
+            :[2]
+            push.i [function]regular_func_A
+            conv.i.v
+            pushi.e -1
+            conv.i.v
+            call.i method 2
+            dup.v 0
+            pop.v.v self.test
+            popz.v
+            call.i regular_func_A 0
+            pop.v.v builtin.a
+            call.i regular_func_A 0
+            b [4]
+
+            > struct_func___struct__1 (locals=0, args=0)
+            :[3]
+            call.i @@SetStatic@@ 0
+            pushi.e -15
+            pushi.e 0
+            push.v [array]self.argument
+            pop.v.v self.c
+            exit.i
+
+            :[4]
+            push.i [function]struct_func___struct__1
+            conv.i.v
+            call.i @@NullObject@@ 0
+            call.i method 2
+            dup.v 0
+            pop.v.v global.___struct___1
+            call.i @@NewGMLObject@@ 2
+            pop.v.v builtin.b
+            """,
+            """
+            function test()
+            {
+            }
+
+            a = test();
+            b = 
+            {
+                c: test()
+            };
+            """,
+            new GameContextMock()
+            {
+                UsingNewFunctionResolution = true
+            }
+        );
+    }
 }
