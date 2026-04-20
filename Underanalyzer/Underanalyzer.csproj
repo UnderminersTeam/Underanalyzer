@@ -1,19 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>UnderminersTeam.Underanalyzer</PackageId>
+        <AssemblyName>Underanalyzer</AssemblyName>
+        <Version>0.1.0</Version>
+        <Authors>colinator27</Authors>
+        <Product>Underanalyzer</Product>
+        <Description>
+            GameMaker VM analysis, compiler, and decompiler library, for use in larger modding
+            tools. Written in C#, with interfaces that map to existing structures in game data.
+            Licensed under MPL-2.0.
 
-  <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
-    <LangVersion>12</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+            Why? Existing tools have their own tools for this, but they are often tightly coupled to
+            a large codebase (unnecessarily). This project has a much more narrow and testable
+            scope, with its own lifecycle.
+        </Description>
+        <PackageTags>GameMaker;GML;Gamemaker Language;Undertale;Deltarune;UndertaleModTool</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/UnderminersTeam/Underanalyzer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>UnderanalyzerTest</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="10.0.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>UnderanalyzerTest</_Parameter1>
+        </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="10.0.1" />
+    </ItemGroup>
 
 </Project>
