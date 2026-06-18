@@ -109,6 +109,12 @@ internal sealed class BlockSimulator
         int dupSize = instr.DuplicationSize;
         int dupSwapSize = instr.DuplicationSize2;
 
+        if (dupType == DataType.Int16)
+        {
+            // This is actually a dup.v with reversed instruction encoding (to support larger bottom data sizes)
+            dupTypeSize = DataTypeToSize[(int)DataType.Variable];
+            (dupSize, dupSwapSize) = (dupSwapSize, dupSize);
+        }
         if (dupSwapSize != 0)
         {
             // "Dup Swap" mode (GMLv2 version of "Pop Swap" mode)
@@ -116,12 +122,6 @@ internal sealed class BlockSimulator
             {
                 // Exit early; basically a no-op instruction
                 return;
-            }
-            if (dupType == DataType.Int16)
-            {
-                // This is actually a dup.v with reversed instruction encoding (to support larger bottom data sizes)
-                dupTypeSize = DataTypeToSize[(int)DataType.Variable];
-                (dupSize, dupSwapSize) = (dupSwapSize, dupSize);
             }
 
             // Load top data from stack

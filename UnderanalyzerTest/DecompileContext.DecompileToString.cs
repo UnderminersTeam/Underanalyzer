@@ -3389,4 +3389,41 @@ public class DecompileContext_DecompileToString
             }
         );
     }
+
+    [Fact]
+    public void TestNewChainedFunctionArgumentOrder()
+    {
+        TestUtil.VerifyDecompileResult(
+            """
+            pushi.e 1
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            dup.e 2 0
+            callv.v 0
+            popz.v
+            pushi.e 2
+            conv.i.v
+            call.i @@This@@ 0
+            push.v builtin.a
+            callv.v 1
+            dup.v 0
+            pushi.e -9
+            push.v [stacktop]self.b
+            pushi.e 3
+            conv.i.v
+            dup.e 2 1
+            callv.v 1
+            popz.v
+            """,
+            """
+            a(1).b();
+            a(2).b(3);
+            """
+        );
+    }
 }
