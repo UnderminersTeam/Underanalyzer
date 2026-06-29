@@ -1,4 +1,4 @@
-﻿/*
+/*
   This Source Code Form is subject to the terms of the Mozilla Public
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -184,23 +184,31 @@ public class DecompileSettings : IDecompileSettings
     public bool CleanupDefaultArgumentValues { get; set; } = true;
     public bool CleanupBuiltinArrayVariables { get; set; } = true;
     public bool CleanupLocalVarDeclarations { get; set; } = true;
-    public bool CreateEnumDeclarations { get; set; } = true;
+    public bool CreateEnumDeclarations { get; set; } = false;
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";
     public string UnknownArgumentNamePattern { get; set; } = "arg{0}";
     public bool AllowLeftoverDataOnStack { get; set; } = true;
 
     // Some basic data populated from code seen in the wild
-    // TODO: populate this with more values by default?
     public Dictionary<double, string> SinglePartPredefinedDoubles = new()
     {
         { 3.141592653589793, "pi" },
+        { 2.718281828459045, "e" },
+        { 1.4142135623730951, "sqrt(2)" },
+        { 1.7320508075688772, "sqrt(3)" },
+        { 1.618033988749895, "phi" },
     };
     public Dictionary<double, string> MultiPartPredefinedDoubles = new()
     {
         { 6.283185307179586, "2 * pi" },
         { 12.566370614359172, "4 * pi" },
         { 31.41592653589793, "10 * pi" },
+        { 1.5707963267948966, "pi / 2" },
+        { 0.7853981633974483, "pi / 4" },
+        { 0.5235987755982988, "pi / 6" },
+        { 0.017453292519943295, "pi / 180" },
+        { 57.29577951308232, "180 / pi" },
         { 0.3333333333333333, "1/3" },
         { 0.6666666666666666, "2/3" },
         { 1.3333333333333333, "4/3" },
@@ -212,7 +220,7 @@ public class DecompileSettings : IDecompileSettings
         { 0.06666666666666667, "1/15" },
         { 0.9523809523809523, "20/21" },
         { 0.03333333333333333, "1/30" },
-        { 0.008333333333333333, "1/120" }
+        { 0.008333333333333333, "1/120" },
     };
 
     public bool TryGetPredefinedDouble(double value, [MaybeNullWhen(false)] out string result, out bool isResultMultiPart)
