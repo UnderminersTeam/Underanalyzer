@@ -307,6 +307,141 @@ public class LexContext_Tokenize
     }
 
     [Fact]
+    public void TestStringTemplateBasic()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"meow{123}{{}}:3"
+            """
+        );
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+        foreach (var token in context.Tokens)
+        {
+            Console.WriteLine($"{token.GetType().Name}\t{token.ToString()}");
+        }
+        TestUtil.AssertTokens([
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("meow", typeof(TokenTemplateStringMiddle)),
+            ("{", typeof(TokenSeparator)),
+            ("123", typeof(TokenNumber)),
+            ("}", typeof(TokenSeparator)),
+            ("{", typeof(TokenSeparator)),
+            ("{", typeof(TokenSeparator)),
+            ("}", typeof(TokenSeparator)),
+            ("}", typeof(TokenSeparator)),
+            (":3", typeof(TokenTemplateStringMiddle)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+        ], context.Tokens);
+    }
+
+    [Fact]
+    public void TestStringTemplateNested()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"m{$"e{$"o"}"}{$"w"}"
+            """
+        );
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+        TestUtil.AssertTokens([
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("m", typeof(TokenTemplateStringMiddle)),
+            ("{", typeof(TokenSeparator)),
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("e", typeof(TokenTemplateStringMiddle)),
+            ("{", typeof(TokenSeparator)),
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("o", typeof(TokenTemplateStringMiddle)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+            ("}", typeof(TokenSeparator)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+            ("}", typeof(TokenSeparator)),
+            ("{", typeof(TokenSeparator)),
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("w", typeof(TokenTemplateStringMiddle)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+            ("}", typeof(TokenSeparator)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+        ], context.Tokens);
+    }
+
+    [Fact]
+    public void TestStringTemplateEscapes()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"\{\}\\\a\b\f\n\r\t\v\u00e2\u61\x41\101"
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+        TestUtil.AssertTokens([
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("\\\\{\\\\}\\\\\\a\\b\\f\\n\\r\\t\\v\\u00e2\\u61\\x41\\101", typeof(TokenTemplateStringMiddle)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+        ], context.Tokens);
+        Assert.Equal("\\\a\b\f\n\r\t\v\u00e2\u0061AA", ((TokenTemplateStringMiddle)context.Tokens[1]).Value);
+    }
+
+    [Fact]
+    public void TestStringTemplateUnclosed()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
+    public void TestStringTemplateUnclosed2()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"{
+            """
+        );
+
+        Assert.Equal(2, context.CompileContext.Errors.Count);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
+    public void TestStringTemplateUnclosed3()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"a
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
+    public void TestStringTemplateNewlines()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"
+            a
+            b
+            "
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
     public void TestHex()
     {
         LexContext context = TestUtil.Lex(

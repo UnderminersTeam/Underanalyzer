@@ -205,6 +205,14 @@ public interface IGameContext
     public bool UsingNewChainedFunctionArgumentOrder { get; }
 
     /// <summary>
+    /// <see langword="true"/> if the game uses template strings; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Currently only supports the new code generation via <tt>@@string@@</tt>, introduced in GameMaker 2024.14.
+    /// </remarks>
+    public bool UsingTemplateStrings { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

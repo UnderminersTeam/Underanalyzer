@@ -55,6 +55,7 @@ public class BuiltinsMock : IBuiltins
         { VMConstants.TryUnhookFunction, new(VMConstants.TryUnhookFunction, 0, 0) },
         { VMConstants.FinishCatchFunction, new(VMConstants.FinishCatchFunction, 0, 0) },
         { VMConstants.FinishFinallyFunction, new(VMConstants.FinishFinallyFunction, 0, 0) },
+        { VMConstants.TemplateStringFunction, new(VMConstants.TemplateStringFunction, 1, int.MaxValue) },
     };
 
     /// <summary>

@@ -1865,4 +1865,18 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestTemplateString()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = $"meow {x} lalala {$""}";
+            b = @@string@@("{0} now there are two of them. there are two {0}", x);
+            c = @@string@@("{0} {1}", x);
+            d = $"\{";
+            e = $"\{x\} \{ 3\} \{\}";
+            """
+        );
+    }
 }

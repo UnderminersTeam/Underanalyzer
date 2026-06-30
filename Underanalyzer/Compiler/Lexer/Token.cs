@@ -356,6 +356,40 @@ internal sealed record TokenString(LexContext Context, int TextPosition, string 
 }
 
 /// <summary>
+/// Token representing the starting quote of a template string in code.
+/// </summary>
+internal sealed record TokenTemplateStringStart(LexContext Context, int TextPosition) : IToken
+{
+    public override string ToString()
+    {
+        return "$\"";
+    }
+}
+
+/// <summary>
+/// Token representing the ending quote of a template string in code.
+/// </summary>
+internal sealed record TokenTemplateStringEnd(LexContext Context, int TextPosition) : IToken
+{
+    public override string ToString()
+    {
+        return "\"";
+    }
+}
+
+/// <summary>
+/// Token representing content in a template string in code.
+/// </summary>
+internal sealed record TokenTemplateStringMiddle(LexContext Context, int TextPosition, string Text, string Value) : IToken
+{
+    public override string ToString()
+    {
+        return Text;
+    }
+}
+
+
+/// <summary>
 /// Token representing a simple function call in code.
 /// </summary>
 /// <param name="Text">Verbatim text used for the function identifier.</param>

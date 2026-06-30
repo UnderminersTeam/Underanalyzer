@@ -4,6 +4,7 @@
   file, You can obtain one at https://mozilla.org/MPL/2.0/.
 */
 
+using System;
 using System.Collections.Generic;
 using Underanalyzer.Decompiler.GameSpecific;
 
@@ -61,7 +62,7 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
             Arguments[i] = Arguments[i].Clean(cleaner);
         }
 
-        // Handle special instance types
+        // Handle special instance types and template strings
         switch (Function.Name.Content)
         {
             case VMConstants.SelfFunction:
@@ -87,6 +88,8 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
                 Arguments[0].Duplicated = true;
                 Arguments[0].StackType = StackType;
                 return Arguments[0];
+            case VMConstants.TemplateStringFunction:
+                return CleanupTemplateString(cleaner);
         }
 
         return CleanupMacroTypes(cleaner);
@@ -172,6 +175,72 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
 
         // No resolution found
         return this;
+    }
+
+    private IExpressionNode CleanupTemplateString(ASTCleaner cleaner)
+    {
+        if (!cleaner.Context.Settings.CleanupTemplateStrings)
+        {
+            return this;
+        }
+
+        // make sure format is valid, fall back to function call and return as is otherwise
+
+        if (Arguments is not [StringNode { Value: { Content: string format } formatRef }, ..])
+        {
+            return this;
+        }
+
+        // for each field, whether or not a placeholder exists
+        bool[] fieldsSeen = new bool[Arguments.Count - 1];
+        for (int i = 0; i < format.Length; i++)
+        {
+            if (format[i] != '{')
+            {
+                continue;
+            }
+
+            // parse a placeholder
+
+            i++;
+            bool valid = i < format.Length && format[i] != '}';
+            int index = 0;
+            while (i < format.Length && format[i] != '}')
+            {
+                if (format[i] < '0' || format[i] > '9')
+                {
+                    valid = false;
+                }
+                if (valid)
+                {
+                    index = index * 10 + (format[i] - '0');
+                }
+                i++;
+            }
+            if (!valid || i >= format.Length)
+            {
+                continue;
+            }
+
+            if (index >= fieldsSeen.Length || fieldsSeen[index])
+            {
+                // out of range or duplicate
+                return this;
+            }
+            fieldsSeen[index] = true;
+        }
+
+        // make sure all fields have corresponding placeholders
+        foreach (var seen in fieldsSeen)
+        {
+            if (!seen)
+            {
+                return this;
+            }
+        }
+
+        Arguments.RemoveAt(0);
+        return new TemplateStringNode(formatRef, Arguments);
     }
 
     /// <inheritdoc/>

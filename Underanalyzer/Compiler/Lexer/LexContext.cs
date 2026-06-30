@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Underanalyzer.Compiler.Lexer;
 
@@ -65,13 +66,18 @@ internal sealed class LexContext : ISubCompileContext
     }
 
     /// <summary>
-    /// Tokenizes the input text until reaching the end.
+    /// Tokenizes the input text until reaching the end, or until the template
+    /// string field is closed if the <tt>inTemplateString</tt> parameter is
+    /// <see langword="true"/>. In the latter case, the closing brace is also
+    /// consumed.
     /// </summary>
-    public void Tokenize()
+    public int Tokenize(int startPosition = 0, bool inTemplateString = false)
     {
         ReadOnlySpan<char> text = Text;
-        int pos = 0;
+        int pos = startPosition;
         bool newStrings = CompileContext.GameContext.UsingGMS2OrLater;
+        // store brace nesting level for template string fields, e.g. $"{{}}"
+        int braceLevel = 0;
 
         while (pos < text.Length)
         {
@@ -97,7 +103,18 @@ internal sealed class LexContext : ISubCompileContext
             {
                 pos = Identifiers.Parse(this, pos);
             }
-            else if (currChar == '$' || (currChar == '0' && nextChar == 'x'))
+            else if (currChar == '$')
+            {
+                if (nextChar == '"')
+                {
+                    pos = Strings.ParseTemplate(this, pos);
+                }
+                else
+                {
+                    pos = Numbers.ParseHex(this, pos, true);
+                }
+            }
+            else if (currChar == '0' && nextChar == 'x')
             {
                 pos = Numbers.ParseHex(this, pos, currChar == '$');
             }
@@ -136,9 +153,35 @@ internal sealed class LexContext : ISubCompileContext
                 if (!success)
                 {
                     CompileContext.PushError("Unrecognized token", this, pos);
+                    continue;
+                }
+
+                if (inTemplateString && Tokens[^1] is TokenSeparator sep)
+                {
+                    switch (sep.Kind)
+                    {
+                        case SeparatorKind.BlockOpen:
+                            braceLevel++;
+                            break;
+
+                        case SeparatorKind.BlockClose:
+                            if (braceLevel == 0)
+                            {
+                                return pos;
+                            }
+                            braceLevel--;
+                            break;
+                    }
                 }
             }
         }
+
+        if (inTemplateString)
+        {
+            // if not returned yet, we are at the end of the code
+            CompileContext.PushError("Template string field not closed", this, startPosition);
+        }
+        return pos;
     }
 
     /// <summary>

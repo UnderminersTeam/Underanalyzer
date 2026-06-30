@@ -121,6 +121,11 @@ public interface IDecompileSettings
     public bool CleanupLocalVarDeclarations { get; }
 
     /// <summary>
+    /// If true, the decompiler will make an attempt to rewrite calls to <tt>@@string@@</tt> as template strings.
+    /// </summary>
+    public bool CleanupTemplateStrings { get; }
+
+    /// <summary>
     /// If true, enum values that are detected in a code entry (including any unknown ones) will 
     /// be given declarations at the top of the code.
     /// </summary>
@@ -184,6 +189,7 @@ public class DecompileSettings : IDecompileSettings
     public bool CleanupDefaultArgumentValues { get; set; } = true;
     public bool CleanupBuiltinArrayVariables { get; set; } = true;
     public bool CleanupLocalVarDeclarations { get; set; } = true;
+    public bool CleanupTemplateStrings { get; set; } = true;
     public bool CreateEnumDeclarations { get; set; } = true;
     public string UnknownEnumName { get; set; } = "UnknownEnum";
     public string UnknownEnumValuePattern { get; set; } = "Value_{0}";

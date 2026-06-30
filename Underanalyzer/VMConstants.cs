@@ -48,6 +48,9 @@ internal static class VMConstants
     // Function name used to throw an object/exception
     public const string ThrowFunction = "@@throw@@";
 
+    // Function name for template strings
+    public const string TemplateStringFunction = "@@string@@";
+
     // Variable names used by compiler to rewrite try/catch/finally
     public const string TryBreakVariable = "__yy_breakEx";
     public const string TryContinueVariable = "__yy_continueEx";

@@ -116,6 +116,66 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
 
         return result;
     }
+    /// <summary>
+    /// Parses a template string from the given context's current position, and returns
+    /// a corresponding function call node for that string.
+    /// </summary>
+    public static SimpleFunctionCallNode ParseTemplateString(ParseContext context)
+    {
+        var startToken = context.Tokens[context.Position - 1];
+
+        // placeholder string node, to be replaced with format string later
+        List<IASTNode> arguments = [new StringNode("", null)];
+
+        SimpleFunctionCallNode result = new(
+            VMConstants.TemplateStringFunction, 
+            context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.TemplateStringFunction), 
+            arguments
+        );
+
+        int fieldIndex = 0;
+        StringBuilder formatSb = new();
+        while (!context.EndOfCode && context.CurrentToken is not TokenTemplateStringEnd)
+        {
+            if (context.CurrentToken is TokenTemplateStringMiddle { Value: var value })
+            {
+                formatSb.Append(value);
+                context.Position++;
+                continue;
+            }
+
+            if (context.IsCurrentToken(SeparatorKind.BlockOpen))
+            {
+                context.Position++;
+
+                // parse field
+                if (Expressions.ParseExpression(context) is IASTNode expr)
+                {
+                    arguments.Add(expr);
+                    formatSb.Append($"{{{fieldIndex}}}"); // {0}
+                    fieldIndex++;
+                }
+                else
+                {
+                    // failed to parse expression; stop parsing template string
+                    break;
+                }
+
+                context.EnsureToken(SeparatorKind.BlockClose);
+                continue;
+            }
+        }
+
+        arguments[0] = new StringNode(formatSb.ToString(), startToken);
+
+        if (context.EndOfCode)
+        {
+            context.CompileContext.PushError($"Unexpected end of code (expected '\"')");
+        }
+        context.Position++;
+
+        return result;
+    }
 
     /// <inheritdoc/>
     public IASTNode PostProcess(ParseContext context)
