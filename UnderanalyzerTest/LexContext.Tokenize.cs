@@ -316,10 +316,6 @@ public class LexContext_Tokenize
         );
         Assert.Empty(context.CompileContext.Errors);
         Assert.False(context.CompileContext.HasErrors);
-        foreach (var token in context.Tokens)
-        {
-            Console.WriteLine($"{token.GetType().Name}\t{token.ToString()}");
-        }
         TestUtil.AssertTokens([
             ("$\"", typeof(TokenTemplateStringStart)),
             ("meow", typeof(TokenTemplateStringMiddle)),
@@ -380,10 +376,10 @@ public class LexContext_Tokenize
         Assert.False(context.CompileContext.HasErrors);
         TestUtil.AssertTokens([
             ("$\"", typeof(TokenTemplateStringStart)),
-            ("\\\\{\\\\}\\\\\\a\\b\\f\\n\\r\\t\\v\\u00e2\\u61\\x41\\101", typeof(TokenTemplateStringMiddle)),
+            ("\\{\\}\\\\\\a\\b\\f\\n\\r\\t\\v\\u00e2\\u61\\x41\\101", typeof(TokenTemplateStringMiddle)),
             ("\"", typeof(TokenTemplateStringEnd)),
         ], context.Tokens);
-        Assert.Equal("\\\a\b\f\n\r\t\v\u00e2\u0061AA", ((TokenTemplateStringMiddle)context.Tokens[1]).Value);
+        Assert.Equal("{}\\\a\b\f\n\r\t\v\u00e2\u0061AA", ((TokenTemplateStringMiddle)context.Tokens[1]).Value);
     }
 
     [Fact]

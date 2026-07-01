@@ -1140,9 +1140,6 @@ public class ParseContext_Parse
 
         Assert.Equal("", ((StringNode)call.Arguments[1]).Value);
 
-        var structDecl = (FunctionDeclNode)call.Arguments[2];
-        Assert.True(structDecl.IsStruct);
-        Assert.False(structDecl.IsStatement);
-        Assert.True(structDecl.IsConstructor);
+        Assert.Equal(VMConstants.NewObjectFunction, ((SimpleFunctionCallNode)call.Arguments[2]).FunctionName);
     }
 }
