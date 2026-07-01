@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Underanalyzer.Decompiler.GameSpecific;
 
 namespace Underanalyzer.Decompiler.AST;
@@ -141,6 +140,10 @@ public class TemplateStringNode(IGMString format, List<IExpressionNode> fields)
 
     public IExpressionNode? ResolveMacroType(ASTCleaner cleaner, IMacroType type)
     {
-        throw new System.NotImplementedException();
+        if (type is IMacroTypeConditional conditional)
+        {
+            return conditional.Resolve(cleaner, this);
+        }
+        return null;
     }
 }
