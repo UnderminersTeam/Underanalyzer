@@ -232,11 +232,17 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
             // Parse the placeholder (may not necessarily be valid)
             int startIndex = i + 1;
             int j = startIndex;
+            bool invalidCharacter = false;
             while (j < format.Length && format[j] != '}')
             {
+                if (format[j] < '0' || format[j] > '9')
+                {
+                    invalidCharacter = true;
+                    break;
+                }
                 j++;
             }
-            if (j >= format.Length || j == startIndex)
+            if (invalidCharacter || j >= format.Length || j == startIndex)
             {
                 continue;
             }

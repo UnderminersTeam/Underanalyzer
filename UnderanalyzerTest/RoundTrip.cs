@@ -1885,6 +1885,8 @@ public class RoundTrip
             unresolved = string(some_variable);
             old_bug = $"\{{123}}";
             old_bug_equivalent = string("{{0}}", 123);
+            spaces_test = string("{ 0}", 123);
+            spaces_test_2 = string("{0 }", 123);
             """,
             """
             a = $"meow {x} lalala {""}";
@@ -1899,6 +1901,8 @@ public class RoundTrip
             unresolved = string(some_variable);
             old_bug = string("{{0}}", 123);
             old_bug_equivalent = string("{{0}}", 123);
+            spaces_test = string("{ 0}", 123);
+            spaces_test_2 = string("{0 }", 123);
             """,
             false,
             new GameContextMock()
@@ -1927,6 +1931,8 @@ public class RoundTrip
             unresolved_1 = string(some_variable);
             unresolved_2 = @@string@@(some_variable);
             old_bug_now_fixed = $"\{{123}}";
+            spaces_test = @@string@@("{ 0}", 123);
+            spaces_test_2 = @@string@@("{0 }", 123);
             """,
             """
             a = $"meow {x} lalala {""}";
@@ -1941,6 +1947,8 @@ public class RoundTrip
             unresolved_1 = string(some_variable);
             unresolved_2 = @@string@@(some_variable);
             old_bug_now_fixed = $"\{{123}}";
+            spaces_test = @@string@@("{ 0}", 123);
+            spaces_test_2 = @@string@@("{0 }", 123);
             """
         );
     }

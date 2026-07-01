@@ -82,20 +82,26 @@ public class TemplateStringNode(IGMString format, List<IExpressionNode> fields)
             // Parse the placeholder (may not necessarily be valid)
             int startIndex = i + 1;
             int j = startIndex;
+            bool invalidCharacter = false;
             while (j < format.Length && format[j] != '}')
             {
+                if (format[j] < '0' || format[j] > '9')
+                {
+                    invalidCharacter = true;
+                    break;
+                }
                 j++;
             }
-            if (j >= format.Length || j == startIndex)
+            if (invalidCharacter || j >= format.Length || j == startIndex)
             {
-                // Invalid - escape the character!
+                // Invalid - escape the starting character!
                 printer.Write("\\{");
                 continue;
             }
             ReadOnlySpan<char> placeholderNumberText = format.AsSpan()[startIndex..j];
             if (!int.TryParse(placeholderNumberText, out int fieldIndex))
             {
-                // Invalid - escape the character!
+                // Invalid - escape the starting character!
                 printer.Write("\\{");
                 continue;
             }
