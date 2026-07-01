@@ -45,9 +45,14 @@ internal sealed class ParseContext : ISubCompileContext
     public HashSet<string>? ParseGlobalFunctions { get; } = null;
 
     /// <summary>
-    /// List of tokens to be parsed by this context.
-    /// </summary>
+    /// The position of the current token being parsed by this context. 
+    /// /// </summary>
     public int Position { get; set; } = 0;
+
+    /// <summary>
+    /// The current token being parsed by this context.
+    /// </summary>
+    public IToken CurrentToken => Tokens[Position];
 
     /// <summary>
     /// True if reached the end of code; false otherwise.

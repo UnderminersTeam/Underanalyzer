@@ -205,6 +205,22 @@ public interface IGameContext
     public bool UsingNewChainedFunctionArgumentOrder { get; }
 
     /// <summary>
+    /// <see langword="true"/> if the game uses template strings; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This alone signifies support added in GameMaker 2023.4. Modern code generation introduced in 2024.14 is different.
+    /// </remarks>
+    public bool UsingTemplateStrings { get; }
+
+    /// <summary>
+    /// <see langword="true"/> if the game uses the modern code generation for template strings; <see langword="false"/> otherwise.
+    /// </summary>
+    /// <remarks>
+    /// This changes the code generation for template strings to match what is observed in GameMaker 2024.14 and above.
+    /// </remarks>
+    public bool UsingModernTemplateStrings { get; }
+
+    /// <summary>
     /// Interface for getting global functions.
     /// Can be custom, or can use the provided implementation of <see cref="Decompiler.GlobalFunctions"/>.
     /// This should not be modified during decompilation.

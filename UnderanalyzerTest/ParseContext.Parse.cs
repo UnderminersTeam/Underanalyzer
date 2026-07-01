@@ -1117,4 +1117,58 @@ public class ParseContext_Parse
             }
         );
     }
+
+    [Fact]
+    public void TestTemplateStrings()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a = $"{""} {{}}";
+            """,
+            new Underanalyzer.Mock.GameContextMock()
+            {
+                UsingModernTemplateStrings = false
+            }
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+
+        var node = Assert.Single(((BlockNode)context.Root!).Children);
+        AssignNode assign = (AssignNode)node;
+        Assert.Equal("a", ((SimpleVariableNode)assign.Destination).VariableName);
+
+        var call = (SimpleFunctionCallNode)assign.Expression;
+        Assert.Equal(VMConstants.TemplateStringFunction, call.FunctionName);
+        Assert.Equal("{0} {1}", ((StringNode)call.Arguments[0]).Value);
+
+        Assert.Equal("", ((StringNode)call.Arguments[1]).Value);
+
+        Assert.Equal(VMConstants.NewObjectFunction, ((SimpleFunctionCallNode)call.Arguments[2]).FunctionName);
+    }
+
+    [Fact]
+    public void TestModernTemplateStrings()
+    {
+        ParseContext context = TestUtil.Parse(
+            """
+            a = $"{""} {{}}";
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+
+        var node = Assert.Single(((BlockNode)context.Root!).Children);
+        AssignNode assign = (AssignNode)node;
+        Assert.Equal("a", ((SimpleVariableNode)assign.Destination).VariableName);
+
+        var call = (SimpleFunctionCallNode)assign.Expression;
+        Assert.Equal(VMConstants.ModernTemplateStringFunction, call.FunctionName);
+        Assert.Equal("{0} {1}", ((StringNode)call.Arguments[0]).Value);
+
+        Assert.Equal("", ((StringNode)call.Arguments[1]).Value);
+
+        Assert.Equal(VMConstants.NewObjectFunction, ((SimpleFunctionCallNode)call.Arguments[2]).FunctionName);
+    }
 }

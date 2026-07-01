@@ -1865,4 +1865,91 @@ public class RoundTrip
             }
         );
     }
+
+    [Fact]
+    public void TestTemplateStrings()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = $"meow {x} lalala {$""}";
+            b = string("{0} now there are two of them. there are two {0}", x);
+            c = string("{0} {1}", x);
+            d = $"\{";
+            e = $"\{x\} \{ 3\} \{\}";
+            f = $"{5}";
+            g = $"Split\n{
+            across
+            }\nmultiple lines";
+            h = $"\{x\} { 3} \{\}";
+            ambiguous_example = string("{0} {1} {2}", 1, 2, 3);
+            unresolved = string(some_variable);
+            old_bug = $"\{{123}}";
+            old_bug_equivalent = string("{{0}}", 123);
+            spaces_test = string("{ 0}", 123);
+            spaces_test_2 = string("{0 }", 123);
+            """,
+            """
+            a = $"meow {x} lalala {""}";
+            b = string("{0} now there are two of them. there are two {0}", x);
+            c = string("{0} {1}", x);
+            d = "{";
+            e = "{x} { 3} {}";
+            f = $"{5}";
+            g = $"Split\n{across}\nmultiple lines";
+            h = $"\{x} {3} \{}";
+            ambiguous_example = $"{1} {2} {3}";
+            unresolved = string(some_variable);
+            old_bug = string("{{0}}", 123);
+            old_bug_equivalent = string("{{0}}", 123);
+            spaces_test = string("{ 0}", 123);
+            spaces_test_2 = string("{0 }", 123);
+            """,
+            false,
+            new GameContextMock()
+            {
+                UsingModernTemplateStrings = false
+            }
+        );
+    }
+
+    [Fact]
+    public void TestModernTemplateStrings()
+    {
+        TestUtil.VerifyRoundTrip(
+            """
+            a = $"meow {x} lalala {$""}";
+            b = @@string@@("{0} now there are two of them. there are two {0}", x);
+            c = @@string@@("{0} {1}", x);
+            d = $"\{";
+            e = $"\{x\} \{ 3\} \{\}";
+            f = $"{5}";
+            g = $"Split\n{
+            across
+            }\nmultiple lines";
+            h = $"\{x\} { 3} \{\}";
+            no_longer_ambiguous_example = string("{0} {1} {2}", 1, 2, 3);
+            unresolved_1 = string(some_variable);
+            unresolved_2 = @@string@@(some_variable);
+            old_bug_now_fixed = $"\{{123}}";
+            spaces_test = @@string@@("{ 0}", 123);
+            spaces_test_2 = @@string@@("{0 }", 123);
+            """,
+            """
+            a = $"meow {x} lalala {""}";
+            b = @@string@@("{0} now there are two of them. there are two {0}", x);
+            c = @@string@@("{0} {1}", x);
+            d = "{";
+            e = "{x} { 3} {}";
+            f = $"{5}";
+            g = $"Split\n{across}\nmultiple lines";
+            h = $"\{x} {3} \{}";
+            no_longer_ambiguous_example = string("{0} {1} {2}", 1, 2, 3);
+            unresolved_1 = string(some_variable);
+            unresolved_2 = @@string@@(some_variable);
+            old_bug_now_fixed = $"\{{123}}";
+            spaces_test = @@string@@("{ 0}", 123);
+            spaces_test_2 = @@string@@("{0 }", 123);
+            """
+        );
+    }
 }

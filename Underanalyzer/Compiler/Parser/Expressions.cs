@@ -729,6 +729,14 @@ internal static class Expressions
             case TokenString tokenString:
                 context.Position++;
                 return new StringNode(tokenString);
+            case TokenTemplateStringStart:
+                context.Position++;
+                if (context.CompileContext.GameContext.UsingTemplateStrings)
+                {
+                    return SimpleFunctionCallNode.ParseTemplateString(context);
+                }
+                context.CompileContext.PushError("Cannot use template strings in this GameMaker version", token);
+                return null;
             case TokenBoolean tokenBoolean:
                 context.Position++;
                 return new BooleanNode(tokenBoolean);

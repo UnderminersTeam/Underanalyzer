@@ -33,7 +33,6 @@ public class BuiltinsMock : IBuiltins
     public Dictionary<string, BuiltinFunctionMock> BuiltinFunctions = new()
     {
         { "test_builtin_function", new("test_builtin_function", 0, int.MaxValue) },
-        { "string", new("string", 1, 1) },
         { "real", new("real", 1, 1) },
         { "ord", new("ord", 1, 1) },
         { "script_execute", new("script_execute", 1, int.MaxValue) },
@@ -55,6 +54,8 @@ public class BuiltinsMock : IBuiltins
         { VMConstants.TryUnhookFunction, new(VMConstants.TryUnhookFunction, 0, 0) },
         { VMConstants.FinishCatchFunction, new(VMConstants.FinishCatchFunction, 0, 0) },
         { VMConstants.FinishFinallyFunction, new(VMConstants.FinishFinallyFunction, 0, 0) },
+        { VMConstants.TemplateStringFunction, new(VMConstants.TemplateStringFunction, 1, int.MaxValue) },
+        { VMConstants.ModernTemplateStringFunction, new(VMConstants.ModernTemplateStringFunction, 1, int.MaxValue) },
     };
 
     /// <summary>
