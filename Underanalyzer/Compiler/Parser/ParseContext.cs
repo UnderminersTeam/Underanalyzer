@@ -7,7 +7,6 @@
 using System.Collections.Generic;
 using Underanalyzer.Compiler.Lexer;
 using Underanalyzer.Compiler.Nodes;
-using Underanalyzer.Decompiler.AST;
 
 namespace Underanalyzer.Compiler.Parser;
 
@@ -119,7 +118,7 @@ internal sealed class ParseContext : ISubCompileContext
     /// </summary>
     public void Parse()
     {
-        Root = Nodes.BlockNode.ParseRoot(this);
+        Root = BlockNode.ParseRoot(this);
     }
 
     /// <summary>
