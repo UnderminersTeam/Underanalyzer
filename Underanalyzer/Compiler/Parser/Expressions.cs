@@ -735,7 +735,7 @@ internal static class Expressions
                 {
                     return SimpleFunctionCallNode.ParseTemplateString(context);
                 }
-                context.CompileContext.PushError("Cannot use template strings in this game context", token);
+                context.CompileContext.PushError("Cannot use template strings in this GameMaker version", token);
                 return null;
             case TokenBoolean tokenBoolean:
                 context.Position++;

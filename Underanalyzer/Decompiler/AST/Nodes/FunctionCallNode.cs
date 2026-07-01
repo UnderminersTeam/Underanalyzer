@@ -89,7 +89,23 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
                 Arguments[0].StackType = StackType;
                 return Arguments[0];
             case VMConstants.TemplateStringFunction:
-                return CleanupTemplateString(cleaner);
+                {
+                    IGameContext context = cleaner.Context.GameContext;
+                    if (context.UsingTemplateStrings && !context.UsingModernTemplateStrings)
+                    {
+                        return CleanupTemplateString(cleaner, false);
+                    }
+                    break;
+                }
+            case VMConstants.ModernTemplateStringFunction:
+                {
+                    IGameContext context = cleaner.Context.GameContext;
+                    if (context.UsingTemplateStrings && context.UsingModernTemplateStrings)
+                    {
+                        return CleanupTemplateString(cleaner, true);
+                    }
+                    break;
+                }
         }
 
         return CleanupMacroTypes(cleaner);
@@ -177,68 +193,78 @@ public class FunctionCallNode(IGMFunction function, List<IExpressionNode> argume
         return this;
     }
 
-    private IExpressionNode CleanupTemplateString(ASTCleaner cleaner)
+    private IExpressionNode CleanupTemplateString(ASTCleaner cleaner, bool isModern)
     {
+        // Don't attempt cleanup if not enabled
         if (!cleaner.Context.Settings.CleanupTemplateStrings)
         {
             return this;
         }
 
-        // make sure format is valid, fall back to function call and return as is otherwise
-
+        // Make sure format is valid; fall back to function call and return as-is, otherwise
         if (Arguments is not [StringNode { Value: { Content: string format } formatRef }, ..])
+        {
+            return this;
+        }
+        if (Arguments.Count < 2)
         {
             return this;
         }
 
         // for each field, whether or not a placeholder exists
-        bool[] fieldsSeen = new bool[Arguments.Count - 1];
+        int nextExpectedFieldIndex = 0;
+        int maxExpectedFieldIndex = Arguments.Count - 2;
         for (int i = 0; i < format.Length; i++)
         {
+            // Skip non-placeholder starting characters
             if (format[i] != '{')
             {
                 continue;
             }
 
-            // parse a placeholder
-
-            i++;
-            bool valid = i < format.Length && format[i] != '}';
-            int index = 0;
-            while (i < format.Length && format[i] != '}')
+            // If the next character is the same, it can be treated as an escape on non-modern versions, and
+            // we probably just want to bail to preserve behavior... (e.g. if ported to other GM versions)
+            if (!isModern && (i + 1) < format.Length && format[i + 1] == '{')
             {
-                if (format[i] < '0' || format[i] > '9')
-                {
-                    valid = false;
-                }
-                if (valid)
-                {
-                    index = index * 10 + (format[i] - '0');
-                }
-                i++;
+                return this;
             }
-            if (!valid || i >= format.Length)
+
+            // Parse the placeholder (may not necessarily be valid)
+            int startIndex = i + 1;
+            int j = startIndex;
+            while (j < format.Length && format[j] != '}')
+            {
+                j++;
+            }
+            if (j >= format.Length || j == startIndex)
             {
                 continue;
             }
-
-            if (index >= fieldsSeen.Length || fieldsSeen[index])
+            ReadOnlySpan<char> placeholderNumberText = format.AsSpan()[startIndex..j];
+            if (!int.TryParse(placeholderNumberText, out int fieldIndex))
             {
-                // out of range or duplicate
+                continue;
+            }
+            if (fieldIndex < 0 || fieldIndex > maxExpectedFieldIndex || fieldIndex != nextExpectedFieldIndex)
+            {
+                // Totally invalid or unexpected field index... bail!
                 return this;
             }
-            fieldsSeen[index] = true;
+
+            // Move on to next field - should be in linear order for regular interpolated strings
+            nextExpectedFieldIndex++;
+
+            // Advance to the end of the placeholder
+            i = j;
         }
 
-        // make sure all fields have corresponding placeholders
-        foreach (var seen in fieldsSeen)
+        // If we didn't use exactly the number of expected indices, bail!
+        if (nextExpectedFieldIndex != (maxExpectedFieldIndex + 1))
         {
-            if (!seen)
-            {
-                return this;
-            }
+            return this;
         }
 
+        // No checks failed, and this seems to be a valid (possible) template string!
         Arguments.RemoveAt(0);
         return new TemplateStringNode(formatRef, Arguments);
     }

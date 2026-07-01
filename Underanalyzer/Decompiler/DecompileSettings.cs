@@ -121,7 +121,8 @@ public interface IDecompileSettings
     public bool CleanupLocalVarDeclarations { get; }
 
     /// <summary>
-    /// If true, the decompiler will make an attempt to rewrite calls to <tt>@@string@@</tt> as template strings.
+    /// If true, the decompiler will make an attempt to rewrite calls to <tt>string</tt>/<tt>@@string@@</tt> as template strings,
+    /// as it pertains to the game context and its GameMaker version.
     /// </summary>
     public bool CleanupTemplateStrings { get; }
 

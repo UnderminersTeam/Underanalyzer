@@ -438,6 +438,58 @@ public class LexContext_Tokenize
     }
 
     [Fact]
+    public void TestStringTemplateValidNewlines()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"\n{
+            a
+            }\nb"
+            """
+        );
+
+        Assert.Empty(context.CompileContext.Errors);
+        Assert.False(context.CompileContext.HasErrors);
+        TestUtil.AssertTokens([
+            ("$\"", typeof(TokenTemplateStringStart)),
+            ("\\n", typeof(TokenTemplateStringMiddle)),
+            ("{", typeof(TokenSeparator)),
+            ("a", typeof(TokenVariable)),
+            ("}", typeof(TokenSeparator)),
+            ("\\nb", typeof(TokenTemplateStringMiddle)),
+            ("\"", typeof(TokenTemplateStringEnd)),
+        ], context.Tokens);
+        Assert.Equal("\n", ((TokenTemplateStringMiddle)context.Tokens[1]).Value);
+        Assert.Equal("\nb", ((TokenTemplateStringMiddle)context.Tokens[5]).Value);
+    }
+
+    [Fact]
+    public void TestBadStringBackslash()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            "hello \
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
+    public void TestBadStringBackslashTemplate()
+    {
+        LexContext context = TestUtil.Lex(
+            """
+            $"hello \
+            """
+        );
+
+        Assert.Single(context.CompileContext.Errors);
+        Assert.True(context.CompileContext.HasErrors);
+    }
+
+    [Fact]
     public void TestHex()
     {
         LexContext context = TestUtil.Lex(

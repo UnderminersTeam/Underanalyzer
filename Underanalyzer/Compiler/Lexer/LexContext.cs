@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Underanalyzer.Compiler.Lexer;
 
@@ -76,8 +75,9 @@ internal sealed class LexContext : ISubCompileContext
         ReadOnlySpan<char> text = Text;
         int pos = startPosition;
         bool newStrings = CompileContext.GameContext.UsingGMS2OrLater;
-        // store brace nesting level for template string fields, e.g. $"{{}}"
-        int braceLevel = 0;
+
+        // Store brace nesting level for template string fields, e.g. $"{{}}"
+        int templateBraceLevel = 0;
 
         while (pos < text.Length)
         {
@@ -116,7 +116,7 @@ internal sealed class LexContext : ISubCompileContext
             }
             else if (currChar == '0' && nextChar == 'x')
             {
-                pos = Numbers.ParseHex(this, pos, currChar == '$');
+                pos = Numbers.ParseHex(this, pos, false);
             }
             else if (char.IsDigit(currChar) || (currChar == '.' && char.IsDigit(nextChar)))
             {
@@ -156,20 +156,21 @@ internal sealed class LexContext : ISubCompileContext
                     continue;
                 }
 
+                // If within a template string, adjust its brace level (until no braces left)
                 if (inTemplateString && Tokens[^1] is TokenSeparator sep)
                 {
                     switch (sep.Kind)
                     {
                         case SeparatorKind.BlockOpen:
-                            braceLevel++;
+                            templateBraceLevel++;
                             break;
 
                         case SeparatorKind.BlockClose:
-                            if (braceLevel == 0)
+                            if (templateBraceLevel == 0)
                             {
                                 return pos;
                             }
-                            braceLevel--;
+                            templateBraceLevel--;
                             break;
                     }
                 }
@@ -178,7 +179,7 @@ internal sealed class LexContext : ISubCompileContext
 
         if (inTemplateString)
         {
-            // if not returned yet, we are at the end of the code
+            // If not returned yet, we are at the end of the code
             CompileContext.PushError("Template string field not closed", this, startPosition);
         }
         return pos;

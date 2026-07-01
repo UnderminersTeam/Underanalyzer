@@ -64,13 +64,13 @@ internal static class Strings
         }
 
         // If at the end of the code, the string was not correctly closed
-        if (pos >= context.Text.Length)
+        if (pos >= text.Length)
         {
             context.CompileContext.PushError("String not closed", context, startPosition);
             return pos;
         }
 
-        context.Tokens.Add(new TokenString(context, startPosition, context.Text[startPosition..(pos + 1)], sb.ToString()));
+        context.Tokens.Add(new TokenString(context, startPosition, text[startPosition..(pos + 1)].ToString(), sb.ToString()));
 
         return pos + 1;
     }
@@ -81,6 +81,7 @@ internal static class Strings
     public static int ParseTemplate(LexContext context, int startPosition)
     {
         ReadOnlySpan<char> text = context.Text;
+        StringBuilder sb = new(64);
         int pos = startPosition + 2;
         bool newlineErroredAlready = false;
 
@@ -95,7 +96,7 @@ internal static class Strings
                 break;
             }
 
-            // start of field
+            // Start of field
             if (c == '{')
             {
                 context.Tokens.Add(new TokenSeparator(context, pos, SeparatorKind.BlockOpen));
@@ -105,30 +106,30 @@ internal static class Strings
                 continue;
             }
 
-            // any other character
+            // Any other character
             int tokenStartPos = pos;
-            StringBuilder sb = new(32);
+            sb.Clear();
             while (pos < text.Length && text[pos] is not ('"' or '{'))
             {
                 pos = ParseChar(context, pos, sb, ref newlineErroredAlready);
             }
 
             // If at the end of the code, the string was not correctly closed
-            if (pos >= context.Text.Length)
+            if (pos >= text.Length)
             {
                 context.CompileContext.PushError("String not closed", context, startPosition);
                 return pos;
             }
 
-            // if we've read any characters:
+            // If we've read any characters, make a token for that section of the string
             if (pos != tokenStartPos)
             {
-                context.Tokens.Add(new TokenTemplateStringMiddle(context, pos, context.Text[tokenStartPos..pos], sb.ToString()));
+                context.Tokens.Add(new TokenTemplateStringMiddle(context, pos, text[tokenStartPos..pos].ToString(), sb.ToString()));
             }
         }
 
         // If at the end of the code, the string was not correctly closed
-        if (pos >= context.Text.Length)
+        if (pos >= text.Length)
         {
             context.CompileContext.PushError("String not closed", context, startPosition);
             return pos;
@@ -138,7 +139,10 @@ internal static class Strings
 
         return pos + 1;
     }
-
+    
+    /// <summary>
+    /// Parses a single character within a string, appending it to the supplied StringBuilder, and returning the new text position.
+    /// </summary>
     private static int ParseChar(LexContext context, int pos, StringBuilder sb, ref bool newlineErroredAlready)
     {
         ReadOnlySpan<char> text = context.Text;
@@ -156,7 +160,7 @@ internal static class Strings
             return pos;
         }
 
-        if (c != '\\')
+        if (c != '\\' || (pos + 1) >= text.Length)
         {
             // All non-backslash characters are just normal text
             sb.Append(c);

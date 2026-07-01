@@ -120,44 +120,53 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
     /// Parses a template string from the given context's current position, and returns
     /// a corresponding function call node for that string.
     /// </summary>
-    public static SimpleFunctionCallNode ParseTemplateString(ParseContext context)
+    public static IASTNode ParseTemplateString(ParseContext context)
     {
         var startToken = context.Tokens[context.Position - 1];
 
-        // placeholder string node, to be replaced with format string later
-        List<IASTNode> arguments = [new StringNode("", null)];
+        // Placeholder string node, to be replaced with format string later
+        List<IASTNode> arguments = new(4)
+        {
+            new StringNode("", null)
+        };
 
+        // For newer GameMaker versions, use modern template string function; otherwise, use regular string function
+        string templateStringFunction = context.CompileContext.GameContext.UsingModernTemplateStrings ?
+            VMConstants.ModernTemplateStringFunction : VMConstants.TemplateStringFunction;
         SimpleFunctionCallNode result = new(
-            VMConstants.TemplateStringFunction, 
-            context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(VMConstants.TemplateStringFunction), 
+            templateStringFunction, 
+            context.CompileContext.GameContext.Builtins.LookupBuiltinFunction(templateStringFunction), 
             arguments
         );
 
+        // Build out the format string, segment by segment
         int fieldIndex = 0;
-        StringBuilder formatSb = new();
+        StringBuilder formatSb = new(64);
         while (!context.EndOfCode && context.CurrentToken is not TokenTemplateStringEnd)
         {
-            if (context.CurrentToken is TokenTemplateStringMiddle { Value: var value })
+            // For regular text segments, just append their contents directly
+            if (context.CurrentToken is TokenTemplateStringMiddle { Value: string value })
             {
                 formatSb.Append(value);
                 context.Position++;
                 continue;
             }
 
+            // For fields, parse expression and append placeholder index
             if (context.IsCurrentToken(SeparatorKind.BlockOpen))
             {
                 context.Position++;
 
-                // parse field
+                // Parse field
                 if (Expressions.ParseExpression(context) is IASTNode expr)
                 {
                     arguments.Add(expr);
-                    formatSb.Append($"{{{fieldIndex}}}"); // {0}
+                    formatSb.Append($"{{{fieldIndex}}}"); // e.g. {0}
                     fieldIndex++;
                 }
                 else
                 {
-                    // failed to parse expression; stop parsing template string
+                    // Failed to parse expression; stop parsing template string
                     break;
                 }
 
@@ -166,13 +175,21 @@ internal sealed class SimpleFunctionCallNode : IMaybeStatementASTNode
             }
         }
 
+        // Replace first argument with final format string
         arguments[0] = new StringNode(formatSb.ToString(), startToken);
 
+        // Move past the end of the string, or error if it wasn't found
         if (context.EndOfCode)
         {
             context.CompileContext.PushError($"Unexpected end of code (expected '\"')");
         }
         context.Position++;
+
+        // If no arguments were actually used, we don't need to create a function at all, actually
+        if (fieldIndex == 0)
+        {
+            return arguments[0];
+        }
 
         return result;
     }
