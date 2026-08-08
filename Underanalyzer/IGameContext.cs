@@ -30,6 +30,11 @@ public enum AssetType
     AnimCurve,
     ParticleSystem,
     RoomInstance,
+
+    /// <remarks>
+    /// This asset type overlaps with <see cref="Sound"/> in official GameMaker.
+    /// It is distinguished here, as it can be useful for decompilation purposes.
+    /// </remarks>
     AudioGroup
 }
 
